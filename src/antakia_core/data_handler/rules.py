@@ -424,9 +424,8 @@ class RuleSet:
         -------
 
         """
-        tokens = skrules[0]
-        precision = tokens[1][0]
-        recall = tokens[1][1]
+        rules_info = skrules[0]
+        precision, recall, __ = rules_info[1]
         f1 = precision * recall * 2 / (precision + recall)
         score_dict = {
             "precision": round(precision, 3),
@@ -434,24 +433,16 @@ class RuleSet:
             "f1": round(f1, 3),
         }
 
-        tokens = tokens[0].split(" and ")
+        rule_strings = rules_info[0].split(" and ")
 
         rule_list = RuleSet()
-        for i in range(len(tokens)):
-            tokens[i] = tokens[i].split(" ")
-            variable = variables.get_var(tokens[i][0])
+        for rule in rule_strings:
+            rule_parts = rule.split(' ')
 
-            if "<=" in tokens[i] or "<" in tokens[i]:
-                min = - math.inf
-                max = round(float(tokens[i][2]), 3)
-
-            elif ">=" in tokens[i] or ">" in tokens[i]:
-                min = round(float(tokens[i][2]), 3)
-                max = math.inf
-            else:
+            variable = variables.get_var(rule_parts[0])
+            if len(rule_parts) != 3:
                 raise ValueError('Rule not recognized')
-
-            temp_rule = Rule(min, "<=", variable, "<=", max)
+            temp_rule = Rule(None, None, variable, rule_parts[1], float(rule_parts[2]))
             rule_list.append(temp_rule)
 
         return rule_list, score_dict
