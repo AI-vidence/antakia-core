@@ -1,0 +1,30 @@
+# Apple
+.DS_Store
+
+# VSCode
+.vscode/
+*.code-workspace
+.idea/
+
+# environnement variables
+.env
+
+# Byte-compiled / build files
+__pycache__/
+*.py[cod]
+*$py.class
+dist/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Poetry
+poetry.lock
+
+# docs
+site/
+
