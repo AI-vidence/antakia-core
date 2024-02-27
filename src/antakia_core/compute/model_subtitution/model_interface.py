@@ -71,7 +71,7 @@ class InterpretableModels:
             if model.name not in self.models:
                 self.models[pretty_model_name(model.name)] = model
 
-    def _init_scores(self, task_type):
+    def _init_scores(self, customer_model, task_type):
         if self.score_type == 'compute':
             self._compute_score_type(customer_model, X_test, y_test)
         if task_type == ProblemCategory.regression:
@@ -110,7 +110,7 @@ class InterpretableModels:
         if X_test is None or len(X_test) == 0:
             print('no test set provided, splitting train set')
             X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
-        self._init_scores(task_type)
+        self._init_scores(customer_model, task_type)
         self._init_models(task_type)
         if customer_model is not None:
             self.models[self.customer_model_name] = MLModel(customer_model, self.customer_model_name, True)
@@ -122,11 +122,11 @@ class InterpretableModels:
             for score_name, score in self.scores.items():
                 self.perfs.loc[model_name, score_name] = score[0](y_test, y_pred)
 
-        self.perfs['delta'] = self.perfs[self.custom_score_str] - self.perfs.loc[
-            self.customer_model_name, self.custom_score_str]
+        self.perfs['delta'] = (self.perfs[self.custom_score_str] - self.perfs.loc[
+            self.customer_model_name, self.custom_score_str]) * (2 * (self.score_type == 'minimize') - 1)
         get_delta_color = lambda x: 'red' if x > 0.01 else 'green' if x < -0.01 else 'orange'
         self.perfs['delta_color'] = self.perfs['delta'].apply(get_delta_color)
-        return self.perfs.sort_values(self.custom_score_str, ascending=True)
+        return self.perfs.sort_values(self.custom_score_str, ascending=self.score_type == 'minimize')
 
     def select_model(self, model_name):
         self.selected_model = model_name
