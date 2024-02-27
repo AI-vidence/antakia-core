@@ -220,7 +220,7 @@ class ModelRegion(Region):
         perfs = self.interpretable_models.perfs
         if len(perfs) == 0:
             return perfs
-        return perfs.sort_values(self.interpretable_models.custom_score_str, ascending=True)
+        return perfs.sort_values('delta', ascending=True)
 
     @property
     def delta(self):

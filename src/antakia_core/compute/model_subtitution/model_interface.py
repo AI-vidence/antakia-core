@@ -124,10 +124,12 @@ class InterpretableModels:
 
         self.perfs['delta'] = (self.perfs[self.custom_score_str] - self.perfs.loc[
             self.customer_model_name, self.custom_score_str]) * (2 * (self.score_type == 'minimize') - 1)
-        get_delta_color = lambda x: 'red' if x > 0.01 else 'green' if x < -0.01 else 'orange'
+
+        def get_delta_color(delta):
+            return 'red' if delta > 0.01 else 'green' if delta < -0.01 else 'orange'
+
         self.perfs['delta_color'] = self.perfs['delta'].apply(get_delta_color)
-        print(self.score_type)
-        return self.perfs.sort_values(self.custom_score_str, ascending=self.score_type == 'minimize')
+        return self.perfs.sort_values('delta', ascending=True)
 
     def select_model(self, model_name):
         self.selected_model = model_name
