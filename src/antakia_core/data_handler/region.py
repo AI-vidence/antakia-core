@@ -255,6 +255,9 @@ class ModelRegion(Region):
     def get_model(self, model_name):
         return self.interpretable_models.models[model_name]
 
+    def get_selected_model(self):
+        return self.get_model(self.interpretable_models.selected_model)
+
 
 class RegionSet:
     """
