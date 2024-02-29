@@ -5,7 +5,7 @@ from sklearn.neighbors import KNeighborsClassifier
 
 from antakia_core.compute.model_subtitution.model_interface import InterpretableModels
 from antakia_core.data_handler.rules import RuleSet
-from antakia_core.utils.utils import colors, boolean_mask
+from antakia_core.utils.utils import colors, boolean_mask, format_number
 
 
 class Region:
@@ -92,6 +92,7 @@ class Region:
         dict_form = {
             "Region": self.num,
             "Rules": self.name,
+            "Average": None,
             "Points": self.mask.sum(),
             "% dataset": f"{round(self.mask.mean() * 100, 2)}%",
             "Sub-model": None,
@@ -168,6 +169,7 @@ class ModelRegion(Region):
         dict_form = super().to_dict()
         if self.interpretable_models.selected_model is not None:
             dict_form['Sub-model'] = self.interpretable_models.selected_model_str()
+        dict_form["Average"] = format_number(self.y[self.mask].mean())
         return dict_form
 
     def select_model(self, model_name: str):

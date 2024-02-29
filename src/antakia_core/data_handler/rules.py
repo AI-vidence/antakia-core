@@ -7,7 +7,7 @@ import pandas as pd
 import os
 import math
 
-from antakia_core.utils.utils import boolean_mask, mask_to_index
+from antakia_core.utils.utils import boolean_mask, mask_to_index, format_number
 from antakia_core.utils.variable import Variable, DataVariables
 
 
@@ -129,20 +129,20 @@ class Rule:
             )
         if self.rule_type == 1:
             return (
-                    (self.max == other.max) &
-                    (self.operator_max == other.operator_max)
+                (self.max == other.max) &
+                (self.operator_max == other.operator_max)
             )
         if self.rule_type == 2:
             return (
-                    (self.min == other.min) &
-                    (self.operator_min == other.operator_min)
+                (self.min == other.min) &
+                (self.operator_min == other.operator_min)
             )
         return (
-                (self.min == other.min) &
-                (self.max == other.max) &
-                (self.operator_min == other.operator_min) &
-                (self.operator_max == other.operator_max) &
-                (self.variable == other.variable)
+            (self.min == other.min) &
+            (self.max == other.max) &
+            (self.operator_min == other.operator_min) &
+            (self.operator_max == other.operator_max) &
+            (self.variable == other.variable)
         )
 
     @property
@@ -191,29 +191,29 @@ class Rule:
             return txt
         if self.rule_type == 1:
             # Rule type 1
-            txt = f"{self.variable.display_name} {self.PRETTY_OPERATORS[self.operator_max]} {self.max}"
+            txt = f"{self.variable.display_name} {self.PRETTY_OPERATORS[self.operator_max]} {format_number(self.max)}"
             return txt
         if self.rule_type == 2:
             # Rule type 2
-            txt = f"{self.variable.display_name} {self.PRETTY_OPERATORS[4 - self.operator_min]} {self.min}"
+            txt = f"{self.variable.display_name} {self.PRETTY_OPERATORS[4 - self.operator_min]} {format_number(self.min)}"
             return txt
         if self.rule_type == 3:
             # Rule type 3 : the rule is of the form : variable included in [min, max] interval, or min < variable < max
             if os.environ.get("USE_INTERVALS_FOR_RULES"):
-                txt = f"{self.variable.display_name} \u2208 {self.PRETTY_BRAKET[self.operator_min]} {self.min},"
-                txt += f" {self.max} {self.PRETTY_BRAKET[4 - self.operator_max]}"  # element of
+                txt = f"{self.variable.display_name} \u2208 {self.PRETTY_BRAKET[self.operator_min]} {format_number(self.min)},"
+                txt += f" {format_number(self.max)} {self.PRETTY_BRAKET[4 - self.operator_max]}"  # element of
                 return txt
-            txt = f'{self.min} {self.PRETTY_OPERATORS[self.operator_min]} {self.variable.display_name} '
-            txt += f'{self.PRETTY_OPERATORS[self.operator_max]} {self.max}'
+            txt = f'{format_number(self.min)} {self.PRETTY_OPERATORS[self.operator_min]} {self.variable.display_name} '
+            txt += f'{self.PRETTY_OPERATORS[self.operator_max]} {format_number(self.max)}'
             return txt
         # Rule type 4 : the rule is of the form : variable not included in [min, max] interval or variable < min and variable > max
         if os.environ.get("USE_INTERVALS_FOR_RULES"):
-            txt = f"{self.variable.display_name} \u2209 {self.PRETTY_BRAKET[self.operator_min]} {self.min},"
-            txt += f" {self.max} {self.PRETTY_BRAKET[4 - self.operator_max]}"  # element of
+            txt = f"{self.variable.display_name} \u2209 {self.PRETTY_BRAKET[self.operator_min]} {format_number(self.min)},"
+            txt += f" {format_number(self.max)} {self.PRETTY_BRAKET[4 - self.operator_max]}"  # element of
             return txt
         else:
-            txt = f'{self.variable.display_name} {self.PRETTY_OPERATORS[4 - self.operator_min]} {self.min} or '
-            txt += f'{self.variable.display_name} {self.PRETTY_OPERATORS[self.operator_max]} {self.max}'
+            txt = f'{self.variable.display_name} {self.PRETTY_OPERATORS[4 - self.operator_min]} {format_number(self.min)} or '
+            txt += f'{self.variable.display_name} {self.PRETTY_OPERATORS[self.operator_max]} {format_number(self.max)}'
         return txt
 
     def get_matching_mask(self, X: pd.DataFrame) -> pd.Series:
