@@ -258,7 +258,16 @@ class ModelRegion(Region):
         return self.interpretable_models.models[model_name]
 
     def get_selected_model(self):
+        if self.interpretable_models.selected_model is None:
+            return None
         return self.get_model(self.interpretable_models.selected_model)
+
+    def predict(self, X):
+        mask = self.rules.get_matching_mask(X)
+        model = self.get_selected_model()
+        if model is not None:
+            return model.predict(X[mask]).reindex(X.index)
+        return pd.Series(index=X.index)
 
 
 class RegionSet:
@@ -577,3 +586,9 @@ class ModelRegionSet(RegionSet):
         delta_score /= len(self.X)
         base_stats['delta_score'] = delta_score
         return base_stats
+
+    def predict(self, X):
+        prediction = pd.Series(index=X.index)
+        for region in self.regions.values():
+            prediction = prediction.fillna(region.predict(X))
+        return prediction

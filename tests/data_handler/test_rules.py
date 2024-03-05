@@ -18,10 +18,10 @@ def test_type_1():
 
     assert rule1_4 == rule1_3
     assert rule1_5 == rule1_2
-    assert repr(rule1_6) == 'type1 < 10'
-    assert repr(rule1_7) == 'type1 < 10'
-    assert repr(rule1_8) == 'type1 < 10'
-    assert repr(rule1_9) == 'type1 ≤ 10'
+    assert repr(rule1_6) == 'type1 < 10.00'
+    assert repr(rule1_7) == 'type1 < 10.00'
+    assert repr(rule1_8) == 'type1 < 10.00'
+    assert repr(rule1_9) == 'type1 ≤ 10.00'
 
     assert rule1_1.rule_type == 1
     assert rule1_2.rule_type == 1
@@ -31,9 +31,9 @@ def test_type_1():
     assert not rule1_1.is_interval_rule
     assert not rule1_1.is_inner_interval_rule
 
-    assert repr(rule1_1) == 'type1 < 10'
-    assert repr(rule1_2) == 'type1 ≤ 10'
-    assert repr(rule1_3) == 'type1 < 20'
+    assert repr(rule1_1) == 'type1 < 10.00'
+    assert repr(rule1_2) == 'type1 ≤ 10.00'
+    assert repr(rule1_3) == 'type1 < 20.00'
 
     data = pd.DataFrame(np.arange(30).reshape((-1, 1)), columns=['type1'])
     assert rule1_1.get_matching_mask(data).sum() == 10
@@ -61,10 +61,10 @@ def test_type_2():
 
     assert rule2_4 == rule2_3
     assert rule2_5 == rule2_2
-    assert repr(rule2_6) == 'type2 > 10'
-    assert repr(rule2_7) == 'type2 > 10'
-    assert repr(rule2_8) == 'type2 ≥ 20'
-    assert repr(rule2_9) == 'type2 > 20'
+    assert repr(rule2_6) == 'type2 > 10.00'
+    assert repr(rule2_7) == 'type2 > 10.00'
+    assert repr(rule2_8) == 'type2 ≥ 20.00'
+    assert repr(rule2_9) == 'type2 > 20.00'
 
     assert rule2_1.rule_type == 2
     assert rule2_2.rule_type == 2
@@ -74,9 +74,9 @@ def test_type_2():
     assert not rule2_1.is_interval_rule
     assert not rule2_1.is_inner_interval_rule
 
-    assert repr(rule2_1) == 'type2 > 10'
-    assert repr(rule2_2) == 'type2 ≥ 10'
-    assert repr(rule2_3) == 'type2 > 20'
+    assert repr(rule2_1) == 'type2 > 10.00'
+    assert repr(rule2_2) == 'type2 ≥ 10.00'
+    assert repr(rule2_3) == 'type2 > 20.00'
 
     data = pd.DataFrame(np.arange(30).reshape((-1, 1)), columns=['type2'])
     assert rule2_1.get_matching_mask(data).sum() == 19
@@ -108,9 +108,9 @@ def test_type_3():
     assert rule3_1.is_interval_rule
     assert rule3_1.is_inner_interval_rule
 
-    assert repr(rule3_1) == '10 < type3 < 40'
-    assert repr(rule3_2) == '10 ≤ type3 ≤ 40'
-    assert repr(rule3_3) == '20 < type3 < 30'
+    assert repr(rule3_1) == '10.00 < type3 < 40.00'
+    assert repr(rule3_2) == '10.00 ≤ type3 ≤ 40.00'
+    assert repr(rule3_3) == '20.00 < type3 < 30.00'
 
     data = pd.DataFrame(np.arange(50).reshape((-1, 1)), columns=['type3'])
     assert rule3_1.get_matching_mask(data).sum() == 29
@@ -142,9 +142,9 @@ def test_type_4():
     assert rule4_1.is_interval_rule
     assert not rule4_1.is_inner_interval_rule
 
-    assert repr(rule4_1) == 'type4 < 10 or type4 > 40'
-    assert repr(rule4_2) == 'type4 ≤ 10 or type4 ≥ 40'
-    assert repr(rule4_3) == 'type4 < 20 or type4 > 30'
+    assert repr(rule4_1) == 'type4 < 10.00 or type4 > 40.00'
+    assert repr(rule4_2) == 'type4 ≤ 10.00 or type4 ≥ 40.00'
+    assert repr(rule4_3) == 'type4 < 20.00 or type4 > 30.00'
 
     data = pd.DataFrame(np.arange(50).reshape((-1, 1)), columns=['type4'])
     assert rule4_1.get_matching_mask(data).sum() == 19
@@ -167,14 +167,14 @@ def test_combine():
     rule3_1 = Rule(10, '<=', var1, '<', 40)
     rule4_1 = Rule(10, '>', var1, '>', 40)
 
-    assert repr(rule2_1.combine(rule1_1)) == '10 ≤ comb1 < 20'
+    assert repr(rule2_1.combine(rule1_1)) == '10.00 ≤ comb1 < 20.00'
     assert rule2_1.combine(rule1_2) is None
-    assert repr(rule2_1.combine(rule1_3)) == '10 ≤ comb1 ≤ 10'
+    assert repr(rule2_1.combine(rule1_3)) == '10.00 ≤ comb1 ≤ 10.00'
     assert rule2_1.combine(rule1_4) is None
 
-    assert repr(rule3_1.combine(rule1_1)) == '10 ≤ comb1 < 20'
+    assert repr(rule3_1.combine(rule1_1)) == '10.00 ≤ comb1 < 20.00'
     assert rule3_1.combine(rule1_2) is None
-    assert repr(rule3_1.combine(rule1_3)) == '10 ≤ comb1 ≤ 10'
+    assert repr(rule3_1.combine(rule1_3)) == '10.00 ≤ comb1 ≤ 10.00'
     assert rule3_1.combine(rule1_4) is None
 
     assert rule4_1.combine(rule1_1) is None

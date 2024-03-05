@@ -19,18 +19,18 @@ def test_init():
     assert drm.X.equals(X)
     assert drm.progress_updated is dummy_progress
 
-    drm1 = DimReducMethod(2, None, 2, X, progress_updated=callback.call)
+    drm1 = DimReducMethod(2, None, 2, X, progress_updated=callback)
     assert drm1.dimreduc_method == 2
     assert drm1.default_parameters is None
     assert drm1.dimension == 2
     assert drm1.dimreduc_model is None
-    assert drm1.progress_updated == callback.call
+    assert drm1.progress_updated == callback
 
     with pytest.raises(ValueError):
-        DimReducMethod(6, None, 2, X, progress_updated=callback.call)
+        DimReducMethod(6, None, 2, X, progress_updated=callback)
 
     with pytest.raises(ValueError):
-        DimReducMethod(2, None, 4, X, progress_updated=callback.call)
+        DimReducMethod(2, None, 4, X, progress_updated=callback)
 
 
 def test_dimreduc_method_as_str():
