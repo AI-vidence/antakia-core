@@ -123,7 +123,7 @@ def test_boolean_mask():
 
 
 def test_compute_step():
-    assert utils.compute_step(0, 100) == (0, 100, 1.0)
-    assert utils.compute_step(0, 50) == (0, 50, 0.5)
-    assert utils.compute_step(0, 1) == (0, 1, 0.01)
-    assert utils.compute_step(0, 1000) == (0, 1000, 10)
+    assert utils.compute_step(0, 100) == (0, 101, 1.0)
+    assert utils.compute_step(0, 50) == (0, 50.5, 0.5)
+    assert utils.compute_step(0, 1) == (0, 1.01, 0.01)
+    assert utils.compute_step(0, 1000) == (0, 1010, 10)

@@ -44,12 +44,6 @@ def skope_rules(
 
     if sk_classifier.rules_ != []:
         rules_list, score_dict = RuleSet.sk_rules_to_rule_set(sk_classifier.rules_, variables)
-
-        if len(rules_list) >= 0:
-            rules_list.combine()
-
-        # We remove infinity in rules : we convert in simple rule if inf present
-        # We had to wait for _combine_rule_list to proceed
         return rules_list, score_dict
 
     else:

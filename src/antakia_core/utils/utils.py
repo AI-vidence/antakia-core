@@ -94,9 +94,9 @@ def compute_step(min, max):
     """
     step = (max - min) / 100
     round_value = round(math.log(step / 2) / math.log(10)) - 1
-    min_ = np.round(min, -round_value)
-    max_ = np.round(max, -round_value)
     step = np.round(step, -round_value)
+    min_ = np.round(min, -round_value)
+    max_ = int((max - min_) / step + 1) * step + min
     return min_, max_, step
 
 
@@ -148,6 +148,7 @@ def format_number(value: Number) -> str:
         if abs(value) < 1e-2 or abs(value) > 1e4:
             return '.2e'
         return '.2f'
+
     if value == 0:
         return value
     elif pd.isna(value):
