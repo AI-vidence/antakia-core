@@ -134,7 +134,6 @@ class RuleSet:
             "recall": round(recall, 3),
             "f1": round(f1, 3),
         }
-        print(rules_info[0])
         rule_strings = rules_info[0].split(" and ")
 
         rule_list = RuleSet()
@@ -146,7 +145,6 @@ class RuleSet:
                 raise ValueError('Rule not recognized')
             includes = '=' in rule_parts[1]
             value = float(rule_parts[2])
-            print(includes, value)
             if '<' in rule_parts[1]:
                 temp_rule = Rule(variable, max=value, includes_max=includes)
             else:
