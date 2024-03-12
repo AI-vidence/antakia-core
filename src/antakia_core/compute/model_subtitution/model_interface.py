@@ -140,6 +140,12 @@ class InterpretableModels:
         display_str = f'{reduced_name} - {self.custom_score_str}:{perf[self.custom_score_str]:.2f} ({perf["delta"]:.2f})'
         return display_str
 
+    def reset(self):
+        self.models = {}
+        self.scores = {}
+        self.perfs = pd.DataFrame()
+        self.selected_model = None
+
 
 if __name__ == '__main__':
     df = pd.read_csv('../../../../antakia/data/california_housing.csv').set_index('Unnamed: 0')

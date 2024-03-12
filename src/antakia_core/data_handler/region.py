@@ -274,6 +274,9 @@ class ModelRegion(Region):
             return model.predict(X[mask]).reindex(X.index)
         return pd.Series(index=X.index)
 
+    def update_rule_set(self, rule_set: RuleSet):
+        super().update_rule_set(rule_set)
+        self.interpretable_models.reset()
 
 class RegionSet:
     """
