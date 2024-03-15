@@ -2,6 +2,7 @@ import pandas as pd
 
 
 class DummyCallable:
+
     def __init__(self):
         self.calls = []
 
@@ -10,9 +11,7 @@ class DummyCallable:
 
 
 def generate_df_series():
-    X = pd.DataFrame([[4, 7, 10],
-                      [5, 8, 11],
-                      [6, 9, 12]],
+    X = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],
                      index=[1, 2, 3],
                      columns=['a', 'b', 'c'])
     y = pd.Series([1, 2, 3])
@@ -21,6 +20,7 @@ def generate_df_series():
 
 
 class DummyModel:
+
     def predict(self, X):
         if isinstance(X, pd.DataFrame):
             return ((X.iloc[:, 0] > 0.5) & (X.iloc[:, 1] > 0.5)).astype(int)
@@ -34,6 +34,7 @@ class DummyModel:
 
 
 class DummyProgress(DummyCallable):
+
     def __init__(self):
         super().__init__()
         self.progress = 0

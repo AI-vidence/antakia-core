@@ -30,8 +30,8 @@ class Variable:
             col_index: int,
             column_name: str,
             type: str,
-            unit: str = None,
-            descr: str = None,
+            unit: str | None = None,
+            descr: str | None = None,
             critical: bool = False,
             continuous: bool = True,
             lat: bool = False,
@@ -82,10 +82,13 @@ class Variable:
         if 'column_name' not in df.columns:
             df['column_name'] = df.index
             if is_numeric_dtype(df['column_name']):
-                raise KeyError('column_name (index) column is mandatory and should be string')
+                raise KeyError(
+                    'column_name (index) column is mandatory and should be string'
+                )
         if 'type' not in df.columns:
             raise KeyError('type column is mandatory')
-        variables = df.apply(lambda row: Variable(**row), axis=1).to_list()
+        variables = df.apply(lambda row: Variable(**row),
+                             axis=1).to_list()  # type:ignore
         return DataVariables(variables)
 
     @staticmethod
@@ -114,9 +117,9 @@ class Variable:
         guess if a variable is continous from its values
         """
         # TODO : precise continuous definition
-        id_first_true = (serie > 0).idxmax()
-        id_last_true = (serie > 0)[::-1].idxmax()
-        return all((serie > 0).loc[id_first_true:id_last_true] == True)
+        id_first_true = int((serie > 0).idxmax())
+        id_last_true = int((serie > 0)[::-1].idxmax())
+        return ((serie > 0).loc[id_first_true:id_last_true] == True).all()
 
     def __repr__(self):
         """
@@ -138,17 +141,13 @@ class Variable:
         return text
 
     def __eq__(self, other):
-        return (
-                self.col_index == other.col_index and
-                self.column_name == other.column_name and
-                self.type == other.type and
-                self.unit == other.unit and
-                self.descr == other.descr and
-                self.critical == other.critical and
-                self.continuous == other.continuous and
-                self.lat == other.lat and
-                self.lon == other.lon
-        )
+        return (self.col_index == other.col_index
+                and self.column_name == other.column_name
+                and self.type == other.type and self.unit == other.unit
+                and self.descr == other.descr
+                and self.critical == other.critical
+                and self.continuous == other.continuous
+                and self.lat == other.lat and self.lon == other.lon)
 
     def __hash__(self):
         return hash(self.column_name)

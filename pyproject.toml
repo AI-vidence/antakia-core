@@ -25,6 +25,8 @@ mkdocs = "^1.5.3"
 mock = "^5.1.0"
 pytest = "^8.0.1"
 pytest-cov = "^4.1.0"
+mypy = "^1.9.0"
+yapf = "^0.40.2"
 
 [build-system]
 requires = ["poetry-core"]

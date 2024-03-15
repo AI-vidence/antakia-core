@@ -11,11 +11,10 @@ class RuleSet:
     set of rules
     """
 
-    def __init__(self, rules: list[Rule] | RuleSet | None = None):
-
+    def __init__(self, rules: list[Rule] | 'RuleSet' | None = None):
+        self.rules: dict[Variable, Rule] = {}
         if isinstance(rules, RuleSet):
-            rules = rules.rules.values()
-        self.rules = {}
+            rules = list(rules.rules.values())
         if rules:
             for rule in rules:
                 self.rules[rule.variable] = rule

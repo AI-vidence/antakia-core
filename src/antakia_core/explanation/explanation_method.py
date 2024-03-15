@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing import Callable
+
 import pandas as pd
 
 from antakia_core.utils.long_task import LongTask
@@ -18,15 +21,17 @@ class ExplanationMethod(LongTask):
     LIME = 2
 
     def __init__(
-            self,
-            explanation_method: int,
-            X: pd.DataFrame,
-            model,
-            task_type,
-            progress_updated: callable = None,
+        self,
+        explanation_method: int,
+        X: pd.DataFrame,
+        model,
+        task_type,
+        progress_updated: Callable | None = None,
     ):
-        if not ExplanationMethod.is_valid_explanation_method(explanation_method):
-            raise ValueError(explanation_method, " is a bad explanation method")
+        if not ExplanationMethod.is_valid_explanation_method(
+                explanation_method):
+            raise ValueError(explanation_method,
+                             " is a bad explanation method")
         self.explanation_method = explanation_method
         super().__init__(X, progress_updated)
         self.task_type = task_type
@@ -37,11 +42,9 @@ class ExplanationMethod(LongTask):
         """
         Returns True if this is a valid explanation method.
         """
-        return (
-                method == ExplanationMethod.SHAP
+        return (method == ExplanationMethod.SHAP
                 or method == ExplanationMethod.LIME
-                or method == ExplanationMethod.NONE
-        )
+                or method == ExplanationMethod.NONE)
 
     @staticmethod
     def explanation_methods_as_list() -> list:

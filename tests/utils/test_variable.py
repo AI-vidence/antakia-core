@@ -5,7 +5,14 @@ from antakia_core.utils.variable import Variable, DataVariables
 
 
 def test_init_variable():
-    var = Variable(0, 'var1', 'int', unit='seconds', descr='description', critical=True, continuous=True, lat=True,
+    var = Variable(0,
+                   'var1',
+                   'int',
+                   unit='seconds',
+                   descr='description',
+                   critical=True,
+                   continuous=True,
+                   lat=True,
                    lon=True)
 
     assert var.col_index == 0
@@ -37,10 +44,11 @@ def test_guess_variables():
 
     assert Variable.guess_variables(df1) == DataVariables([])
 
-    assert Variable.guess_variables(df2) == DataVariables(
-        [Variable(0, 'a', 'int64', continuous=True),
-         Variable(1, 'b', 'int64', continuous=True),
-         Variable(2, 'c', 'int64', continuous=True)])
+    assert Variable.guess_variables(df2) == DataVariables([
+        Variable(0, 'a', 'int64', continuous=True),
+        Variable(1, 'b', 'int64', continuous=True),
+        Variable(2, 'c', 'int64', continuous=True)
+    ])
 
     assert Variable.guess_variables(df3) == DataVariables(
         [Variable(0, 'lat', 'int64', lat=True, continuous=True)])
@@ -51,58 +59,120 @@ def test_guess_variables():
 
 def test_import_variable_df():
     variables_df = pd.DataFrame(
-        {'col_index': [0, 1, 2, 3, 4, 5, 6, 7],
-         'descr': ['Median income', 'House age', 'Average nb rooms', 'Average nb bedrooms', 'Population',
-                   'Average occupancy', 'Latitude', 'Longitude'],
-         'type': ['float64', 'int', 'float64', 'float64', 'int', 'float64', 'float64', 'float64'],
-         'unit': ['k$', 'years', 'rooms', 'rooms', 'people', 'ratio', 'degrees', 'degrees'],
-         'critical': [True, False, False, False, False, False, False, False],
-         'lat': [False, False, False, False, False, False, True, False],
-         'lon': [False, False, False, False, False, False, False, True]},
-        index=['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup', 'Latitude', 'Longitude']
-    )
+        {
+            'col_index': [0, 1, 2, 3, 4, 5, 6, 7],
+            'descr': [
+                'Median income', 'House age', 'Average nb rooms',
+                'Average nb bedrooms', 'Population', 'Average occupancy',
+                'Latitude', 'Longitude'
+            ],
+            'type': [
+                'float64', 'int', 'float64', 'float64', 'int', 'float64',
+                'float64', 'float64'
+            ],
+            'unit': [
+                'k$', 'years', 'rooms', 'rooms', 'people', 'ratio', 'degrees',
+                'degrees'
+            ],
+            'critical':
+            [True, False, False, False, False, False, False, False],
+            'lat': [False, False, False, False, False, False, True, False],
+            'lon': [False, False, False, False, False, False, False, True]
+        },
+        index=[
+            'MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population',
+            'AveOccup', 'Latitude', 'Longitude'
+        ])
 
-    assert Variable.import_variable_df(variables_df) == DataVariables(
-        [Variable(0, 'MedInc', 'float64', descr='Median income', unit='k$', critical=True),
-         Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
-         Variable(2, 'AveRooms', 'float64', descr='Average nb rooms', unit='rooms'),
-         Variable(3, 'AveBedrms', 'float64', descr='Average nb bedrooms', unit='rooms'),
-         Variable(4, 'Population', 'int', descr='Population', unit='people'),
-         Variable(5, 'AveOccup', 'float64', descr='Average occupancy', unit='ratio'),
-         Variable(6, 'Latitude', 'float64', descr='Latitude', unit='degrees', lat=True),
-         Variable(7, 'Longitude', 'float64', descr='Longitude', unit='degrees', lon=True)])
+    assert Variable.import_variable_df(variables_df) == DataVariables([
+        Variable(0,
+                 'MedInc',
+                 'float64',
+                 descr='Median income',
+                 unit='k$',
+                 critical=True),
+        Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
+        Variable(2,
+                 'AveRooms',
+                 'float64',
+                 descr='Average nb rooms',
+                 unit='rooms'),
+        Variable(3,
+                 'AveBedrms',
+                 'float64',
+                 descr='Average nb bedrooms',
+                 unit='rooms'),
+        Variable(4, 'Population', 'int', descr='Population', unit='people'),
+        Variable(5,
+                 'AveOccup',
+                 'float64',
+                 descr='Average occupancy',
+                 unit='ratio'),
+        Variable(6,
+                 'Latitude',
+                 'float64',
+                 descr='Latitude',
+                 unit='degrees',
+                 lat=True),
+        Variable(7,
+                 'Longitude',
+                 'float64',
+                 descr='Longitude',
+                 unit='degrees',
+                 lon=True)
+    ])
 
-    variables_df1 = pd.DataFrame(
-        {'col_index': [0],
-         'type': ['float64']},
-        index=['MedInc']
-    )
-
-    assert Variable.import_variable_df(variables_df1) == DataVariables([Variable(0, 'MedInc', 'float64')])
-
-    variables_df2 = pd.DataFrame({'colonne': [0],
-                                  'type': ['float64']},
+    variables_df1 = pd.DataFrame({
+        'col_index': [0],
+        'type': ['float64']
+    },
                                  index=['MedInc'])
 
-    assert Variable.import_variable_df(variables_df2) == DataVariables([Variable(0, 'MedInc', 'float64')])
+    assert Variable.import_variable_df(variables_df1) == DataVariables(
+        [Variable(0, 'MedInc', 'float64')])
+
+    variables_df2 = pd.DataFrame({
+        'colonne': [0],
+        'type': ['float64']
+    },
+                                 index=['MedInc'])
+
+    assert Variable.import_variable_df(variables_df2) == DataVariables(
+        [Variable(0, 'MedInc', 'float64')])
 
     with pytest.raises(KeyError):
-        Variable.import_variable_df(variables_df1.drop('column_name', axis=1).reset_index(drop=True))
+        Variable.import_variable_df(
+            variables_df1.drop('column_name', axis=1).reset_index(drop=True))
     with pytest.raises(KeyError):
         Variable.import_variable_df(variables_df1.drop('type', axis=1))
 
 
 def test_import_variable_list():
-    list_var = [{'col_index': 0, "column_name": 'a', 'type': 'int64'},
-                {'col_index': 1, "column_name": 'b', 'type': 'int64'},
-                {'col_index': 2, "column_name": 'c', 'type': 'int64'}]
+    list_var = [{
+        'col_index': 0,
+        "column_name": 'a',
+        'type': 'int64'
+    }, {
+        'col_index': 1,
+        "column_name": 'b',
+        'type': 'int64'
+    }, {
+        'col_index': 2,
+        "column_name": 'c',
+        'type': 'int64'
+    }]
 
-    assert Variable.import_variable_list(list_var) == DataVariables(
-        [Variable(0, 'a', 'int64'),
-         Variable(1, 'b', 'int64'),
-         Variable(2, 'c', 'int64')])
+    assert Variable.import_variable_list(list_var) == DataVariables([
+        Variable(0, 'a', 'int64'),
+        Variable(1, 'b', 'int64'),
+        Variable(2, 'c', 'int64')
+    ])
 
-    list_var1 = [{'colonne_index': 0, "column_name": 'a', 'type_de_variable': 'int64'}]
+    list_var1 = [{
+        'colonne_index': 0,
+        "column_name": 'a',
+        'type_de_variable': 'int64'
+    }]
 
     with pytest.raises(ValueError):
         Variable.import_variable_list(list_var1)
@@ -112,86 +182,254 @@ def test_repr():
     var1 = Variable(0, 'var1', 'int')
     assert repr(var1) == "var1, col#:0, type:int"
 
-    var2 = Variable(0, 'var2', 'int', unit='seconds', descr='description', critical=True, continuous=False, lat=True,
+    var2 = Variable(0,
+                    'var2',
+                    'int',
+                    unit='seconds',
+                    descr='description',
+                    critical=True,
+                    continuous=False,
+                    lat=True,
                     lon=True)
     assert repr(
-        var2) == "var2, col#:0, type:int, descr:description, unit:seconds, critical, categorical, is lat, is lon"
+        var2
+    ) == "var2, col#:0, type:int, descr:description, unit:seconds, critical, categorical, is lat, is lon"
 
 
 def test_str_dv():
-    dv = DataVariables(
-        [Variable(0, 'MedInc', 'float64', descr='Median income', unit='k$', critical=True),
-         Variable(6, 'Latitude', 'float64', descr='Latitude', unit='degrees', lat=True),
-         Variable(7, 'Longitude', 'float64', descr='Longitude', unit='degrees', lon=True)])
+    dv = DataVariables([
+        Variable(0,
+                 'MedInc',
+                 'float64',
+                 descr='Median income',
+                 unit='k$',
+                 critical=True),
+        Variable(6,
+                 'Latitude',
+                 'float64',
+                 descr='Latitude',
+                 unit='degrees',
+                 lat=True),
+        Variable(7,
+                 'Longitude',
+                 'float64',
+                 descr='Longitude',
+                 unit='degrees',
+                 lon=True)
+    ])
 
-    assert str(dv) == ('0) MedInc, col#:0, type:float64, descr:Median income, unit:k$, critical\n'
-                       '6) Latitude, col#:6, type:float64, descr:Latitude, unit:degrees, is lat\n'
-                       '7) Longitude, col#:7, type:float64, descr:Longitude, unit:degrees, is lon\n')
+    assert str(dv) == (
+        '0) MedInc, col#:0, type:float64, descr:Median income, unit:k$, critical\n'
+        '6) Latitude, col#:6, type:float64, descr:Latitude, unit:degrees, is lat\n'
+        '7) Longitude, col#:7, type:float64, descr:Longitude, unit:degrees, is lon\n'
+    )
 
 
 def test_sym_list():
-    dv = DataVariables(
-        [Variable(0, 'MedInc', 'float64', descr='Median income', unit='k$', critical=True),
-         Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
-         Variable(2, 'AveRooms', 'float64', descr='Average nb rooms', unit='rooms'),
-         Variable(3, 'AveBedrms', 'float64', descr='Average nb bedrooms', unit='rooms'),
-         Variable(4, 'Population', 'int', descr='Population', unit='people'),
-         Variable(5, 'AveOccup', 'float64', descr='Average occupancy', unit='ratio'),
-         Variable(6, 'Latitude', 'float64', descr='Latitude', unit='degrees', lat=True),
-         Variable(7, 'Longitude', 'float64', descr='Longitude', unit='degrees', lon=True)])
+    dv = DataVariables([
+        Variable(0,
+                 'MedInc',
+                 'float64',
+                 descr='Median income',
+                 unit='k$',
+                 critical=True),
+        Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
+        Variable(2,
+                 'AveRooms',
+                 'float64',
+                 descr='Average nb rooms',
+                 unit='rooms'),
+        Variable(3,
+                 'AveBedrms',
+                 'float64',
+                 descr='Average nb bedrooms',
+                 unit='rooms'),
+        Variable(4, 'Population', 'int', descr='Population', unit='people'),
+        Variable(5,
+                 'AveOccup',
+                 'float64',
+                 descr='Average occupancy',
+                 unit='ratio'),
+        Variable(6,
+                 'Latitude',
+                 'float64',
+                 descr='Latitude',
+                 unit='degrees',
+                 lat=True),
+        Variable(7,
+                 'Longitude',
+                 'float64',
+                 descr='Longitude',
+                 unit='degrees',
+                 lon=True)
+    ])
 
-    assert dv.columns_list() == ['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup', 'Latitude',
-                                 'Longitude']
+    assert dv.columns_list() == [
+        'MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population',
+        'AveOccup', 'Latitude', 'Longitude'
+    ]
 
 
 def test_get_var():
-    dv = DataVariables(
-        [Variable(0, 'MedInc', 'float64', descr='Median income', unit='k$', critical=True),
-         Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
-         Variable(2, 'AveRooms', 'float64', descr='Average nb rooms', unit='rooms'),
-         Variable(3, 'AveBedrms', 'float64', descr='Average nb bedrooms', unit='rooms'),
-         Variable(4, 'Population', 'int', descr='Population', unit='people'),
-         Variable(5, 'AveOccup', 'float64', descr='Average occupancy', unit='ratio'),
-         Variable(6, 'Latitude', 'float64', descr='Latitude', unit='degrees', lat=True),
-         Variable(7, 'Longitude', 'float64', descr='Longitude', unit='degrees', lon=True)])
+    dv = DataVariables([
+        Variable(0,
+                 'MedInc',
+                 'float64',
+                 descr='Median income',
+                 unit='k$',
+                 critical=True),
+        Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
+        Variable(2,
+                 'AveRooms',
+                 'float64',
+                 descr='Average nb rooms',
+                 unit='rooms'),
+        Variable(3,
+                 'AveBedrms',
+                 'float64',
+                 descr='Average nb bedrooms',
+                 unit='rooms'),
+        Variable(4, 'Population', 'int', descr='Population', unit='people'),
+        Variable(5,
+                 'AveOccup',
+                 'float64',
+                 descr='Average occupancy',
+                 unit='ratio'),
+        Variable(6,
+                 'Latitude',
+                 'float64',
+                 descr='Latitude',
+                 unit='degrees',
+                 lat=True),
+        Variable(7,
+                 'Longitude',
+                 'float64',
+                 descr='Longitude',
+                 unit='degrees',
+                 lon=True)
+    ])
 
-    assert dv.get_var('MedInc') == Variable(0, 'MedInc', 'float64', descr='Median income', unit='k$', critical=True)
+    assert dv.get_var('MedInc') == Variable(0,
+                                            'MedInc',
+                                            'float64',
+                                            descr='Median income',
+                                            unit='k$',
+                                            critical=True)
 
 
 def test_len_dv():
-    dv = DataVariables(
-        [Variable(0, 'MedInc', 'float64', descr='Median income', unit='k$', critical=True),
-         Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
-         Variable(2, 'AveRooms', 'float64', descr='Average nb rooms', unit='rooms'),
-         Variable(3, 'AveBedrms', 'float64', descr='Average nb bedrooms', unit='rooms'),
-         Variable(4, 'Population', 'int', descr='Population', unit='people'),
-         Variable(5, 'AveOccup', 'float64', descr='Average occupancy', unit='ratio'),
-         Variable(6, 'Latitude', 'float64', descr='Latitude', unit='degrees', lat=True),
-         Variable(7, 'Longitude', 'float64', descr='Longitude', unit='degrees', lon=True)])
+    dv = DataVariables([
+        Variable(0,
+                 'MedInc',
+                 'float64',
+                 descr='Median income',
+                 unit='k$',
+                 critical=True),
+        Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
+        Variable(2,
+                 'AveRooms',
+                 'float64',
+                 descr='Average nb rooms',
+                 unit='rooms'),
+        Variable(3,
+                 'AveBedrms',
+                 'float64',
+                 descr='Average nb bedrooms',
+                 unit='rooms'),
+        Variable(4, 'Population', 'int', descr='Population', unit='people'),
+        Variable(5,
+                 'AveOccup',
+                 'float64',
+                 descr='Average occupancy',
+                 unit='ratio'),
+        Variable(6,
+                 'Latitude',
+                 'float64',
+                 descr='Latitude',
+                 unit='degrees',
+                 lat=True),
+        Variable(7,
+                 'Longitude',
+                 'float64',
+                 descr='Longitude',
+                 unit='degrees',
+                 lon=True)
+    ])
 
     assert len(dv) == 8
 
 
 def test_eq_dv():
-    dv = DataVariables(
-        [Variable(0, 'MedInc', 'float64', descr='Median income', unit='k$', critical=True),
-         Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
-         Variable(6, 'Latitude', 'float64', descr='Latitude', unit='degrees', lat=True),
-         Variable(7, 'Longitude', 'float64', descr='Longitude', unit='degrees', lon=True)])
-    dv1 = DataVariables(
-        [Variable(0, 'MedInc', 'float64', descr='Median income', unit='k$', critical=True),
-         Variable(3, 'AveBedrms', 'float64', descr='Average nb bedrooms', unit='rooms'),
-         Variable(4, 'Population', 'int', descr='Population', unit='people'),
-         Variable(7, 'Longitude', 'float64', descr='Longitude', unit='degrees', lon=True)])
+    dv = DataVariables([
+        Variable(0,
+                 'MedInc',
+                 'float64',
+                 descr='Median income',
+                 unit='k$',
+                 critical=True),
+        Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
+        Variable(6,
+                 'Latitude',
+                 'float64',
+                 descr='Latitude',
+                 unit='degrees',
+                 lat=True),
+        Variable(7,
+                 'Longitude',
+                 'float64',
+                 descr='Longitude',
+                 unit='degrees',
+                 lon=True)
+    ])
+    dv1 = DataVariables([
+        Variable(0,
+                 'MedInc',
+                 'float64',
+                 descr='Median income',
+                 unit='k$',
+                 critical=True),
+        Variable(3,
+                 'AveBedrms',
+                 'float64',
+                 descr='Average nb bedrooms',
+                 unit='rooms'),
+        Variable(4, 'Population', 'int', descr='Population', unit='people'),
+        Variable(7,
+                 'Longitude',
+                 'float64',
+                 descr='Longitude',
+                 unit='degrees',
+                 lon=True)
+    ])
 
     assert not dv == dv1
 
-    dv2 = DataVariables(
-        [Variable(0, 'MedInc', 'float64', descr='Median income', unit='k$', critical=True),
-         Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
-         Variable(3, 'AveBedrms', 'float64', descr='Average nb bedrooms', unit='rooms'),
-         Variable(4, 'Population', 'int', descr='Population', unit='people'),
-         Variable(6, 'Latitude', 'float64', descr='Latitude', unit='degrees', lat=True),
-         Variable(7, 'Longitude', 'float64', descr='Longitude', unit='degrees', lon=True)])
+    dv2 = DataVariables([
+        Variable(0,
+                 'MedInc',
+                 'float64',
+                 descr='Median income',
+                 unit='k$',
+                 critical=True),
+        Variable(1, 'HouseAge', 'int', descr='House age', unit='years'),
+        Variable(3,
+                 'AveBedrms',
+                 'float64',
+                 descr='Average nb bedrooms',
+                 unit='rooms'),
+        Variable(4, 'Population', 'int', descr='Population', unit='people'),
+        Variable(6,
+                 'Latitude',
+                 'float64',
+                 descr='Latitude',
+                 unit='degrees',
+                 lat=True),
+        Variable(7,
+                 'Longitude',
+                 'float64',
+                 descr='Longitude',
+                 unit='degrees',
+                 lon=True)
+    ])
 
     assert not dv1 == dv2

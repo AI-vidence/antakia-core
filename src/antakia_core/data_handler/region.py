@@ -15,7 +15,12 @@ class Region:
     """
     region_colors = colors
 
-    def __init__(self, X, rules: RuleSet | None = None, mask: pd.Series | None = None, color=None, num=-1):
+    def __init__(self,
+                 X,
+                 rules: RuleSet | None = None,
+                 mask: pd.Series | None = None,
+                 color=None,
+                 num=-1):
         """
 
         Parameters
@@ -139,9 +144,17 @@ class ModelRegion(Region):
     supercharged Region with an explainable predictive model
     """
 
-    def __init__(self, X, y, X_test, y_test, customer_model, rules: RuleSet | None = None,
-                 mask: pd.Series | None = None, color=None,
-                 score=None, num=-1):
+    def __init__(self,
+                 X,
+                 y,
+                 X_test,
+                 y_test,
+                 customer_model,
+                 rules: RuleSet | None = None,
+                 mask: pd.Series | None = None,
+                 color=None,
+                 score=None,
+                 num=-1):
         """
 
         Parameters
@@ -173,7 +186,8 @@ class ModelRegion(Region):
         """
         dict_form = super().to_dict()
         if self.interpretable_models.selected_model is not None:
-            dict_form['Sub-model'] = self.interpretable_models.selected_model_str()
+            dict_form[
+                'Sub-model'] = self.interpretable_models.selected_model_str()
         dict_form["Average"] = format_number(self.y[self.mask].mean())
         return dict_form
 
@@ -204,8 +218,7 @@ class ModelRegion(Region):
                 self.y.loc[self.mask],
                 self.X_test.loc[self.test_mask],
                 self.y_test.loc[self.test_mask],
-                task_type=task_type
-            )
+                task_type=task_type)
         else:
             self.interpretable_models.get_models_performance(
                 self.customer_model,
@@ -213,8 +226,7 @@ class ModelRegion(Region):
                 self.y.loc[self.mask],
                 None,
                 None,
-                task_type=task_type
-            )
+                task_type=task_type)
 
     @property
     def perfs(self):
@@ -238,7 +250,8 @@ class ModelRegion(Region):
 
         """
         if self.interpretable_models.selected_model:
-            return self.interpretable_models.perfs.loc[self.interpretable_models.selected_model, 'delta']
+            return self.interpretable_models.perfs.loc[
+                self.interpretable_models.selected_model, 'delta']
         return 0
 
     @property
@@ -256,7 +269,8 @@ class ModelRegion(Region):
                 if not self.mask.any() or self.mask.all():
                     return boolean_mask(self.X_test, self.mask.mean())
                 knn = KNeighborsClassifier().fit(self.X, self.mask)
-                self._test_mask = pd.Series(knn.predict(self.X_test), index=self.X_test.index)
+                self._test_mask = pd.Series(knn.predict(self.X_test),
+                                            index=self.X_test.index)
         return self._test_mask
 
     def get_model(self, model_name):
@@ -278,19 +292,20 @@ class ModelRegion(Region):
         super().update_rule_set(rule_set)
         self.interpretable_models.reset()
 
+
 class RegionSet:
     """
     group of regions
     """
 
-    def __init__(self, X):
+    def __init__(self, X: pd.DataFrame):
         """
 
         Parameters
         ----------
         X: reference dataset
         """
-        self.regions: dict[int:Region] = {}
+        self.regions: dict[int, Region] = {}
         self.insert_order: list[int] = []
         self.display_order: list[Region] = []
         self.X = X
@@ -343,7 +358,11 @@ class RegionSet:
         self.insert_order.append(region.num)
         self.display_order.append(region)
 
-    def add_region(self, rules: RuleSet = None, mask=None, color=None, auto_cluster=False) -> Region:
+    def add_region(self,
+                   rules: RuleSet | None = None,
+                   mask: pd.Series | None = None,
+                   color: str | None = None,
+                   auto_cluster: bool = False) -> Region:
         """
         create a Region from a rule set or a mask
         Parameters
@@ -378,7 +397,8 @@ class RegionSet:
 
         """
         for region in region_set.regions.values():
-            self.add_region(region.rules, region.mask, region._color, region.auto_cluster)
+            self.add_region(region.rules, region.mask, region._color,
+                            region.auto_cluster)
 
     def remove(self, region_num) -> None:
         """
@@ -481,7 +501,7 @@ class RegionSet:
             if not self.regions[i].validated:
                 self.remove(i)
 
-    def pop_last(self) -> Region:
+    def pop_last(self) -> Region | None:
         """
         removes and return the last region
         Returns
@@ -491,9 +511,12 @@ class RegionSet:
         if len(self.insert_order) > 0:
             num = self.insert_order[-1]
             region = self.get(num)
+            if region is None:
+                return region
             if not self.regions[num].validated:
                 self.remove(num)
             return region
+        return None
 
     def sort(self, by, ascending=True):
         """
@@ -545,6 +568,7 @@ class ModelRegionSet(RegionSet):
         score: scoring method
         """
         super().__init__(X)
+        self.regions: dict[int, ModelRegion] = {}  # type:ignore
         self.y = y
         self.X_test = X_test
         self.y_test = y_test
@@ -553,23 +577,25 @@ class ModelRegionSet(RegionSet):
 
     def add(self, region: Region):
         if not isinstance(region, ModelRegion):
-            m_region = ModelRegion(
-                X=self.X,
-                y=self.y,
-                X_test=self.X_test,
-                y_test=self.y_test,
-                customer_model=self.model,
-                score=self.score,
-                rules=region.rules,
-                mask=region.mask,
-                color=region._color,
-                num=region.num
-            )
+            m_region = ModelRegion(X=self.X,
+                                   y=self.y,
+                                   X_test=self.X_test,
+                                   y_test=self.y_test,
+                                   customer_model=self.model,
+                                   score=self.score,
+                                   rules=region.rules,
+                                   mask=region.mask,
+                                   color=region._color,
+                                   num=region.num)
             m_region.validated = region.validated
             region = m_region
         super().add(region)
 
-    def add_region(self, rules: RuleSet = None, mask=None, color=None, auto_cluster=False) -> Region:
+    def add_region(self,
+                   rules: RuleSet | None = None,
+                   mask: pd.Series | None = None,
+                   color: str | None = None,
+                   auto_cluster: bool = False) -> Region:
         """
         add new ModelRegion
         Parameters
@@ -585,28 +611,26 @@ class ModelRegionSet(RegionSet):
         """
         if mask is not None:
             mask = mask.reindex(self.X.index).fillna(False)
-        region = ModelRegion(
-            X=self.X,
-            y=self.y,
-            X_test=self.X_test,
-            y_test=self.y_test,
-            customer_model=self.model,
-            score=self.score,
-            rules=rules,
-            mask=mask,
-            color=color
-        )
+        region = ModelRegion(X=self.X,
+                             y=self.y,
+                             X_test=self.X_test,
+                             y_test=self.y_test,
+                             customer_model=self.model,
+                             score=self.score,
+                             rules=rules,
+                             mask=mask,
+                             color=color)
         region.num = -1
         region.auto_cluster = auto_cluster
         self.add(region)
         return region
 
     def get(self, i) -> ModelRegion | None:
-        return super().get(i)
+        return self.regions.get(i)
 
     def stats(self) -> dict:
         base_stats = super().stats()
-        delta_score = 0
+        delta_score = 0.
         for region in self.regions.values():
             weight = region.mask.sum()
             delta = region.delta

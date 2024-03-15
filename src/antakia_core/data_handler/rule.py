@@ -13,11 +13,16 @@ class Rule:
     class to represent logical rule over a variable
     """
 
-    def __init__(self, variable: Variable, min: float | None = None, includes_min: bool | None = None,
-                 max: float | None = None, includes_max: bool | None = None, cat_values: list | set | None = None):
+    def __init__(self,
+                 variable: Variable,
+                 min: float | None = None,
+                 includes_min: bool | None = None,
+                 max: float | None = None,
+                 includes_max: bool | None = None,
+                 cat_values: list | set | None = None):
         self.variable = variable
         if cat_values is not None:
-            self.cat_values = set(cat_values)
+            self.cat_values: set | None = set(cat_values)
             self.min = None
             self.max = None
             self.includes_min = None
@@ -45,18 +50,18 @@ class Rule:
         if self.rule_type in (-1, 5):
             return True
         if self.rule_type == 0:
-            return len(self.cat_values.symmetric_difference(other.cat_values)) == 0
+            return len(self.cat_values.symmetric_difference(
+                other.cat_values)) == 0
         if self.rule_type == 4:
             return self.min == other.min
         if self.rule_type == 1:
             return self.max == other.max and self.includes_max == other.includes_max
         if self.rule_type == 2:
             return self.min == other.min and self.includes_min == other.includes_min
-        return (
-            self.max == other.max and self.includes_max == other.includes_max
-        ) and (
-            self.min == other.min and self.includes_min == other.includes_min
-        )
+        return (self.max == other.max
+                and self.includes_max == other.includes_max) and (
+                    self.min == other.min
+                    and self.includes_min == other.includes_min)
 
     def __repr__(self):
         if self.is_categorical_rule:
@@ -149,12 +154,13 @@ class Rule:
         if self.rule_type == -1:
             return boolean_mask(X, True)
         if self.rule_type == 0:
-            return col.isin(self.cat_values)
+            return col.isin(self.cat_values)  # type:ignore
         if self.rule_type == 4:
             return col == self.min
         if self.rule_type == 5:
             return boolean_mask(X, False)
-        return getattr(col, self.operator_max)(self.max) & getattr(col, self.operator_min)(self.min)
+        return getattr(col, self.operator_max)(self.max) & getattr(
+            col, self.operator_min)(self.min)
 
     def __call__(self, value: float | pd.DataFrame) -> bool | pd.Series:
         if isinstance(value, pd.DataFrame):
@@ -162,12 +168,13 @@ class Rule:
         if self.rule_type == -1:
             return True
         if self.rule_type == 0:
-            return value in self.cat_values
+            return value in self.cat_values  # type:ignore
         if self.rule_type == 4:
             return value == self.min
         if self.rule_type == 5:
             return False
-        return getattr(value, self.operator_max)(self.max) & getattr(value, self.operator_min)(self.min)
+        return getattr(value, self.operator_max)(self.max) & getattr(
+            value, self.operator_min)(self.min)
 
     def combine(self, rule: Rule):
         """
@@ -185,12 +192,18 @@ class Rule:
             raise ValueError('cannot combine two rules on different variables')
         # categorical rules
         if self.categorical_rule and rule.categorical_rule:
-            common_values = set(self.cat_values).intersection(rule.cat_values)
+            common_values = set(self.cat_values).intersection(  # type:ignore
+                rule.cat_values)  # type:ignore
             return Rule(self.variable, cat_values=common_values)
         if rule.categorical_rule:
-            return rule.combine(self)
+            return rule.combine(self)  # type:ignore
         if self.categorical_rule:
-            return Rule(self.variable, cat_values=[v for v in self.cat_values if rule(v)])
+            return Rule(
+                self.variable,  # type:ignore
+                cat_values=[
+                    v for v in self.cat_values  # type:ignore
+                    if rule(v)
+                ])  # type:ignore
         # edge cases
         if self.rule_type == 5 or rule.rule_type == 5:
             return self.copy()
@@ -199,21 +212,23 @@ class Rule:
         if rule.rule_type == -1:
             return self.copy()
         # nominal
-        min_val = max(self.min, rule.min)
-        if self.min > rule.min:
+        min_val = max(self.min, rule.min)  # type:ignore
+        if self.min > rule.min:  # type:ignore
             include_min = self.includes_min
-        elif rule.min > self.min:
+        elif rule.min > self.min:  # type:ignore
             include_min = rule.includes_min
         else:
-            include_min = min(self.includes_min, rule.includes_min)
+            include_min = min(self.includes_min,
+                              rule.includes_min)  # type:ignore
 
-        max_val = min(self.max, rule.max)
-        if self.max < rule.max:
+        max_val = min(self.max, rule.max)  # type:ignore
+        if self.max < rule.max:  # type:ignore
             include_max = self.includes_max
-        elif rule.max < self.max:
+        elif rule.max < self.max:  # type:ignore
             include_max = rule.includes_max
         else:
-            include_max = min(self.includes_max, rule.includes_max)
+            include_max = min(self.includes_max,
+                              rule.includes_max)  # type:ignore
         return Rule(self.variable, min_val, include_min, max_val, include_max)
 
     def __and__(self, other):
@@ -229,14 +244,17 @@ class Rule:
         }
 
     def copy(self):
-        return Rule(self.variable, self.min, self.includes_min, self.max, self.includes_max, self.cat_values)
+        return Rule(self.variable, self.min, self.includes_min, self.max,
+                    self.includes_max, self.cat_values)
 
 
 class TruthyRule(Rule):
+
     def __init__(self, var: Variable):
         super().__init__(var)
 
 
 class FalsyRule(Rule):
+
     def __init__(self, var: Variable):
         super().__init__(var, min=5, max=4)

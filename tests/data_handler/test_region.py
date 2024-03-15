@@ -12,7 +12,8 @@ def test_regions():
         [4, 2],
         [10, 1],
         [20, 2],
-    ], columns=['var1', 'var2'])
+    ],
+                        columns=['var1', 'var2'])
     rs = RegionSet(data)
     assert len(rs) == 0
     var = Variable(0, 'var1', 'float')

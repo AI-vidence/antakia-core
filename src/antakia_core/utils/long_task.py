@@ -1,11 +1,14 @@
+from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
+from typing import Callable
 
 import pandas as pd
 
 
 def dummy_progress(*args, **kwargs):
     pass
+
 
 class LongTask(ABC):
     """
@@ -19,7 +22,9 @@ class LongTask(ABC):
     progress:int
     """
 
-    def __init__(self, X: pd.DataFrame=None, progress_updated: callable = None):
+    def __init__(self,
+                 X: pd.DataFrame | None = None,
+                 progress_updated: Callable | None = None):
         if X is None:
             raise ValueError("You must provide a dataframe for a LongTask")
         self.X = X
@@ -29,8 +34,7 @@ class LongTask(ABC):
         self.start_time = time.time()
 
     def publish_progress(self, progress: int):
-        if self.progress_updated:
-            self.progress_updated(progress, time.time() - self.start_time)
+        self.progress_updated(progress, time.time() - self.start_time)
 
     @abstractmethod
     def compute(self, **kwargs) -> pd.DataFrame:
