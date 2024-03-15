@@ -5,7 +5,7 @@ from sklearn.neighbors import KNeighborsClassifier
 
 from antakia_core.compute.model_subtitution.model_interface import InterpretableModels
 from antakia_core.data_handler.rules import RuleSet
-from antakia_core.utils.utils import colors, boolean_mask
+from antakia_core.utils.utils import colors, boolean_mask, format_number
 
 
 class Region:
@@ -15,7 +15,7 @@ class Region:
     """
     region_colors = colors
 
-    def __init__(self, X, rules: RuleSet | None = None, mask: pd.Series | None = None, color=None):
+    def __init__(self, X, rules: RuleSet | None = None, mask: pd.Series | None = None, color=None, num=-1):
         """
 
         Parameters
@@ -26,7 +26,7 @@ class Region:
         color: region color, if not provided, auto assigned
         """
         self.X = X
-        self.num = 0
+        self.num = num
         self.rules = RuleSet(rules)
         if mask is None:
             # if no mask, compute it
@@ -92,6 +92,7 @@ class Region:
         dict_form = {
             "Region": self.num,
             "Rules": self.name,
+            "Average": None,
             "Points": self.mask.sum(),
             "% dataset": f"{round(self.mask.mean() * 100, 2)}%",
             "Sub-model": None,
@@ -127,6 +128,11 @@ class Region:
         """
         self.validated = True
 
+    def update_rule_set(self, rule_set: RuleSet):
+        self.rules = rule_set
+        self.mask = self.rules.get_matching_mask(self.X)
+        self.validated = False
+
 
 class ModelRegion(Region):
     """
@@ -135,7 +141,7 @@ class ModelRegion(Region):
 
     def __init__(self, X, y, X_test, y_test, customer_model, rules: RuleSet | None = None,
                  mask: pd.Series | None = None, color=None,
-                 score=None):
+                 score=None, num=-1):
         """
 
         Parameters
@@ -150,7 +156,7 @@ class ModelRegion(Region):
         color: region's color
         score: customer provided scoring method
         """
-        super().__init__(X, rules, mask, color)
+        super().__init__(X, rules, mask, color, num)
         self.y = y
         self.X_test = X_test
         self._test_mask = None
@@ -168,6 +174,7 @@ class ModelRegion(Region):
         dict_form = super().to_dict()
         if self.interpretable_models.selected_model is not None:
             dict_form['Sub-model'] = self.interpretable_models.selected_model_str()
+        dict_form["Average"] = format_number(self.y[self.mask].mean())
         return dict_form
 
     def select_model(self, model_name: str):
@@ -256,8 +263,20 @@ class ModelRegion(Region):
         return self.interpretable_models.models[model_name]
 
     def get_selected_model(self):
+        if self.interpretable_models.selected_model is None:
+            return None
         return self.get_model(self.interpretable_models.selected_model)
 
+    def predict(self, X):
+        mask = self.rules.get_matching_mask(X)
+        model = self.get_selected_model()
+        if model is not None:
+            return model.predict(X[mask]).reindex(X.index)
+        return pd.Series(index=X.index)
+
+    def update_rule_set(self, rule_set: RuleSet):
+        super().update_rule_set(rule_set)
+        self.interpretable_models.reset()
 
 class RegionSet:
     """
@@ -314,9 +333,12 @@ class RegionSet:
         -------
 
         """
-        if region.num < 0 or self.get(region.num) is not None:
+        if region.num < 0:
             num = self.get_new_num()
             region.num = num
+        if region.num in self.regions:
+            self.remove(region.num)
+
         self.regions[region.num] = region
         self.insert_order.append(region.num)
         self.display_order.append(region)
@@ -339,7 +361,6 @@ class RegionSet:
         if mask is not None:
             mask = mask.reindex(self.X.index).fillna(False)
         region = Region(X=self.X, rules=rules, mask=mask, color=color)
-        region.num = -1
         region.auto_cluster = auto_cluster
         self.add(region)
         return region
@@ -530,6 +551,24 @@ class ModelRegionSet(RegionSet):
         self.model = model
         self.score = score
 
+    def add(self, region: Region):
+        if not isinstance(region, ModelRegion):
+            m_region = ModelRegion(
+                X=self.X,
+                y=self.y,
+                X_test=self.X_test,
+                y_test=self.y_test,
+                customer_model=self.model,
+                score=self.score,
+                rules=region.rules,
+                mask=region.mask,
+                color=region._color,
+                num=region.num
+            )
+            m_region.validated = region.validated
+            region = m_region
+        super().add(region)
+
     def add_region(self, rules: RuleSet = None, mask=None, color=None, auto_cluster=False) -> Region:
         """
         add new ModelRegion
@@ -575,3 +614,9 @@ class ModelRegionSet(RegionSet):
         delta_score /= len(self.X)
         base_stats['delta_score'] = delta_score
         return base_stats
+
+    def predict(self, X):
+        prediction = pd.Series(index=X.index)
+        for region in self.regions.values():
+            prediction = prediction.fillna(region.predict(X))
+        return prediction

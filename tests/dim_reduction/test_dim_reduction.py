@@ -14,13 +14,13 @@ def test_init_PCA():
     X, _ = generate_df_series()
     callback = DummyCallable()
 
-    dr_pca = PCADimReduc(X, 2, callback.call)
+    dr_pca = PCADimReduc(X, 2, callback)
     assert dr_pca.dimreduc_method == 1
     np.testing.assert_array_equal(dr_pca.default_parameters, {'n_components': 2})
     assert dr_pca.dimension == 2
     assert dr_pca.dimreduc_model == PCA
     assert dr_pca.X.equals(X)
-    assert dr_pca.progress_updated == callback.call
+    assert dr_pca.progress_updated == callback
     np.testing.assert_array_equal(dr_pca.allowed_kwargs,
                                   ['copy', 'whiten', 'svd_solver', 'tol', 'iterated_power', 'n_oversamples',
                                    'power_iteration_normalizer', 'random_state'])
@@ -36,14 +36,14 @@ def test_init_TSNEDimReduc():
     X, _ = generate_df_series()
     callback = DummyCallable()
 
-    tsne = TSNEDimReduc(X, 2, callback.call)
+    tsne = TSNEDimReduc(X, 2, callback)
 
     assert tsne.dimreduc_method == -1
     np.testing.assert_array_equal(tsne.default_parameters, {'n_components': 2, 'n_jobs': -1})
     assert tsne.dimension == 2
     assert tsne.dimreduc_model == TSNEwrapper
     assert tsne.X.equals(X)
-    assert tsne.progress_updated == callback.call
+    assert tsne.progress_updated == callback
     np.testing.assert_array_equal(tsne.allowed_kwargs,
                                   ['perplexity', 'early_exaggeration', 'learning_rate', 'n_iter',
                                    'n_iter_without_progress', 'min_grad_norm', 'metric', 'metric_params', 'init',
@@ -56,7 +56,7 @@ def test_init_TSNEDimReduc():
 def test_parameters_TSNEDimReduc():
     X, _ = generate_df_series()
     callback = DummyCallable()
-    tsne = TSNEDimReduc(X, 2, callback.call)
+    tsne = TSNEDimReduc(X, 2, callback)
     expected_parameters = {
         'perplexity': {
             'type': float,
@@ -77,14 +77,14 @@ def test_parameters_TSNEDimReduc():
 def test_init_UMAPDimReduc():
     X, _ = generate_df_series()
     callback = DummyCallable()
-    umap_dr = UMAPDimReduc(X, 2, callback.call)
+    umap_dr = UMAPDimReduc(X, 2, callback)
 
     assert umap_dr.dimreduc_method == 2
     np.testing.assert_array_equal(umap_dr.default_parameters, {'n_components': 2, 'n_jobs': -1})
     assert umap_dr.dimension == 2
     assert umap_dr.dimreduc_model == umap.UMAP
     assert umap_dr.X.equals(X)
-    assert umap_dr.progress_updated == callback.call
+    assert umap_dr.progress_updated == callback
     np.testing.assert_array_equal(umap_dr.allowed_kwargs,
                                   ['n_neighbors', 'metric', 'metric_kwds', 'output_metric',
                                    'output_metric_kwds', 'n_epochs', 'learning_rate', 'init', 'min_dist', 'spread',
@@ -102,7 +102,7 @@ def test_init_UMAPDimReduc():
 def test_parameters_UMAPDimReduc():
     X, _ = generate_df_series()
     callback = DummyCallable()
-    umap_dr = UMAPDimReduc(X, 2, callback.call)
+    umap_dr = UMAPDimReduc(X, 2, callback)
     np.testing.assert_array_equal(umap_dr.parameters(),
                                   {'n_neighbors': {'type': int, 'min': 1, 'max': 200, 'default': 15},
                                    'min_dist': {'type': float, 'min': 0.1, 'max': 0.99, 'default': 0.1}})
@@ -111,14 +111,14 @@ def test_parameters_UMAPDimReduc():
 def test_init_PacMAPDimReduc():
     X, _ = generate_df_series()
     callback = DummyCallable()
-    pacmap_dr = PaCMAPDimReduc(X, 2, callback.call)
+    pacmap_dr = PaCMAPDimReduc(X, 2, callback)
 
     assert pacmap_dr.dimreduc_method == 3
     np.testing.assert_array_equal(pacmap_dr.default_parameters, {'n_components': 2})
     assert pacmap_dr.dimension == 2
     assert pacmap_dr.dimreduc_model == pacmap.PaCMAP
     assert pacmap_dr.X.equals(X)
-    assert pacmap_dr.progress_updated == callback.call
+    assert pacmap_dr.progress_updated == callback
     np.testing.assert_array_equal(pacmap_dr.allowed_kwargs,
                                   ['n_neighbors', 'MN_ratio', 'FP_ratio', 'pair_neighbors', 'pair_MN',
                                    'pair_FP', 'distance', 'lr', 'num_iters', 'apply_pca', 'intermediate',
@@ -129,7 +129,7 @@ def test_init_PacMAPDimReduc():
 def test_parameters_PacMAPDimReduc():
     X, _ = generate_df_series()
     callback = DummyCallable()
-    pacmap_dr = PaCMAPDimReduc(X, 2, callback.call)
+    pacmap_dr = PaCMAPDimReduc(X, 2, callback)
     np.testing.assert_array_equal(pacmap_dr.parameters(),
                                   {'n_neighbors': {'type': int, 'min': 1, 'max': 200, 'default': 15},
                                    'MN_ratio': {'type': float, 'min': 0.1, 'max': 10, 'default': 0.5, 'scale': 'log'},
@@ -143,9 +143,9 @@ def test_compute_projection():  # not ok
     y = X.sum(axis=1)
 
     with pytest.raises(ValueError):
-        compute_projection(X, y, 8, 2, callback.call)
+        compute_projection(X, y, 8, 2, callback)
 
-    np.testing.assert_array_equal(compute_projection(X, y, 1, 2, callback.call).index, X.index)
+    np.testing.assert_array_equal(compute_projection(X, y, 1, 2, callback).index, X.index)
 
 
 def test_dim_reduction():  # ok sauf PaCMAP : windows fatal error (access violation File) pour PaCMAP
@@ -159,12 +159,12 @@ def test_dim_reduction():  # ok sauf PaCMAP : windows fatal error (access violat
         params = dim_reduc_factory.get(dim_method).parameters()
         params = {k: v['default'] for k, v in params.items()}
 
-        cpt_proj_2D = compute_projection(X, y, dim_method, 2, callback.call, **params)
+        cpt_proj_2D = compute_projection(X, y, dim_method, 2, callback, **params)
         assert cpt_proj_2D.shape == (len(X), 2)
         assert X.index.equals(cpt_proj_2D.index)
-        assert callback.calls[-1][0] == 100
+        assert callback.calls[-1][0][0] == 100
 
-        cpt_proj_3D = compute_projection(X, y, dim_method, 3, callback.call, **params)
+        cpt_proj_3D = compute_projection(X, y, dim_method, 3, callback, **params)
         assert cpt_proj_3D.shape == (len(X), 3)
         assert X.index.equals(cpt_proj_3D.index)
-        assert callback.calls[-1][0] == 100
+        assert callback.calls[-1][0][0] == 100

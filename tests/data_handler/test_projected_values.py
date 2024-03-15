@@ -21,10 +21,10 @@ def test_set_parameters(cpt_proj):
     proj = Proj(1, 2)
     callback = DummyCallable()
     pv = ProjectedValues(X, y)
-    pv.compute(proj, callback.call)
+    pv.compute(proj, callback)
     pv.set_parameters(proj, {'n_neighbors': 2})
     assert pv._parameters == {proj: {'current': {'n_neighbors': 2}, 'previous': {}}}
-    pv.compute(proj, callback.call)
+    pv.compute(proj, callback)
     pv.set_parameters(proj, {'MN_ratio': 4})
     assert pv._parameters == {proj: {'current': {'MN_ratio': 4, 'n_neighbors': 2}, 'previous': {'n_neighbors': 2}}}
 
@@ -88,7 +88,7 @@ def test_is_present(cpt_proj):
     proj = Proj(1, 2)
     assert not pv.is_present(proj)
 
-    pv.compute(proj, callback.call)
+    pv.compute(proj, callback)
     assert pv.is_present(proj)
 
 
@@ -106,5 +106,5 @@ def test_compute(cpt_proj):
     cpt_proj.return_value = X_red
     proj = Proj(1, 2)
 
-    pv.compute(proj, callback.call)
+    pv.compute(proj, callback)
     assert pv._projected_values[proj].equals(X_red)

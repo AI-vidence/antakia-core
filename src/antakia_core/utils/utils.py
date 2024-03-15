@@ -4,11 +4,13 @@ Utils module for the antakia package.
 import math
 import time
 from enum import EnumMeta, Enum
+from numbers import Number
 
 import numpy as np
 from functools import wraps
 
 import pandas as pd
+from pandas.api.types import is_bool_dtype, is_integer_dtype
 
 
 def in_index(indexes: list, X: pd.DataFrame) -> bool:
@@ -92,9 +94,9 @@ def compute_step(min, max):
     """
     step = (max - min) / 100
     round_value = round(math.log(step / 2) / math.log(10)) - 1
-    min_ = np.round(min, -round_value)
-    max_ = np.round(max, -round_value)
     step = np.round(step, -round_value)
+    min_ = np.round(min, -round_value)
+    max_ = int((max - min_) / step + 1) * step + min
     return min_, max_, step
 
 
@@ -127,6 +129,31 @@ class MetaEnum(EnumMeta):
         except ValueError:
             return False
         return True
+
+
+def format_data(x):
+    if isinstance(x, str):
+        return x[:15]
+    if isinstance(x, Number):
+        return format_number(x)
+    if isinstance(x, pd.Series):
+        if is_bool_dtype(x.dtype) or is_integer_dtype(x.dtype):
+            return x
+        return x.apply(format_data)
+    return x
+
+
+def format_number(value: Number) -> str:
+    def format_str(value):
+        if abs(value) < 1e-2 or abs(value) > 1e4:
+            return '.2e'
+        return '.2f'
+
+    if value == 0:
+        return value
+    elif pd.isna(value):
+        return 'NaN'
+    return format(value, format_str(value))
 
 
 class BaseEnum(Enum, metaclass=MetaEnum):
