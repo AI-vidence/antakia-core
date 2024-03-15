@@ -27,7 +27,7 @@ def skope_rules(
         # We convert df_indexes in row_indexes
         y_train = df_mask.astype(int)
         if variables is None:
-            variables = Variable.guess_variables(base_space_df)
+            variables = DataVariables.guess_variables(base_space_df)
 
         sk_classifier = SkopeRules(
             feature_names=variables.columns_list(),
