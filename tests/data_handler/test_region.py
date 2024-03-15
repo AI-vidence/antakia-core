@@ -16,10 +16,9 @@ def test_regions():
     rs = RegionSet(data)
     assert len(rs) == 0
     var = Variable(0, 'var1', 'float')
-    rule1 = Rule(var, max=10, includes_max=False)
-    rule2 = Rule(var, min=2, includes_min=True)
+    rule1 = Rule(var, min=2, includes_min=True, max=10, includes_max=False)
 
-    region = rs.add_region(rules=RuleSet([rule1, rule2]))
+    region = rs.add_region(rules=RuleSet([rule1]))
     assert rs.get(1) == region
     assert len(rs) == 1
     assert rs.get_max_num() == 1
@@ -29,7 +28,7 @@ def test_regions():
     assert (color == pd.Series(['grey', 'red', 'red', 'grey', 'grey'])).all()
 
     rs.clear_unvalidated()
-    rs.add_region(RuleSet([rule1, rule2]), color='blue')
+    rs.add_region(RuleSet([rule1]), color='blue')
     assert rs.get_max_num() == 1
     assert rs.get_new_num() == 2
     assert rs.get(1).color == 'blue'
