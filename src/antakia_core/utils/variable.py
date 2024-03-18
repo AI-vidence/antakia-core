@@ -26,17 +26,17 @@ class Variable:
     """
 
     def __init__(
-            self,
-            col_index: int,
-            column_name: str,
-            type: str,
-            unit: str | None = None,
-            descr: str | None = None,
-            critical: bool = False,
-            continuous: bool = True,
-            lat: bool = False,
-            lon: bool = False,
-            **kwargs  # to ignore unknown args in building object
+        self,
+        col_index: int,
+        column_name: str,
+        type: str,
+        unit: str | None = None,
+        descr: str | None = None,
+        critical: bool = False,
+        continuous: bool = True,
+        lat: bool = False,
+        lon: bool = False,
+        **kwargs  # to ignore unknown args in building object
     ):
         self.col_index = col_index
         self.column_name = column_name
@@ -92,6 +92,18 @@ class Variable:
 
     def __hash__(self):
         return hash(self.column_name)
+
+    @staticmethod
+    def import_variable_df(df: pd.DataFrame) -> 'DataVariables':
+        return DataVariables.import_variable_df(df)
+
+    @staticmethod
+    def import_variable_list(var_list: list) -> 'DataVariables':
+        return DataVariables.import_variable_list(var_list)
+
+    @staticmethod
+    def guess_variables(X: pd.DataFrame) -> 'DataVariables':
+        return DataVariables.guess_variables(X)
 
 
 class DataVariables:
