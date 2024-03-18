@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "antakia-core"
-version = "0.2.25"
+version = "0.2.26"
 description = "Core modules for AntakIA"
 authors = ["Pierre Hulot <pierre@ai-vidence.com>"]
 readme = "README.md"
