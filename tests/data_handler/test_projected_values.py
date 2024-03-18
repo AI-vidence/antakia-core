@@ -23,10 +23,27 @@ def test_set_parameters(cpt_proj):
     pv = ProjectedValues(X, y)
     pv.compute(proj, callback)
     pv.set_parameters(proj, {'n_neighbors': 2})
-    assert pv._parameters == {proj: {'current': {'n_neighbors': 2}, 'previous': {}}}
+    assert pv._parameters == {
+        proj: {
+            'current': {
+                'n_neighbors': 2
+            },
+            'previous': {}
+        }
+    }
     pv.compute(proj, callback)
     pv.set_parameters(proj, {'MN_ratio': 4})
-    assert pv._parameters == {proj: {'current': {'MN_ratio': 4, 'n_neighbors': 2}, 'previous': {'n_neighbors': 2}}}
+    assert pv._parameters == {
+        proj: {
+            'current': {
+                'MN_ratio': 4,
+                'n_neighbors': 2
+            },
+            'previous': {
+                'n_neighbors': 2
+            }
+        }
+    }
 
 
 def test_get_parameters():
@@ -35,11 +52,17 @@ def test_get_parameters():
     proj = Proj(1, 2)
     assert pv.get_parameters(proj) == {'current': {}, 'previous': {}}
     pv1 = ProjectedValues(X, y)
-    proj = Proj(2,3)
+    proj = Proj(2, 3)
     pv1.build_default_parameters(proj)
     assert pv1.get_parameters(proj) == {
-        'current': {'min_dist': 0.1, 'n_neighbors': 15},
-        'previous': {'min_dist': 0.1, 'n_neighbors': 15}
+        'current': {
+            'min_dist': 0.1,
+            'n_neighbors': 15
+        },
+        'previous': {
+            'min_dist': 0.1,
+            'n_neighbors': 15
+        }
     }
 
 
@@ -51,21 +74,25 @@ def test_build_default_parameters():
     assert pv._parameters == {proj: {'current': {}, 'previous': {}}}
 
     pv1 = ProjectedValues(X, y)
-    proj = Proj(2,3)
+    proj = Proj(2, 3)
     pv1.build_default_parameters(proj)
     assert pv1._parameters == {
         Proj(reduction_method=2, dimension=3): {
-            'current': {'min_dist': 0.1, 'n_neighbors': 15},
-            'previous': {'min_dist': 0.1, 'n_neighbors': 15}
+            'current': {
+                'min_dist': 0.1,
+                'n_neighbors': 15
+            },
+            'previous': {
+                'min_dist': 0.1,
+                'n_neighbors': 15
+            }
         }
     }
 
 
 @mock.patch('antakia_core.data_handler.projected_values.compute_projection')
 def test_get_projection(cpt_proj):
-    X_red = pd.DataFrame([[4, 7, 10],
-                          [5, 8, 11],
-                          [6, 9, 12]],
+    X_red = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],
                          index=[1, 2, 3],
                          columns=['a', 'b', 'c'])
     X, y = generate_df_series()
@@ -97,9 +124,7 @@ def test_compute(cpt_proj):
     X, y = generate_df_series()
     callback = DummyCallable()
     pv = ProjectedValues(X, y)
-    X_red = pd.DataFrame([[4, 7, 10],
-                          [5, 8, 11],
-                          [6, 9, 12]],
+    X_red = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],
                          index=[1, 2, 3],
                          columns=['a', 'b', 'c'])
 

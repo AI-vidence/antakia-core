@@ -1,3 +1,6 @@
+import typing
+from typing import Callable
+
 import pandas as pd
 from sklearn.base import TransformerMixin
 
@@ -20,16 +23,16 @@ class DimReducMethod(LongTask):
     dim_reduc_methods = ['PCA', 'UMAP', 'PaCMAP']
     dimreduc_method = -1
 
-    allowed_kwargs = []
+    allowed_kwargs: list[str] = []
 
     def __init__(
-            self,
-            dimreduc_method: int,
-            dimreduc_model: type[TransformerMixin],
-            dimension: int,
-            X: pd.DataFrame,
-            default_parameters: dict = None,
-            progress_updated: callable = None,
+        self,
+        dimreduc_method: int,
+        dimreduc_model: type[TransformerMixin],
+        dimension: int,
+        X: pd.DataFrame,
+        default_parameters: dict | None = None,
+        progress_updated: Callable | None = None,
     ):
         """
         Constructor for the DimReducMethod class.
@@ -51,13 +54,14 @@ class DimReducMethod(LongTask):
             if dimreduc_method == -1:
                 print('warning - method is not yet supported')
             else:
-                raise ValueError(
-                    dimreduc_method, " is a bad dimensionality reduction method"
-                )
+                raise ValueError(dimreduc_method,
+                                 " is a bad dimensionality reduction method")
         if not DimReducMethod.is_valid_dim_number(dimension):
             raise ValueError(dimension, " is a bad dimension number")
 
         self.dimreduc_method = dimreduc_method
+        if default_parameters is None:
+            default_parameters = {}
         self.default_parameters = default_parameters
         self.dimension = dimension
         self.dimreduc_model = dimreduc_model
@@ -71,7 +75,8 @@ class DimReducMethod(LongTask):
         elif 0 < method <= len(cls.dim_reduc_methods):
             return cls.dim_reduc_methods[method - 1]
         else:
-            raise ValueError(f"{method} is an invalid dimensionality reduction method")
+            raise ValueError(
+                f"{method} is an invalid dimensionality reduction method")
 
     @classmethod
     def dimreduc_method_as_int(cls, method: str) -> int:
@@ -81,7 +86,8 @@ class DimReducMethod(LongTask):
             i = cls.dim_reduc_methods.index(method) + 1
             return i
         except ValueError:
-            raise ValueError(f"{method} is an invalid dimensionality reduction method")
+            raise ValueError(
+                f"{method} is an invalid dimensionality reduction method")
 
     @classmethod
     def dimreduc_methods_as_list(cls) -> list[int]:
@@ -118,7 +124,7 @@ class DimReducMethod(LongTask):
         return self.dimension
 
     @classmethod
-    def parameters(cls) -> dict[str, dict[str, any]]:
+    def parameters(cls) -> dict[str, dict[str, typing.Any]]:
         return {}
 
     def compute(self, **kwargs) -> pd.DataFrame:

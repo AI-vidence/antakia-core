@@ -7,6 +7,7 @@ class NotFittedError(Exception):
 
 
 class MLModel:
+
     def __init__(self, model, name, fitted=False):
         self.fitted = fitted
         self.model = model
@@ -32,10 +33,9 @@ class MLModel:
         if self.feature_importances_ is None:
             if hasattr(self.model, 'feature_importances_'):
                 self.feature_importances_ = pd.Series(
-                    self.model.feature_importances_,
-                    index=X.columns
-                )
+                    self.model.feature_importances_, index=X.columns)
             else:
+
                 def scorer(model, X, y):
                     y_pred = model.predict(X)
                     if score_type == 'minimize':
@@ -43,20 +43,24 @@ class MLModel:
                     else:
                         return score(y, y_pred)
 
-                fi = permutation_importance(
-                    self.model, X, y, n_repeats=10, random_state=42, n_jobs=-1, scoring=scorer
-                )
-                self.feature_importances_ = pd.Series(
-                    fi.importances_mean,
-                    index=X.columns
-                )
+                fi = permutation_importance(self.model,
+                                            X,
+                                            y,
+                                            n_repeats=10,
+                                            random_state=42,
+                                            n_jobs=-1,
+                                            scoring=scorer)
+                self.feature_importances_ = pd.Series(fi.importances_mean,
+                                                      index=X.columns)
 
-    def fit_and_compute_fi(self, X_train, y_train, X_test, y_test, score, score_type):
+    def fit_and_compute_fi(self, X_train, y_train, X_test, y_test, score,
+                           score_type):
         self.fit(X_train, y_train)
         self.compute_feature_importances(X_test, y_test, score, score_type)
 
 
 class AvgRegressionBaseline:
+
     def fit(self, X, y, *args, **kwargs):
         self.mean = y.mean()
 
@@ -65,6 +69,7 @@ class AvgRegressionBaseline:
 
 
 class AvgClassificationBaseline:
+
     def fit(self, X, y, *args, **kwargs):
         lst = list(y)
         self.majority_class = max(lst, key=lst.count)
@@ -80,37 +85,28 @@ class LinearMLModel(MLModel):
         self.means = X.mean()
 
     def global_explanation(self):
-        coefs = pd.Series(self.model.coef_, index=self.model.features_names_in_)
+        coefs = pd.Series(self.model.coef_,
+                          index=self.model.features_names_in_)
         coefs['intercept'] = self.model.intercept_
-        return {
-            'type': 'table',
-            'value': coefs
-        }
+        return {'type': 'table', 'value': coefs}
 
     def local_explanation(self, x):
-        coefs = pd.Series(self.model.coef_, index=self.model.features_names_in_)
+        coefs = pd.Series(self.model.coef_,
+                          index=self.model.features_names_in_)
         exp = coefs * x - coefs * self.means
-        return {
-            'type': 'table',
-            'prior': self.predict(x),
-            'value': exp
-        }
+        return {'type': 'table', 'prior': self.predict(x), 'value': exp}
 
 
 class GAMMLMdel(MLModel):
+
     def global_explanation(self):
-        coefs = pd.Series(self.model.coef_, index=self.model.features_names_in_)
+        coefs = pd.Series(self.model.coef_,
+                          index=self.model.features_names_in_)
         coefs['intercept'] = self.model.intercept_
-        return {
-            'type': 'table',
-            'value': coefs
-        }
+        return {'type': 'table', 'value': coefs}
 
     def local_explanation(self, x):
-        coefs = pd.Series(self.model.coef_, index=self.model.features_names_in_)
+        coefs = pd.Series(self.model.coef_,
+                          index=self.model.features_names_in_)
         exp = coefs * x - coefs * self.means
-        return {
-            'type': 'table',
-            'prior': self.predict(x),
-            'value': exp
-        }
+        return {'type': 'table', 'prior': self.predict(x), 'value': exp}

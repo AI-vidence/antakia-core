@@ -7,4 +7,3 @@ from tests.utils_fct import generate_df_series
 def test_init():
     with pytest.raises(ValueError):
         DimReducMethod(1, None, 2, None)
-

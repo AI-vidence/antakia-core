@@ -7,14 +7,12 @@ from antakia_core.utils.variable import Variable, DataVariables
 from antakia_core.data_handler.rules import Rule, RuleSet
 
 
-def skope_rules(
-        df_mask: pd.Series,
-        base_space_df: pd.DataFrame,
-        variables: DataVariables = None,
-        precision: float = 0.7,
-        recall: float = 0.7,
-        random_state=42
-) -> (RuleSet, dict[str, float]):
+def skope_rules(df_mask: pd.Series,
+                base_space_df: pd.DataFrame,
+                variables: DataVariables | None = None,
+                precision: float = 0.7,
+                recall: float = 0.7,
+                random_state=42) -> tuple[RuleSet, dict[str, float]]:
     """
     variables : list of Variables of the app
     df_indexes : list of (DataFrame) indexes for the points selected in the GUI
@@ -43,7 +41,8 @@ def skope_rules(
         sk_classifier.fit(base_space_df, y_train)
 
     if sk_classifier.rules_ != []:
-        rules_list, score_dict = RuleSet.sk_rules_to_rule_set(sk_classifier.rules_, variables)
+        rules_list, score_dict = RuleSet.sk_rules_to_rule_set(
+            sk_classifier.rules_, variables)
         return rules_list, score_dict
 
     else:

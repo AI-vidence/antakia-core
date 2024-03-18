@@ -1,4 +1,6 @@
 from collections import namedtuple
+from typing import Callable
+
 import pandas as pd
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
@@ -8,11 +10,12 @@ Proj = namedtuple('Proj', ['reduction_method', 'dimension'])
 
 
 class ProjectedValues:
+
     def __init__(self, X: pd.DataFrame, y: pd.Series):
         self.X = X
         self.y = y
-        self._projected_values = {}
-        self._parameters = {}
+        self._projected_values: dict[Proj, pd.DataFrame] = {}
+        self._parameters: dict[Proj, dict] = {}
 
     def set_parameters(self, projection: Proj, parameters: dict):
         """
@@ -28,7 +31,8 @@ class ProjectedValues:
         -------
 
         """
-        assert projection.reduction_method in DimReducMethod.dimreduc_methods_as_list()
+        assert projection.reduction_method in DimReducMethod.dimreduc_methods_as_list(
+        )
         assert projection.dimension in [2, 3]
 
         if self._parameters.get(projection) is None:
@@ -69,7 +73,8 @@ class ProjectedValues:
 
         """
         current = {}
-        dim_reduc_parameters = dim_reduc_factory[projection.reduction_method].parameters()
+        dim_reduc_parameters = dim_reduc_factory[
+            projection.reduction_method].parameters()
         for param, info in dim_reduc_parameters.items():
             current[param] = info['default']
         self._parameters[projection] = {
@@ -77,7 +82,9 @@ class ProjectedValues:
             'previous': current.copy()
         }
 
-    def get_projection(self, projection: Proj, progress_callback: callable = None):
+    def get_projection(self,
+                       projection: Proj,
+                       progress_callback: Callable | None = None):
         """
         get a projection value
         computes it if necessary
@@ -109,7 +116,7 @@ class ProjectedValues:
         """
         return self._projected_values.get(projection) is not None
 
-    def compute(self, projection: Proj, progress_callback: callable):
+    def compute(self, projection: Proj, progress_callback: Callable | None):
         """
         computes a projection and store it
         Parameters
@@ -123,11 +130,7 @@ class ProjectedValues:
 
         """
         projected_values = compute_projection(
-            self.X,
-            self.y,
-            projection.reduction_method,
-            projection.dimension,
+            self.X, self.y, projection.reduction_method, projection.dimension,
             progress_callback,
-            **self.get_parameters(projection)['current']
-        )
+            **self.get_parameters(projection)['current'])
         self._projected_values[projection] = projected_values

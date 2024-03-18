@@ -18,17 +18,17 @@ def in_index(indexes: list, X: pd.DataFrame) -> bool:
     Checks if a list of indexes is in the index of a DataFrame
     """
     try:
-        X.loc[indexes]
+        _ = X.loc[indexes]
         return True
     except KeyError:
         return False
 
 
-def rows_to_mask(X: pd.DataFrame, rows_list: list) -> pd.Series:
+def rows_to_mask(X: pd.DataFrame, rows_list: list[int]) -> pd.Series:
     """
     Converts DataFrame row numbers to Index numbers
     """
-    mask = pd.Series(np.zeros(len(X)), index=X.index)
+    mask = boolean_mask(X, False)
     mask.iloc[rows_list] = 1
     return mask.astype(bool)
 
@@ -63,6 +63,7 @@ def boolean_mask(X: pd.DataFrame, value: bool = True):
 
 
 def timeit(method):
+
     def timed(*args, **kw):
         ts = time.time()
         result = method(*args, **kw)
@@ -78,9 +79,11 @@ def timeit(method):
 
 
 def debug(func):
+
     @wraps(func)
     def wrapper(*args, **kwargs):
-        print(f"Calling {func.__name__} with args: {args} and kwargs: {kwargs}")
+        print(
+            f"Calling {func.__name__} with args: {args} and kwargs: {kwargs}")
         result = func(*args, **kwargs)
         print(f"{func.__name__} returned: {result}")
         return result
@@ -124,6 +127,7 @@ BASE_COLOR = 'grey'
 
 
 class MetaEnum(EnumMeta):
+
     def __contains__(cls, item):
         try:
             cls(item)
@@ -145,22 +149,20 @@ def format_data(x):
 
 
 def format_number(value: Number) -> str:
+
     def format_str(value):
         if abs(value) < 1e-2 or abs(value) > 1e4:
             return '.2e'
         return '.2f'
 
     if value == 0:
-        return value
-    elif pd.isna(value):
+        return str(value)
+    elif pd.isna(value):  # type:ignore
         return 'NaN'
     return format(value, format_str(value))
 
 
-class BaseEnum(Enum, metaclass=MetaEnum):
-    pass
-
-
-ProblemCategory = BaseEnum('ProblemCategory',
-                           ['classification_with_proba', 'classification_proba', 'classification',
-                            'classification_label_only', 'regression', 'auto'])
+ProblemCategory = Enum('ProblemCategory', [
+    'classification_with_proba', 'classification_proba', 'classification',
+    'classification_label_only', 'regression', 'auto'
+])

@@ -13,10 +13,13 @@ from tests.utils_fct import DummyProgress, DummyModel
 
 
 class TestComputeExplanation(TestCase):
+
     def setUp(self):
         self.X, y = load_dataset('Corner', 100, random_seed=42)
-        self.X = pd.DataFrame(self.X, columns=['X1', 'X2'],
-                              index=np.random.choice(np.arange(2 * len(self.X)), len(self.X)))
+        self.X = pd.DataFrame(self.X,
+                              columns=['X1', 'X2'],
+                              index=np.random.choice(
+                                  np.arange(2 * len(self.X)), len(self.X)))
         self.X['X3'] = np.random.random(len(self.X))
         y = pd.Series(y)
         self.model_DT = DecisionTreeRegressor().fit(self.X, y)
@@ -32,13 +35,16 @@ class TestComputeExplanation(TestCase):
         """
         for i in range(4):
             if i in (1, 2):
-                X_exp = compute_explanations(self.X, self.model_DT, i, ProblemCategory.regression,
+                X_exp = compute_explanations(self.X, self.model_DT, i,
+                                             ProblemCategory.regression,
                                              DummyProgress())
                 pd.testing.assert_index_equal(X_exp.index, self.X.index)
                 pd.testing.assert_index_equal(X_exp.columns, self.X.columns)
             else:
                 with pytest.raises(ValueError):
-                    compute_explanations(self.X, self.model_DT, ProblemCategory.regression, i, DummyProgress())
+                    compute_explanations(self.X, self.model_DT,
+                                         ProblemCategory.regression, i,
+                                         DummyProgress())
 
     def test_compute_explanations_dummy(self):
         """
@@ -49,11 +55,13 @@ class TestComputeExplanation(TestCase):
         """
         for i in range(4):
             if i in (1, 2):
-                X_exp = compute_explanations(self.X, self.model_any, i, ProblemCategory.regression,
+                X_exp = compute_explanations(self.X, self.model_any, i,
+                                             ProblemCategory.regression,
                                              DummyProgress())
                 pd.testing.assert_index_equal(X_exp.index, self.X.index)
                 pd.testing.assert_index_equal(X_exp.columns, self.X.columns)
             else:
                 with pytest.raises(ValueError):
-                    compute_explanations(self.X, self.model_any, ProblemCategory.regression, i,
+                    compute_explanations(self.X, self.model_any,
+                                         ProblemCategory.regression, i,
                                          DummyProgress())

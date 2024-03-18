@@ -12,9 +12,7 @@ def test_overlap_handler():
 
 
 def test_in_index():
-    df1 = pd.DataFrame([[4, 7, 10],
-                        [5, 8, 11],
-                        [6, 9, 12]],
+    df1 = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],
                        index=[1, 2, 3],
                        columns=['a', 'b', 'c'])
 
@@ -36,33 +34,26 @@ def test_rows_to_mask_1():
 
 
 def test_rows_to_mask():
-    df1 = pd.DataFrame([[4, 7, 10],
-                        [5, 8, 11],
-                        [6, 9, 12]],
+    df1 = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],
                        index=[1, 2, 3],
                        columns=['a', 'b', 'c'])
 
     np.testing.assert_array_equal(
         utils.rows_to_mask(df1, []).values,
-        pd.Series([False, False, False], [1, 2, 3]).values
-    )
+        pd.Series([False, False, False], [1, 2, 3]).values)
 
     np.testing.assert_array_equal(
         utils.rows_to_mask(df1, [0, 1]).values,
-        pd.Series([True, True, False], [1, 2, 3]).values
-    )
+        pd.Series([True, True, False], [1, 2, 3]).values)
 
     with pytest.raises(IndexError):
         np.testing.assert_array_equal(
             utils.rows_to_mask(df1, [0, 4]).values,
-            pd.Series([True, True, False], [1, 2, 3]).values
-        )
+            pd.Series([True, True, False], [1, 2, 3]).values)
 
 
 def test_indexes_to_rows():
-    df1 = pd.DataFrame([[4, 7, 10],
-                        [5, 8, 11],
-                        [6, 9, 12]],
+    df1 = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],
                        index=[1, 2, 3],
                        columns=['a', 'b', 'c'])
 
@@ -72,54 +63,32 @@ def test_indexes_to_rows():
 
 
 def test_mask_to_rows():
-    mask1 = pd.Series([True, True, False],
-                      index=[1, 2, 3])
+    mask1 = pd.Series([True, True, False], index=[1, 2, 3])
 
-    mask2 = pd.Series([False, False, False],
-                      index=[1, 2, 3])
+    mask2 = pd.Series([False, False, False], index=[1, 2, 3])
 
-    np.testing.assert_array_equal(
-        utils.mask_to_rows(mask1),
-        [0, 1]
-    )
-    np.testing.assert_array_equal(
-        utils.mask_to_index(mask2),
-        []
-    )
+    np.testing.assert_array_equal(utils.mask_to_rows(mask1), [0, 1])
+    np.testing.assert_array_equal(utils.mask_to_index(mask2), [])
 
 
 def test_mask_to_index():
-    mask1 = pd.Series([True, True, False],
-                      index=[1, 2, 3])
-    mask2 = pd.Series([False, False, False],
-                      index=[1, 2, 3])
+    mask1 = pd.Series([True, True, False], index=[1, 2, 3])
+    mask2 = pd.Series([False, False, False], index=[1, 2, 3])
 
-    np.testing.assert_array_equal(
-        utils.mask_to_index(mask1),
-        [1, 2]
-    )
-    np.testing.assert_array_equal(
-        utils.mask_to_index(mask2),
-        []
-    )
+    np.testing.assert_array_equal(utils.mask_to_index(mask1), [1, 2])
+    np.testing.assert_array_equal(utils.mask_to_index(mask2), [])
 
 
 def test_boolean_mask():
-    df1 = pd.DataFrame([[4, 7, 10],
-                        [5, 8, 11],
-                        [6, 9, 12]],
+    df1 = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],
                        index=[1, 2, 3],
                        columns=['a', 'b', 'c'])
 
-    np.testing.assert_array_equal(
-        utils.boolean_mask(df1, False),
-        pd.Series([False, False, False])
-    )
+    np.testing.assert_array_equal(utils.boolean_mask(df1, False),
+                                  pd.Series([False, False, False]))
 
-    np.testing.assert_array_equal(
-        utils.boolean_mask(df1),
-        pd.Series([True, True, True])
-    )
+    np.testing.assert_array_equal(utils.boolean_mask(df1),
+                                  pd.Series([True, True, True]))
 
 
 def test_compute_step():
