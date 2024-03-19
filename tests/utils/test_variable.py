@@ -42,18 +42,18 @@ def test_guess_variables():
     df3 = pd.DataFrame({"lat": [5]})
     df4 = pd.DataFrame({"long": [5]})
 
-    assert Variable.guess_variables(df1) == DataVariables([])
+    assert DataVariables.guess_variables(df1) == DataVariables([])
 
-    assert Variable.guess_variables(df2) == DataVariables([
+    assert DataVariables.guess_variables(df2) == DataVariables([
         Variable(0, 'a', 'int64', continuous=True),
         Variable(1, 'b', 'int64', continuous=True),
         Variable(2, 'c', 'int64', continuous=True)
     ])
 
-    assert Variable.guess_variables(df3) == DataVariables(
+    assert DataVariables.guess_variables(df3) == DataVariables(
         [Variable(0, 'lat', 'int64', lat=True, continuous=True)])
 
-    assert Variable.guess_variables(df4) == DataVariables(
+    assert DataVariables.guess_variables(df4) == DataVariables(
         [Variable(0, 'long', 'int64', lon=True, continuous=True)])
 
 
@@ -84,7 +84,7 @@ def test_import_variable_df():
             'AveOccup', 'Latitude', 'Longitude'
         ])
 
-    assert Variable.import_variable_df(variables_df) == DataVariables([
+    assert DataVariables.import_variable_df(variables_df) == DataVariables([
         Variable(0,
                  'MedInc',
                  'float64',
@@ -128,7 +128,7 @@ def test_import_variable_df():
     },
                                  index=['MedInc'])
 
-    assert Variable.import_variable_df(variables_df1) == DataVariables(
+    assert DataVariables.import_variable_df(variables_df1) == DataVariables(
         [Variable(0, 'MedInc', 'float64')])
 
     variables_df2 = pd.DataFrame({
@@ -137,14 +137,14 @@ def test_import_variable_df():
     },
                                  index=['MedInc'])
 
-    assert Variable.import_variable_df(variables_df2) == DataVariables(
+    assert DataVariables.import_variable_df(variables_df2) == DataVariables(
         [Variable(0, 'MedInc', 'float64')])
 
     with pytest.raises(KeyError):
-        Variable.import_variable_df(
+        DataVariables.import_variable_df(
             variables_df1.drop('column_name', axis=1).reset_index(drop=True))
     with pytest.raises(KeyError):
-        Variable.import_variable_df(variables_df1.drop('type', axis=1))
+        DataVariables.import_variable_df(variables_df1.drop('type', axis=1))
 
 
 def test_import_variable_list():
@@ -162,7 +162,7 @@ def test_import_variable_list():
         'type': 'int64'
     }]
 
-    assert Variable.import_variable_list(list_var) == DataVariables([
+    assert DataVariables.import_variable_list(list_var) == DataVariables([
         Variable(0, 'a', 'int64'),
         Variable(1, 'b', 'int64'),
         Variable(2, 'c', 'int64')
@@ -175,7 +175,7 @@ def test_import_variable_list():
     }]
 
     with pytest.raises(ValueError):
-        Variable.import_variable_list(list_var1)
+        DataVariables.import_variable_list(list_var1)
 
 
 def test_repr():

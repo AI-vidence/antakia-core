@@ -53,65 +53,6 @@ class Variable:
         return self.column_name.replace('_', ' ')
 
     @staticmethod
-    def guess_variables(X: pd.DataFrame) -> 'DataVariables':
-        """
-        guess Variables from the Dataframe values
-        Returns a DataVariable object, with one Variable for each column in X.
-        """
-        variables = []
-        for i, col in enumerate(X.columns):
-            var = Variable(i, col, X.dtypes[col])
-            if isinstance(col, str):
-                if col.lower() in ["latitude", "lat"]:
-                    var.lat = True
-                if col.lower() in ["longitude", "long", "lon"]:
-                    var.lon = True
-            var.continuous = Variable.is_continuous(X[col])
-            variables.append(var)
-        return DataVariables(variables)
-
-    @staticmethod
-    def import_variable_df(df: pd.DataFrame) -> 'DataVariables':
-        """
-        Builds The DataVariable object from a descriptive DataFrame
-        Returns a DataVariable object, with one Variable for each column in X.
-        """
-
-        if "col_index" not in df.columns:
-            df['col_index'] = np.arange(len(df))
-        if 'column_name' not in df.columns:
-            df['column_name'] = df.index
-            if is_numeric_dtype(df['column_name']):
-                raise KeyError(
-                    'column_name (index) column is mandatory and should be string'
-                )
-        if 'type' not in df.columns:
-            raise KeyError('type column is mandatory')
-        variables = df.apply(lambda row: Variable(**row),
-                             axis=1).to_list()  # type:ignore
-        return DataVariables(variables)
-
-    @staticmethod
-    def import_variable_list(var_list: list) -> 'DataVariables':
-        """
-        Builds The DataVariable object from alist of dict
-        Returns a DataVariable object, with one Variable for each column in X.
-
-        """
-        variables = []
-        for i in range(len(var_list)):
-            if isinstance(var_list[i], dict):
-                item = var_list[i]
-                if "col_index" in item and "column_name" in item and "type" in item:
-                    var = Variable(**item)
-                    variables.append(var)
-                else:
-                    raise ValueError(
-                        "Variable must a list of {key:value} with mandatory keys : [col_index, column_name, type] and optional keys : [unit, descr, critical, continuous, lat, lon]"
-                    )
-        return DataVariables(variables)
-
-    @staticmethod
     def is_continuous(serie: pd.Series) -> bool:
         """
         guess if a variable is continous from its values
@@ -152,6 +93,18 @@ class Variable:
     def __hash__(self):
         return hash(self.column_name)
 
+    @staticmethod
+    def import_variable_df(df: pd.DataFrame) -> 'DataVariables':
+        return DataVariables.import_variable_df(df)
+
+    @staticmethod
+    def import_variable_list(var_list: list) -> 'DataVariables':
+        return DataVariables.import_variable_list(var_list)
+
+    @staticmethod
+    def guess_variables(X: pd.DataFrame) -> 'DataVariables':
+        return DataVariables.guess_variables(X)
+
 
 class DataVariables:
     """
@@ -190,3 +143,62 @@ class DataVariables:
             if j not in self.variables.values():
                 return False
         return True
+
+    @staticmethod
+    def import_variable_df(df: pd.DataFrame) -> 'DataVariables':
+        """
+        Builds The DataVariable object from a descriptive DataFrame
+        Returns a DataVariable object, with one Variable for each column in X.
+        """
+
+        if "col_index" not in df.columns:
+            df['col_index'] = np.arange(len(df))
+        if 'column_name' not in df.columns:
+            df['column_name'] = df.index
+            if is_numeric_dtype(df['column_name']):
+                raise KeyError(
+                    'column_name (index) column is mandatory and should be string'
+                )
+        if 'type' not in df.columns:
+            raise KeyError('type column is mandatory')
+        variables = df.apply(lambda row: Variable(**row),
+                             axis=1).to_list()  #type:ignore
+        return DataVariables(variables)
+
+    @staticmethod
+    def import_variable_list(var_list: list) -> 'DataVariables':
+        """
+        Builds The DataVariable object from alist of dict
+        Returns a DataVariable object, with one Variable for each column in X.
+
+        """
+        variables = []
+        for i in range(len(var_list)):
+            if isinstance(var_list[i], dict):
+                item = var_list[i]
+                if "col_index" in item and "column_name" in item and "type" in item:
+                    var = Variable(**item)
+                    variables.append(var)
+                else:
+                    raise ValueError(
+                        "Variable must a list of {key:value} with mandatory keys : [col_index, column_name, type] and optional keys : [unit, descr, critical, continuous, lat, lon]"
+                    )
+        return DataVariables(variables)
+
+    @staticmethod
+    def guess_variables(X: pd.DataFrame) -> 'DataVariables':
+        """
+        guess Variables from the Dataframe values
+        Returns a DataVariable object, with one Variable for each column in X.
+        """
+        variables = []
+        for i, col in enumerate(X.columns):
+            var = Variable(i, col, X.dtypes[col])
+            if isinstance(col, str):
+                if col.lower() in ["latitude", "lat"]:
+                    var.lat = True
+                if col.lower() in ["longitude", "long", "lon"]:
+                    var.lon = True
+            var.continuous = Variable.is_continuous(X[col])
+            variables.append(var)
+        return DataVariables(variables)

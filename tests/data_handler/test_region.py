@@ -2,12 +2,76 @@ from unittest import TestCase
 
 import pandas as pd
 
-from src.antakia_core.data_handler.rules import Rule, RuleSet
-from src.antakia_core.data_handler.region import RegionSet, Region, ModelRegion
-from src.antakia_core.utils.variable import Variable
+from antakia_core.data_handler.rules import Rule, RuleSet
+from antakia_core.utils.variable import Variable
+from antakia_core.data_handler.region_set import RegionSet
 from tests.dummy_datasets import generate_corner_dataset
 from tests.utils_fct import dummy_mask
 
+
+class TestRegion(TestCase):
+
+    def setUp(self) -> None:
+        self.X = pd.DataFrame([
+            [1, 2],
+            [2, 1],
+            [4, 2],
+            [10, 1],
+            [20, 2],
+        ],
+                              columns=['var1', 'var2'])
+        self.v1 = Variable(0, 'var1', 'float')
+        self.v2 = Variable(0, 'var2', 'float')
+
+        self.r1_1 = Rule(self.v1,
+                         min=2,
+                         includes_min=True,
+                         max=10,
+                         includes_max=False)
+
+        self.r2_1 = Rule(self.v2, min=1.5, includes_min=False)
+
+    def test_init(self):
+        rule_set = RuleSet([self.r1_1])
+        region = Region(self.X, rule_set)
+        assert region.num < 0
+        pd.testing.assert_series_equal(region.mask,
+                                       rule_set.get_matching_mask(self.X))
+        assert region._color is None
+        assert not region.validated
+        assert not region.auto_cluster
+
+    def test_color(self):
+        rule_set = RuleSet([self.r1_1])
+        region = Region(self.X, rule_set)
+        assert region.color is not None
+        assert region._color is None
+        region.color = 'red'
+        assert region.color == 'red'
+        assert region._color == 'red'
+
+    def test_to_dict(self):
+        rule_set = RuleSet([self.r1_1])
+        region = Region(self.X, rule_set)
+        assert isinstance(region.to_dict(), dict)
+
+    def test_stats(self):
+        rule_set = RuleSet([self.r1_1])
+        region = Region(self.X, rule_set)
+        assert region.num_points() == 2
+        assert region.dataset_cov() == 2 / 5
+
+    def test_update_rule_set(self):
+        rule_set = RuleSet([self.r1_1])
+        region = Region(self.X, rule_set)
+
+        rule_set2 = RuleSet([self.r2_1])
+        region.update_rule_set(rule_set2)
+        assert self.r2_1 in region.rules.rules.values()
+        assert len(region.rules) == 1
+
+        pd.testing.assert_series_equal(region.mask,
+                                       rule_set2.get_matching_mask(self.X))
 
 class TestRegion(TestCase):
     def setUp(self):
