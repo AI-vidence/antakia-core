@@ -159,7 +159,7 @@ class DataVariables:
                 raise KeyError('column_name (index) column is mandatory and should be string')
         if 'type' not in df.columns:
             raise KeyError('type column is mandatory')
-        variables = df.apply(lambda row: Variable(**row), axis=1).to_list()
+        variables = df.apply(lambda row: Variable(**row), axis=1).to_list() #type:ignore
         return DataVariables(variables)
 
     @staticmethod

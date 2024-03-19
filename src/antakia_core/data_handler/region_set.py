@@ -17,11 +17,11 @@ class RegionSet:
         ----------
         X: reference dataset
         """
-        self.regions: dict[int:Region] = {}
-        self.insert_order: list[int] = []
-        self.display_order: list[Region] = []
+        self.regions = {}
+        self.insert_order = []
+        self.display_order = []
         self.X = X
-        self.left_out_region: Region = Region(self.X, None, boolean_mask(self.X, True), BASE_COLOR, num=Region.LEFT_OUT_NUM)
+        self.left_out_region = Region(self.X, None, boolean_mask(self.X, True), BASE_COLOR, num=Region.LEFT_OUT_NUM)
 
     def get_new_num(self) -> int:
         """
@@ -72,7 +72,7 @@ class RegionSet:
         self.display_order.append(region)
         self._compute_left_out_region()
 
-    def add_region(self, rules: RuleSet = None, mask=None, color=None, auto_cluster=False) -> Region:
+    def add_region(self, rules: RuleSet | None = None, mask=None, color=None, auto_cluster=False) -> Region:
         """
         create a Region from a rule set or a mask
         Parameters
@@ -216,7 +216,7 @@ class RegionSet:
             if not self.regions[i].validated:
                 self.remove(i)
 
-    def pop_last(self) -> Region:
+    def pop_last(self) -> Region | None:
         """
         removes and return the last region
         Returns
@@ -229,6 +229,7 @@ class RegionSet:
             if not self.regions[num].validated:
                 self.remove(num)
             return region
+        return None
 
     def sort(self, by, ascending=True):
         """
@@ -296,7 +297,7 @@ class ModelRegionSet(RegionSet):
         self.y_test = y_test
         self.model = model
         self.score = score
-        self.left_out_region: ModelRegion = self.upgrade_region_to_model_region(self.left_out_region)
+        self.left_out_region = self.upgrade_region_to_model_region(self.left_out_region)
 
     def upgrade_region_to_model_region(self, region: Region):
         """
@@ -329,7 +330,7 @@ class ModelRegionSet(RegionSet):
             region = self.upgrade_region_to_model_region(region)
         super().add(region)
 
-    def add_region(self, rules: RuleSet = None, mask=None, color=None, auto_cluster=False) -> Region:
+    def add_region(self, rules: RuleSet | None = None, mask=None, color=None, auto_cluster=False) -> Region:
         """
         add new ModelRegion
         Parameters
@@ -362,11 +363,11 @@ class ModelRegionSet(RegionSet):
         return region
 
     def get(self, i) -> ModelRegion | None:
-        return super().get(i)
+        return super().get(i)  # type:ignore
 
     def stats(self) -> dict:
         base_stats = super().stats()
-        delta_score = 0
+        delta_score = 0.
         for region in self.regions.values():
             weight = region.mask.sum()
             delta = region.delta

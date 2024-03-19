@@ -19,7 +19,7 @@ def pretty_model_name(model_name):
 
 
 def reduce_name(model_name):
-    parts = re.split('\W+', model_name)
+    parts = re.split(r'\W+', model_name)
     name = ''
     for part in parts:
         name += part[0].upper()
