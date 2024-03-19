@@ -129,9 +129,10 @@ class RegionSet:
         -------
 
         """
-        self.insert_order.remove(region_num)
-        self.display_order.remove(self.regions[region_num])
-        del self.regions[region_num]
+        if region_num != Region.LEFT_OUT_NUM:
+            self.insert_order.remove(region_num)
+            self.display_order.remove(self.regions[region_num])
+            del self.regions[region_num]
         self._compute_left_out_region()
 
     def to_dict(self, include_left_out=True) -> list[dict]:
