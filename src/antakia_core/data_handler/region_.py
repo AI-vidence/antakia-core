@@ -16,7 +16,12 @@ class Region:
     region_colors = colors
     LEFT_OUT_NUM = '-'
 
-    def __init__(self, X, rules: RuleSet | None = None, mask: pd.Series | None = None, color=None, num=-1):
+    def __init__(self,
+                 X,
+                 rules: RuleSet | None = None,
+                 mask: pd.Series | None = None,
+                 color=None,
+                 num=-1):
         """
 
         Parameters
@@ -155,9 +160,17 @@ class ModelRegion(Region):
     supercharged Region with an explainable predictive model
     """
 
-    def __init__(self, X, y, X_test, y_test, customer_model, rules: RuleSet | None = None,
-                 mask: pd.Series | None = None, color=None,
-                 score=None, num=-1):
+    def __init__(self,
+                 X,
+                 y,
+                 X_test,
+                 y_test,
+                 customer_model,
+                 rules: RuleSet | None = None,
+                 mask: pd.Series | None = None,
+                 color=None,
+                 score=None,
+                 num=-1):
         """
 
         Parameters
@@ -189,7 +202,8 @@ class ModelRegion(Region):
         """
         dict_form = super().to_dict()
         if self.interpretable_models.selected_model is not None:
-            dict_form['Sub-model'] = self.interpretable_models.selected_model_str()
+            dict_form[
+                'Sub-model'] = self.interpretable_models.selected_model_str()
         dict_form["Average"] = format_number(self.y[self.mask].mean())
         return dict_form
 
@@ -220,8 +234,7 @@ class ModelRegion(Region):
                 self.y.loc[self.mask],
                 self.X_test.loc[self.test_mask],
                 self.y_test.loc[self.test_mask],
-                task_type=task_type
-            )
+                task_type=task_type)
         else:
             self.interpretable_models.get_models_performance(
                 self.customer_model,
@@ -229,8 +242,7 @@ class ModelRegion(Region):
                 self.y.loc[self.mask],
                 None,
                 None,
-                task_type=task_type
-            )
+                task_type=task_type)
 
     @property
     def perfs(self):
@@ -254,7 +266,8 @@ class ModelRegion(Region):
 
         """
         if self.interpretable_models.selected_model:
-            return self.interpretable_models.perfs.loc[self.interpretable_models.selected_model, 'delta']
+            return self.interpretable_models.perfs.loc[
+                self.interpretable_models.selected_model, 'delta']
         return 0
 
     @property
@@ -270,9 +283,11 @@ class ModelRegion(Region):
                 self._test_mask = self.rules.get_matching_mask(self.X_test)
             else:
                 if not self.mask.any() or self.mask.all():
-                    return boolean_mask(self.X_test, self.mask.mean()).astype(bool)
+                    return boolean_mask(self.X_test,
+                                        self.mask.mean()).astype(bool)
                 knn = KNeighborsClassifier().fit(self.X, self.mask)
-                self._test_mask = pd.Series(knn.predict(self.X_test), index=self.X_test.index)
+                self._test_mask = pd.Series(knn.predict(self.X_test),
+                                            index=self.X_test.index)
         return self._test_mask
 
     def get_model(self, model_name):

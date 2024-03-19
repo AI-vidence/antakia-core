@@ -21,7 +21,11 @@ class RegionSet:
         self.insert_order = []
         self.display_order = []
         self.X = X
-        self.left_out_region = Region(self.X, None, boolean_mask(self.X, True), BASE_COLOR, num=Region.LEFT_OUT_NUM)
+        self.left_out_region = Region(self.X,
+                                      None,
+                                      boolean_mask(self.X, True),
+                                      BASE_COLOR,
+                                      num=Region.LEFT_OUT_NUM)
 
     def get_new_num(self) -> int:
         """
@@ -72,7 +76,11 @@ class RegionSet:
         self.display_order.append(region)
         self._compute_left_out_region()
 
-    def add_region(self, rules: RuleSet | None = None, mask=None, color=None, auto_cluster=False) -> Region:
+    def add_region(self,
+                   rules: RuleSet | None = None,
+                   mask=None,
+                   color=None,
+                   auto_cluster=False) -> Region:
         """
         create a Region from a rule set or a mask
         Parameters
@@ -107,7 +115,8 @@ class RegionSet:
 
         """
         for region in region_set.regions.values():
-            self.add_region(region.rules, region.mask, region._color, region.auto_cluster)
+            self.add_region(region.rules, region.mask, region._color,
+                            region.auto_cluster)
 
     def remove(self, region_num) -> None:
         """
@@ -297,7 +306,8 @@ class ModelRegionSet(RegionSet):
         self.y_test = y_test
         self.model = model
         self.score = score
-        self.left_out_region = self.upgrade_region_to_model_region(self.left_out_region)
+        self.left_out_region = self.upgrade_region_to_model_region(
+            self.left_out_region)
 
     def upgrade_region_to_model_region(self, region: Region):
         """
@@ -310,18 +320,16 @@ class ModelRegionSet(RegionSet):
         -------
 
         """
-        model_region = ModelRegion(
-            X=self.X,
-            y=self.y,
-            X_test=self.X_test,
-            y_test=self.y_test,
-            customer_model=self.model,
-            score=self.score,
-            rules=region.rules,
-            mask=region.mask,
-            color=region._color,
-            num=region.num
-        )
+        model_region = ModelRegion(X=self.X,
+                                   y=self.y,
+                                   X_test=self.X_test,
+                                   y_test=self.y_test,
+                                   customer_model=self.model,
+                                   score=self.score,
+                                   rules=region.rules,
+                                   mask=region.mask,
+                                   color=region._color,
+                                   num=region.num)
         model_region.validated = region.validated
         return model_region
 
@@ -330,7 +338,11 @@ class ModelRegionSet(RegionSet):
             region = self.upgrade_region_to_model_region(region)
         super().add(region)
 
-    def add_region(self, rules: RuleSet | None = None, mask=None, color=None, auto_cluster=False) -> Region:
+    def add_region(self,
+                   rules: RuleSet | None = None,
+                   mask=None,
+                   color=None,
+                   auto_cluster=False) -> Region:
         """
         add new ModelRegion
         Parameters
@@ -346,17 +358,15 @@ class ModelRegionSet(RegionSet):
         """
         if mask is not None:
             mask = mask.reindex(self.X.index).fillna(False)
-        region = ModelRegion(
-            X=self.X,
-            y=self.y,
-            X_test=self.X_test,
-            y_test=self.y_test,
-            customer_model=self.model,
-            score=self.score,
-            rules=rules,
-            mask=mask,
-            color=color
-        )
+        region = ModelRegion(X=self.X,
+                             y=self.y,
+                             X_test=self.X_test,
+                             y_test=self.y_test,
+                             customer_model=self.model,
+                             score=self.score,
+                             rules=rules,
+                             mask=mask,
+                             color=color)
         region.num = -1
         region.auto_cluster = auto_cluster
         self.add(region)

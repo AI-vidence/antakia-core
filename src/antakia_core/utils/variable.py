@@ -26,17 +26,17 @@ class Variable:
     """
 
     def __init__(
-        self,
-        col_index: int,
-        column_name: str,
-        type: str,
-        unit: str | None = None,
-        descr: str | None = None,
-        critical: bool = False,
-        continuous: bool = True,
-        lat: bool = False,
-        lon: bool = False,
-        **kwargs  # to ignore unknown args in building object
+            self,
+            col_index: int,
+            column_name: str,
+            type: str,
+            unit: str | None = None,
+            descr: str | None = None,
+            critical: bool = False,
+            continuous: bool = True,
+            lat: bool = False,
+            lon: bool = False,
+            **kwargs  # to ignore unknown args in building object
     ):
         self.col_index = col_index
         self.column_name = column_name
@@ -156,10 +156,13 @@ class DataVariables:
         if 'column_name' not in df.columns:
             df['column_name'] = df.index
             if is_numeric_dtype(df['column_name']):
-                raise KeyError('column_name (index) column is mandatory and should be string')
+                raise KeyError(
+                    'column_name (index) column is mandatory and should be string'
+                )
         if 'type' not in df.columns:
             raise KeyError('type column is mandatory')
-        variables = df.apply(lambda row: Variable(**row), axis=1).to_list() #type:ignore
+        variables = df.apply(lambda row: Variable(**row),
+                             axis=1).to_list()  #type:ignore
         return DataVariables(variables)
 
     @staticmethod

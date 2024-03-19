@@ -122,7 +122,10 @@ def get_mask_comparison_color(rules_mask, selection_mask):
 
 
 # First color can't be blue, reserved for the rules - grey is reserved to background
-colors = ["red", "blue", "green", "yellow", "orange", "pink", "brown", "cyan", "black"]
+colors = [
+    "red", "blue", "green", "yellow", "orange", "pink", "brown", "cyan",
+    "black"
+]
 BASE_COLOR = 'grey'
 
 

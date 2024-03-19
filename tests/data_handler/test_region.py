@@ -9,6 +9,7 @@ from antakia_core.utils.variable import Variable
 
 
 class TestRegion(unittest.TestCase):
+
     def setUp(self) -> None:
         self.X = pd.DataFrame([
             [1, 2],
@@ -16,11 +17,16 @@ class TestRegion(unittest.TestCase):
             [4, 2],
             [10, 1],
             [20, 2],
-        ], columns=['var1', 'var2'])
+        ],
+                              columns=['var1', 'var2'])
         self.v1 = Variable(0, 'var1', 'float')
         self.v2 = Variable(0, 'var2', 'float')
 
-        self.r1_1 = Rule(self.v1, min=2, includes_min=True, max=10, includes_max=False)
+        self.r1_1 = Rule(self.v1,
+                         min=2,
+                         includes_min=True,
+                         max=10,
+                         includes_max=False)
 
         self.r2_1 = Rule(self.v2, min=1.5, includes_min=False)
 
@@ -28,7 +34,8 @@ class TestRegion(unittest.TestCase):
         rule_set = RuleSet([self.r1_1])
         region = Region(self.X, rule_set)
         assert region.num < 0
-        pd.testing.assert_series_equal(region.mask, rule_set.get_matching_mask(self.X))
+        pd.testing.assert_series_equal(region.mask,
+                                       rule_set.get_matching_mask(self.X))
         assert region._color is None
         assert not region.validated
         assert not region.auto_cluster
@@ -62,10 +69,12 @@ class TestRegion(unittest.TestCase):
         assert self.r2_1 in region.rules.rules.values()
         assert len(region.rules) == 1
 
-        pd.testing.assert_series_equal(region.mask, rule_set2.get_matching_mask(self.X))
+        pd.testing.assert_series_equal(region.mask,
+                                       rule_set2.get_matching_mask(self.X))
 
 
 class TestModelRegion(unittest.TestCase):
+
     def setUp(self):
         self.X = pd.DataFrame([
             [1, 2],
@@ -73,7 +82,8 @@ class TestModelRegion(unittest.TestCase):
             [4, 2],
             [10, 1],
             [20, 2],
-        ], columns=['var1', 'var2'])
+        ],
+                              columns=['var1', 'var2'])
         self.v1 = Variable(0, 'var1', 'float')
         self.v2 = Variable(0, 'var2', 'float')
 
@@ -91,7 +101,7 @@ def test_regions():
         [10, 1],
         [20, 2],
     ],
-        columns=['var1', 'var2'])
+                        columns=['var1', 'var2'])
     rs = RegionSet(data)
     assert len(rs) == 0
     var = Variable(0, 'var1', 'float')
