@@ -364,7 +364,8 @@ class RegionSet:
                    color: str | None = None,
                    auto_cluster: bool = False) -> Region:
         """
-        create a Region from a rule set or a mask
+        create a Region from a rule set or a mask and add it to the
+        region set and return the created region
         Parameters
         ----------
         rules : rule list

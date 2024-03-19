@@ -22,7 +22,7 @@ class RuleSet:
     def add(self, value: Rule):
         """
         add a new rule
-        combines it with the existing rule is variable already used
+        combines it with the existing rule if variable already used
         Parameters
         ----------
         value
@@ -57,6 +57,12 @@ class RuleSet:
         return " and ".join([rule.__repr__() for rule in self.rules.values()])
 
     def to_dict(self):
+        """
+        return a list of dictionaries containing the parameters of each rule
+        Returns
+        -------
+
+        """
         if not self.rules:
             return []
         return [rule.to_dict() for rule in self.rules.values()]
@@ -98,7 +104,7 @@ class RuleSet:
                 masks.append(rule.get_matching_mask(X))
         return masks
 
-    def get_matching_indexes(self, X):
+    def get_matching_indexes(self, X : pd.DataFrame) -> list:
         """
         get the list indexes of X validating the rule
         Parameters
