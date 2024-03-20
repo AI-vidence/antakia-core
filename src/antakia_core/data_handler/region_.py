@@ -142,10 +142,22 @@ class Region:
         self.validated = False
 
     def update_mask(self, mask: pd.Series):
+        """
+        Parameters : the replacement mask
+        ----------
+        replaces the mask of the region by the mask given in parameters
+        set the region's rule set to the empty rule set
+        """
         self.mask = mask
         self.rules = RuleSet()
 
-    def get_color_serie(self):
+    def get_color_serie(self) -> pd.Series:
+        """
+
+        Returns a pd Series
+        -------
+
+        """
         color = pd.Series([BASE_COLOR] * len(self.X), index=self.X.index)
         if self.color == BASE_COLOR:
             region_color = 'blue'

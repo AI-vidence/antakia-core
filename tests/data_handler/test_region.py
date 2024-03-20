@@ -19,7 +19,7 @@ class TestRegion(TestCase):
             [10, 1],
             [20, 2],
         ],
-                              columns=['var1', 'var2'])
+            columns=['var1', 'var2'])
         self.v1 = Variable(0, 'var1', 'float')
         self.v2 = Variable(0, 'var2', 'float')
 
@@ -29,31 +29,62 @@ class TestRegion(TestCase):
                          max=10,
                          includes_max=False)
 
-        self.r2_1 = Rule(self.v2, min=1.5, includes_min=False)
+        self.r2_1 = Rule(self.v2,
+                         min=1.5,
+                         includes_min=False)
 
     def test_init(self):
+        """
+        Tests that the region is correctly instanciated,
+        wether a mask or a rule is given or not
+
+        Tests the implementation of property and setter : color, name
+
+        """
+
         rule_set = RuleSet([self.r1_1])
         region = Region(self.X, rule_set)
         assert region.num < 0
         pd.testing.assert_series_equal(region.mask,
                                        rule_set.get_matching_mask(self.X))
+
+        # test property and setter : color
         assert region._color is None
         assert not region.validated
         assert not region.auto_cluster
+        region.color = 'Blue'
+        assert region.color == 'Blue'
 
-    def test_color(self):
-        rule_set = RuleSet([self.r1_1])
-        region = Region(self.X, rule_set)
-        assert region.color is not None
-        assert region._color is None
-        region.color = 'red'
-        assert region.color == 'red'
-        assert region._color == 'red'
+        assert region.name == '2.00 ≤ var1 < 10.00'
 
     def test_to_dict(self):
         rule_set = RuleSet([self.r1_1])
         region = Region(self.X, rule_set)
-        assert isinstance(region.to_dict(), dict)
+        assert region.to_dict() == {
+            'Region': -1,
+            'Rules': '2.00 ≤ var1 < 10.00',
+            'Average': None,
+            'Points': 2,
+            '% dataset': '40.0%',
+            'Sub-model': None,
+            'color': 'cyan'
+        }
+
+    def test_numpoint(self):
+        rule_set = RuleSet([self.r1_1])
+        region = Region(self.X, rule_set)
+        assert region.num_points() == 2
+
+    def test_dataset_cov(self):
+        rule_set = RuleSet([self.r1_1])
+        region = Region(self.X, rule_set)
+        assert region.dataset_cov() == 0.4
+
+    def test_validate(self):
+        rule_set = RuleSet([self.r1_1])
+        region = Region(self.X, rule_set)
+        region.validate()
+        assert region.validated
 
     def test_stats(self):
         rule_set = RuleSet([self.r1_1])
@@ -73,159 +104,38 @@ class TestRegion(TestCase):
         pd.testing.assert_series_equal(region.mask,
                                        rule_set2.get_matching_mask(self.X))
 
-class TestRegion(TestCase):
-    def setUp(self):
+    def test_update_mask(self):
+        rule_set = RuleSet([self.r1_1])
+        region = Region(self.X, rule_set)
+        mask = dummy_mask(self.X)
+        region.update_mask(mask)
+        assert region.mask.equals(mask)
+        assert len(region.rules) == 0
+
+
+    def test_get_color_series(self):
         pass
 
-    def test_regions(self):
-        """
-        Tests that the region is correctly instanciated,
-        wether a mask or a rule is given or not
-
-        Tests the implementation of property and setter : color, name
-
-        """
-        data = pd.DataFrame([
-            [1, 2],
-            [2, 1],
-            [4, 2],
-            [10, 1],
-            [20, 2],
-        ], columns=['var1', 'var2'])
-        rs = RegionSet(data)
-        assert len(rs) == 0
-        var = Variable(0, 'var1', 'float')
-        rule1 = Rule(None, None, var, '<', 10)
-        rule2 = Rule(2, '<=', var, None, None)
-
-        region = rs.add_region(rules=RuleSet([rule1, rule2]))
-        assert rs.get(1) == region
-        assert len(rs) == 1
-        assert rs.get_max_num() == 1
-        assert rs.get_new_num() == 2
-
-        color = rs.get_color_serie()
-        assert (color == pd.Series(['grey', 'red', 'red', 'grey', 'grey'])).all()
-
-        rs.clear_unvalidated()
-        rs.add_region(RuleSet([rule1, rule2]), color='blue')
-        assert rs.get_max_num() == 1
-        assert rs.get_new_num() == 2
-        assert rs.get(1).color == 'blue'
-
-        color = rs.get_color_serie()
-        assert (color == pd.Series(['grey', 'blue', 'blue', 'grey', 'grey'])).all()
-
-        var2 = Variable(0, 'var2', 'float')
-        rule3 = Rule(None, None, var2, '>', 1.5)
-        rs.add_region(RuleSet([rule3]), color='blue')
-        rs.stats()
-
-        r = Region(data, RuleSet([rule3]))
-        r.num = 1
-
-        rs.add(r)
-        assert r.num == 3
-
-        assert region.to_dict() == {'% dataset': '40.0%', 'Average': None, 'Points': 2, 'Region': 1,
-                                    'Rules': 'var1 < 10.00 and var1 ≥ 2.00', 'Sub-model': None, 'color': 'red'}
-        assert region.num_points() == 2
-        assert region.dataset_cov() == 0.4
-        region.validate()
-        assert region.validated
-        assert region.name == 'var1 < 10.00 and var1 ≥ 2.00'
-        region.color = 'Blue'
-        assert region.color == 'Blue'
-
-
 class TestModelRegion(TestCase):
+
     def setUp(self):
-        self.X = pd.DataFrame(generate_corner_dataset(10)[0])
-        self.y = pd.DataFrame(generate_corner_dataset(10)[1])
-        self.X_test = pd.DataFrame(generate_corner_dataset(10)[0])
-        self.y_test = pd.DataFrame(generate_corner_dataset(10)[1])
+        X, y = generate_corner_dataset(10)
+        X_test, y_test = generate_corner_dataset(10)
+
+        self.X = pd.DataFrame(X)
+        self.y = pd.DataFrame(y)
+        self.X_test = pd.DataFrame(X_test)
+        self.y_test = pd.DataFrame(y_test)
+        self.ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
+                                  self.costumer_model)
         # self.test_mask = None
         # self.costumer_model =
 
     def test_init(self):
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test, self.costumer_model)
+        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
+                             self.costumer_model)
 
     def test_to_dict(self):
         assert ModReg.to_dict().equals()
 
 
-class TestRegionSet(TestCase):
-    def setUp(self):
-        self.data = pd.DataFrame([
-            [1, 2],
-            [2, 1],
-            [4, 2],
-            [10, 1],
-            [20, 2],
-        ], columns=['var1', 'var2'])
-        self.mask = dummy_mask(self.data)
-
-    def test_init_properties(self):
-        rs = RegionSet(self.data)
-        rs.add_region(mask=self.mask)
-        assert isinstance(rs.mask, pd.Series)
-        assert len(rs) == len(rs.regions)
-    def test_get_max_num(self):
-        rs = RegionSet(self.data)
-        assert rs.get_max_num() == 0
-        var1 = Variable(0, 'var1', 'float')
-        rule1 = Rule(None, None, var1, '>', 1.5)
-        region = Region(self.data, RuleSet([rule1]))
-        rs.add(region)
-        assert rs.get_max_num() == 0
-
-
-    def test_add_region(self):
-        rs = RegionSet(self.data)
-        rs.add_region(mask=self.mask)
-        added_region = rs.add_region(mask=self.mask)
-        assert isinstance(added_region, Region)
-
-    def test_extend(self):
-        rs = RegionSet(self.data)
-        rs_added = RegionSet(self.data)
-        rs_added.add_region(mask=self.mask)
-        rs.extend(rs_added)
-
-    def test_remove(self):
-        rs = RegionSet(self.data)
-        rs.add_region(mask=self.mask)
-        rs.remove(1)
-
-    def test_to_dict(self):
-        rs = RegionSet(self.data)
-        rs.add_region(mask=dummy_mask(self.data, 10))
-        assert isinstance(rs.to_dict(), list)
-        if not len(rs.to_dict()):
-            assert isinstance(rs.to_dict()[0], dict)
-
-    def test_get_colors(self):
-        rs = RegionSet(self.data)
-        rs.add_region(mask=self.mask)
-        assert isinstance(rs.get_colors(), list)
-        if not len(rs.get_colors()):
-            assert isinstance(rs.get_colors()[0], str)
-
-    def test_get_masks(self):
-        rs = RegionSet(self.data)
-        rs.add_region(mask=self.mask)
-        assert isinstance(rs.get_masks(), list)
-        if not len(rs.get_masks()):
-            assert isinstance(rs.get_masks()[0], pd.Series)
-
-    def test_get_color_series(self):
-        rs = RegionSet(self.data)
-        rs.add_region(mask=self.mask)
-        assert isinstance(rs.get_color_serie(), pd.Series)
-
-class TestModelRegionSet(TestCase):
-    def setUp(self):
-        pass
-
-    def test_init(self):
-        pass
