@@ -2,9 +2,8 @@ from unittest import TestCase
 
 import pandas as pd
 
-from antakia_core.data_handler.rules import Rule, RuleSet
-from antakia_core.utils.variable import Variable
-from antakia_core.data_handler.region_set import RegionSet
+from antakia_core.data_handler import Region, Rule, RuleSet, RegionSet, ModelRegion, ModelRegionSet
+from antakia_core.utils import Variable
 from tests.dummy_datasets import generate_corner_dataset
 from tests.utils_fct import dummy_mask
 
