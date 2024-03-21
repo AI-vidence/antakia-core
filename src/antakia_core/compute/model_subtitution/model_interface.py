@@ -76,7 +76,7 @@ class InterpretableModels:
             if model.name not in self.models:
                 self.models[pretty_model_name(model.name)] = model
 
-    def _init_scores(self, customer_model, task_type):
+    def _init_scores(self, customer_model, task_type, X_test, y_test):
         if self.score_type == 'compute':
             self._compute_score_type(customer_model, X_test, y_test)
         if task_type == ProblemCategory.regression:
@@ -122,7 +122,7 @@ class InterpretableModels:
             X_train, X_test, y_train, y_test = train_test_split(X_train,
                                                                 y_train,
                                                                 test_size=0.2)
-        self._init_scores(customer_model, task_type)
+        self._init_scores(customer_model, task_type, X_test, y_test)
         self._init_models(task_type)
         if customer_model is not None:
             self.models[self.customer_model_name] = MLModel(
