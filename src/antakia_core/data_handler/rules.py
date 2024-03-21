@@ -17,7 +17,7 @@ class RuleSet:
             rules = list(rules.rules.values())
         if rules:
             for rule in rules:
-                self.rules[rule.variable] = rule
+                self.add(rule)
 
     def add(self, value: Rule):
         """
