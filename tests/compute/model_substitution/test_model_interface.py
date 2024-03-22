@@ -65,7 +65,9 @@ class TestInterpretableModels(TestCase):
         assert int_mod.selected_model == LinearRegression
 
     def test_selected_model_str(self):#not ok
-        pass
+        int_mod = InterpretableModels('MSE')
+        int_mod.select_model(LinearRegression)
+        assert int_mod
 
     def test_reset(self):#not ok
         int_mod = InterpretableModels('MSE')

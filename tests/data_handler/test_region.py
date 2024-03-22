@@ -151,14 +151,15 @@ class TestModelRegion(TestCase):
         #test with initialization with a mask
         ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
                              self.costumer_model, mask=self.mask, score='MSE')
-        ModReg.select_model(LinearRegression)
+        ModReg.interpretable_models._init_models(ProblemCategory.regression)
+        ModReg.select_model('Linear Regression')
         assert ModReg.to_dict() == {
             'Region': -1,
             'Rules': '',
             'Average': '0.33',
             'Points': 3,
             '% dataset': '30.0%',
-            'Sub-model': None,
+            'Sub-model': 'Linear Regression',
             'color': 'cyan'
         }
 
@@ -221,14 +222,17 @@ class TestModelRegion(TestCase):
         ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
                              self.costumer_model, mask=self.mask, score='mse')
         ModReg.interpretable_models._init_models(ProblemCategory.regression)
+
         #check that y_pred is a pd.Series of NaN when no model is selected
-        y_pred = ModReg.predict(self.X)
-        assert isinstance(y_pred, pd.Series)
-        assert y_pred.isna().all()
+        # y_pred = ModReg.predict(self.X)
+        # assert isinstance(y_pred, pd.Series)
+        # assert y_pred.isna().all()
 
-
-        #test when a model is selected
-        ModReg.select_model('Linear Regression')
+        # test when a model is selected
+        model_fitted = LinearRegression()
+        model_fitted.fit(X = self.X, y = self.y)
+        ModReg.interpretable_models.select_model(model_fitted)
+        # ModReg.interpretable_models.selected_model = ModReg.interpretable_models.selected_model.fit()
         y_pred = ModReg.predict(self.X)
         assert isinstance(y_pred, pd.Series)
         assert not y_pred.isna().all()

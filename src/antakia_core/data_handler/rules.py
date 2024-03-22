@@ -32,7 +32,7 @@ class RuleSet:
 
         """
         if value.variable in self.rules:
-            self.rules[value.variable]= self.rules[value.variable].combine(value)
+            self.rules[value.variable] &= value
         else:
             self.rules[value.variable] = value
 
