@@ -15,15 +15,9 @@ from tests.utils_fct import DummyProgress, DummyModel
 class TestComputeExplanation(TestCase):
 
     def setUp(self):
-        self.X, y = load_dataset('Corner', 100, random_seed=42)
-        self.X = pd.DataFrame(self.X,
-                              columns=['X1', 'X2'],
-                              index=np.random.choice(
-                                  np.arange(2 * len(self.X)), len(self.X)))
-        self.X['X3'] = np.random.random(len(self.X))
-        y = pd.Series(y)
-        self.model_DT = DecisionTreeRegressor().fit(self.X, y)
-        self.model_any = DummyModel().fit(self.X, y)
+        self.X, self.y = load_dataset('Corner', 100, random_seed=42, columns=4)
+        self.model_DT = DecisionTreeRegressor().fit(self.X, self.y)
+        self.model_any = DummyModel().fit(self.X, self.y)
         self.X = self.X.sample(100)  # randomize index order
 
     def test_compute_explanations_DT(self):

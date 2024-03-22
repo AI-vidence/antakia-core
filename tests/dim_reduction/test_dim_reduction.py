@@ -1,11 +1,12 @@
 import numpy as np
-import pacmap
+from antakia_core.compute.dim_reduction.pacmap_progress.pacmap_progress import PaCMAP
 import pandas as pd
 import pytest
 import umap
 
 from sklearn.decomposition import PCA
-from antakia_core.compute.dim_reduction.dim_reduction import compute_projection, dim_reduc_factory, PCADimReduc, TSNEwrapper, \
+from antakia_core.compute.dim_reduction.dim_reduction import compute_projection, dim_reduc_factory, PCADimReduc, \
+    TSNEwrapper, \
     TSNEDimReduc, UMAPDimReduc, PaCMAPDimReduc
 from tests.utils_fct import generate_df_series, DummyCallable
 
@@ -161,9 +162,9 @@ def test_init_PacMAPDimReduc():
 
     assert pacmap_dr.dimreduc_method == 3
     np.testing.assert_array_equal(pacmap_dr.default_parameters,
-                                  {'n_components': 2})
+                                  {'n_components': 2, 'progress_callback': callback})
     assert pacmap_dr.dimension == 2
-    assert pacmap_dr.dimreduc_model == pacmap.PaCMAP
+    assert pacmap_dr.dimreduc_model == PaCMAP
     assert pacmap_dr.X.equals(X)
     assert pacmap_dr.progress_updated == callback
     np.testing.assert_array_equal(pacmap_dr.allowed_kwargs, [
