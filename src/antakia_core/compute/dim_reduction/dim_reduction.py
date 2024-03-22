@@ -175,7 +175,7 @@ class PaCMAPDimReduc(DimReducMethod):
         'pair_FP', 'distance', 'lr', 'num_iters', 'apply_pca', 'intermediate',
         'intermediate_snapshots', 'random_state'
     ]
-    has_progress_callback=True
+    has_progress_callback = True
 
     def __init__(self,
                  X: pd.DataFrame,
@@ -248,6 +248,6 @@ def compute_projection(X: pd.DataFrame,
             X_scaled,  # type:ignore
             dimension,  # type:ignore
             progress_callback).compute(  # type:ignore
-            **dim_reduc_kwargs).values,  # type:ignore
+                **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values

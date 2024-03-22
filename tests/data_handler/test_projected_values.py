@@ -10,6 +10,7 @@ from tests.utils_fct import generate_df_series, DummyCallable
 
 
 class TestProjectedValues(TestCase):
+
     def setUp(self):
         self.X, self.y = generate_corner_dataset(10)
         self.X = pd.DataFrame(self.X)
@@ -107,7 +108,6 @@ class TestProjectedValues(TestCase):
         proj = Proj(2, 2)
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
 
-
     def test_is_present(self):
         callback = DummyCallable()
         pv = ProjectedValues(self.X, self.y)
@@ -122,4 +122,4 @@ class TestProjectedValues(TestCase):
         pv = ProjectedValues(self.X, self.y)
         proj = Proj(1, 2)
         pv.compute(proj, callback)
-        assert isinstance(pv._projected_values[proj],pd.DataFrame )
+        assert isinstance(pv._projected_values[proj], pd.DataFrame)
