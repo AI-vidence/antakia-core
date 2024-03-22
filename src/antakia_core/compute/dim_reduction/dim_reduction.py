@@ -1,6 +1,6 @@
 from typing import Callable
 
-import pacmap
+from .pacmap_progress import PaCMAP
 import pandas as pd
 from sklearn.decomposition import PCA
 from openTSNE import TSNE
@@ -181,12 +181,13 @@ class PaCMAPDimReduc(DimReducMethod):
                  dimension: int = 2,
                  callback: Callable | None = None):
         super().__init__(self.dimreduc_method,
-                         pacmap.PaCMAP,
+                         PaCMAP,
                          dimension,
                          X,
                          progress_updated=callback,
                          default_parameters={
                              'n_components': dimension,
+                             'progress_callback': callback
                          })
 
     @classmethod
@@ -246,6 +247,6 @@ def compute_projection(X: pd.DataFrame,
             X_scaled,  # type:ignore
             dimension,  # type:ignore
             progress_callback).compute(  # type:ignore
-                **dim_reduc_kwargs).values,  # type:ignore
+            **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values

@@ -33,7 +33,7 @@ def generate_corner_dataset(
         If corner_position is not one of "top_left", "top_right", "bottom_left", "bottom_right".
     """
     np.random.seed(random_seed)
-    X = np.random.uniform(0, 1, (num_samples, 2))
+    X = np.random.uniform(0, 1, (num_samples, 10))
 
     if corner_position == "top_right":
         mask = (X[:, 0] > 0.5) & (X[:, 1] > 0.5)
@@ -50,7 +50,7 @@ def generate_corner_dataset(
         )
 
     y = mask.astype(int)
-    return X, y
+    return pd.DataFrame(X), pd.Series(y)
 
 
 def get_data_from_mixture_distribution(num_samples,
