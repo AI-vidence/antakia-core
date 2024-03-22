@@ -232,7 +232,6 @@ class TestModelRegion(TestCase):
         model_fitted = LinearRegression()
         model_fitted.fit(X = self.X, y = self.y)
         ModReg.interpretable_models.select_model(model_fitted)
-        # ModReg.interpretable_models.selected_model = ModReg.interpretable_models.selected_model.fit()
         y_pred = ModReg.predict(self.X)
         assert isinstance(y_pred, pd.Series)
         assert not y_pred.isna().all()
