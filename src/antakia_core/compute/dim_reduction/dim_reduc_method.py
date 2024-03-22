@@ -69,7 +69,7 @@ class DimReducMethod(LongTask):
         LongTask.__init__(self, X, progress_updated)
 
     @classmethod
-    def dimreduc_method_as_str(cls, method: int) -> str:
+    def dimreduc_method_as_str(cls, method: int | None) -> str | None:
         if method is None:
             return None
         elif 0 < method <= len(cls.dim_reduc_methods):
@@ -79,7 +79,7 @@ class DimReducMethod(LongTask):
                 f"{method} is an invalid dimensionality reduction method")
 
     @classmethod
-    def dimreduc_method_as_int(cls, method: str) -> int:
+    def dimreduc_method_as_int(cls, method: str | None) -> int | None:
         if method is None:
             return None
         try:
