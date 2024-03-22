@@ -17,7 +17,7 @@ class RuleSet:
             rules = list(rules.rules.values())
         if rules:
             for rule in rules:
-                self.rules[rule.variable] = rule
+                self.add(rule)
 
     def add(self, value: Rule):
         """
@@ -32,8 +32,9 @@ class RuleSet:
 
         """
         if value.variable in self.rules:
-            self.rules[value.variable] &= value
-        self.rules[value.variable] = value
+            self.rules[value.variable]= self.rules[value.variable].combine(value)
+        else:
+            self.rules[value.variable] = value
 
     def replace(self, value: Rule):
         """
@@ -104,7 +105,7 @@ class RuleSet:
                 masks.append(rule.get_matching_mask(X))
         return masks
 
-    def get_matching_indexes(self, X : pd.DataFrame) -> list:
+    def get_matching_indexes(self, X: pd.DataFrame) -> list:
         """
         get the list indexes of X validating the rule
         Parameters
@@ -132,13 +133,17 @@ class RuleSet:
 
         """
         rules_info = skrules[0]
+        ###### deprecated
         precision, recall, __ = rules_info[1]
         f1 = precision * recall * 2 / (precision + recall)
+        #precision = TP/(TP+FP)
+        #recall = TP/(TP+FN)
         score_dict = {
             "precision": round(precision, 3),
             "recall": round(recall, 3),
             "f1": round(f1, 3),
         }
+        ######
         rule_strings = rules_info[0].split(" and ")
 
         rule_list = RuleSet()

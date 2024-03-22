@@ -67,8 +67,8 @@ class Rule:
             return self.min == other.min and self.includes_min == other.includes_min
         return (self.max == other.max
                 and self.includes_max == other.includes_max) and (
-                self.min == other.min
-                and self.includes_min == other.includes_min)
+                    self.min == other.min
+                    and self.includes_min == other.includes_min)
 
     def __repr__(self):
         if self.is_categorical_rule:
