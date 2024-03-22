@@ -3,8 +3,10 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 import pytest
+
 from sklearn.decomposition import PCA
 from openTSNE import TSNE
+
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from antakia_core.utils.long_task import dummy_progress
@@ -97,13 +99,22 @@ class TestDimReducMethod(TestCase):
         assert drm.parameters() == {}
 
     def test_compute(self):  # ok rajouter test sur publish_progress
-        drm1 = DimReducMethod(1, PCA, 2, self.X, default_parameters={'n_components': 2})
-        drm1.compute()
-        assert drm1.default_parameters == {'n_components': 2}
+        drm = DimReducMethod(1,
+                             PCA,
+                             2,
+                             self.X,
+                             default_parameters={'n_components': 2})
+        drm.compute()
+        assert drm.default_parameters == {'n_components': 2}
 
-        drm2 = DimReducMethod(1, TSNE, 2, self.X, default_parameters={'n_components': 2})
-        drm2.compute()
-        # assert drm.
+        #test with TSNE
+        drm1 = DimReducMethod(1,
+                              TSNE,
+                              2,
+                              self.X,
+                              default_parameters={'n_components': 2})
+        drm1.compute()
+
 
     def test_scale_value_space(self):
         np.random.seed(10)
