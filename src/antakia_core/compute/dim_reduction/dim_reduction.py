@@ -175,6 +175,7 @@ class PaCMAPDimReduc(DimReducMethod):
         'pair_FP', 'distance', 'lr', 'num_iters', 'apply_pca', 'intermediate',
         'intermediate_snapshots', 'random_state'
     ]
+    has_progress_callback=True
 
     def __init__(self,
                  X: pd.DataFrame,
