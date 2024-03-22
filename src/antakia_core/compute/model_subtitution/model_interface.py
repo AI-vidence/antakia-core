@@ -14,11 +14,11 @@ import re
 from antakia_core.utils.utils import ProblemCategory
 
 
-def pretty_model_name(model_name):
+def pretty_model_name(model_name : str) -> str:
     return model_name.replace('_', ' ').title()
 
 
-def reduce_name(model_name):
+def reduce_name(model_name : str) -> str:
     parts = re.split(r'\W+', model_name)
     name = ''
     for part in parts:
@@ -164,7 +164,7 @@ class InterpretableModels:
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('../../../../antakia/data/california_housing.csv'
+    df = pd.read_csv('C:/1_Programmation/python/aividence/antakia/examples/data/california_housing.csv'
                      ).set_index('Unnamed: 0')
     df = df.sample(len(df))
     limit = int(2000 / 0.8)

@@ -30,7 +30,8 @@ class RegionSet:
     def get_new_num(self) -> int:
         """
         get a new Region id
-        Returns
+        Returns 1 if region set empty
+        Returns the smallest integer not already taken as a Region id
         -------
 
         """
@@ -228,8 +229,8 @@ class RegionSet:
 
     def pop_last(self) -> Region | None:
         """
-        removes and return the last region
-        Returns
+        removes and return the last region if not validates.
+        Only returns the region if validates
         -------
 
         """
@@ -241,7 +242,7 @@ class RegionSet:
             return region
         return None
 
-    def sort(self, by, ascending=True):
+    def sort(self, by: str, ascending=True):
         """
         sort the region set by id, size, insert order
         Parameters
@@ -275,7 +276,7 @@ class RegionSet:
     def _compute_left_out_region(self):
         """
         compute the left out region
-        Returns
+        Returns the computed region
         -------
 
         """
@@ -310,7 +311,7 @@ class ModelRegionSet(RegionSet):
         self.left_out_region = self.upgrade_region_to_model_region(
             self.left_out_region)
 
-    def upgrade_region_to_model_region(self, region: Region):
+    def upgrade_region_to_model_region(self, region: Region) -> ModelRegion:
         """
         Upgrade the provided region to a model region
         Parameters
@@ -319,7 +320,7 @@ class ModelRegionSet(RegionSet):
 
         Returns
         -------
-
+        model_region
         """
         model_region = ModelRegion(X=self.X,
                                    y=self.y,

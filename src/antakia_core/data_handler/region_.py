@@ -137,6 +137,17 @@ class Region:
         self.validated = True
 
     def update_rule_set(self, rule_set: RuleSet):
+        """
+        overwrite the previous rule set and mask with the rule set given in parameter
+        and his matching mask
+        Parameters
+        ----------
+        rule_set
+
+        Returns
+        -------
+
+        """
         self.rules = rule_set
         self.mask = self.rules.get_matching_mask(self.X)
         self.validated = False
@@ -173,10 +184,10 @@ class ModelRegion(Region):
     """
 
     def __init__(self,
-                 X,
-                 y,
-                 X_test,
-                 y_test,
+                 X: pd.DataFrame,
+                 y: pd.DataFrame,
+                 X_test: pd.DataFrame,
+                 y_test: pd.DataFrame,
                  customer_model,
                  rules: RuleSet | None = None,
                  mask: pd.Series | None = None,
@@ -205,7 +216,7 @@ class ModelRegion(Region):
         self.customer_model = customer_model
         self.interpretable_models = InterpretableModels(score)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         transform region to dict
         Returns
@@ -214,8 +225,7 @@ class ModelRegion(Region):
         """
         dict_form = super().to_dict()
         if self.interpretable_models.selected_model is not None:
-            dict_form[
-                'Sub-model'] = self.interpretable_models.selected_model_str()
+            dict_form['Sub-model'] = self.interpretable_models.selected_model_str()
         dict_form["Average"] = format_number(self.y[self.mask].mean())
         return dict_form
 
@@ -302,7 +312,17 @@ class ModelRegion(Region):
                                             index=self.X_test.index)
         return self._test_mask
 
-    def get_model(self, model_name):
+    def get_model(self, model_name: str):
+        """
+
+        Parameters
+        ----------
+        model_name
+
+        Returns the model object corresponding to the model_name parameter
+        -------
+
+        """
         return self.interpretable_models.models[model_name]
 
     def get_selected_model(self):
@@ -310,7 +330,18 @@ class ModelRegion(Region):
             return None
         return self.get_model(self.interpretable_models.selected_model)
 
-    def predict(self, X):
+    def predict(self, X : pd.DataFrame) -> pd.Series:
+        """
+
+        Parameters X_train dataframe
+        ----------
+        X
+
+        Returns a pandas Series of NaN if no model is selected. Or a pandas Series of
+        predicted y values
+        -------
+
+        """
         mask = self.rules.get_matching_mask(X)
         model = self.get_selected_model()
         if model is not None:

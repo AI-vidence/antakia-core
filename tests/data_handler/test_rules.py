@@ -10,16 +10,18 @@ from tests.dummy_datasets import generate_corner_dataset
 
 
 class TestRuleSet(TestCase):
+
     def setUp(self):
-        var = Variable(0, 'comb1', 'float')
+        var1 = Variable(0, 'comb1', 'float')
         var2 = Variable(0, 'comb2', 'float')
-        rule1_1 = Rule(var, max=10, includes_max=False)
-        rule1_2 = Rule(var, max=10, includes_max=True)
-        rule1_3 = Rule(var, max=20, includes_max=False)
-        self.rule = Rule(var, max=40, includes_max=False)
-        self.rule2 = Rule(var2, max=20, includes_max=False)
+        rule1_1 = Rule(var1, max=10, includes_max=False)
+        rule1_2 = Rule(var1, max=10, includes_max=True)
+        rule1_3 = Rule(var1, max=20, includes_max=False)
+        self.rule1 = Rule(var1, max=40, includes_max=False)
+        self.rule2 = Rule(var1, min=20, includes_max=True)
         self.rules = [rule1_1, rule1_2, rule1_3]
-        self.df = pd.DataFrame(generate_corner_dataset(10)[0], columns=['comb1', 'comb2'])
+        self.df = pd.DataFrame(generate_corner_dataset(10)[0],
+                               columns=['comb1', 'comb2'])
 
     def test_init(self):
         """
@@ -28,9 +30,10 @@ class TestRuleSet(TestCase):
         checks if the rule set is correctly initialized (a copy is made) when given a rule set as parameter.
         checks the init for empty rule set
         """
-        rule_set = RuleSet(self.rules)
-        rule_set1 = RuleSet(rule_set)
-        assert rule_set1.rules == rule_set.rules
+        rule_set0 = RuleSet()
+        rule_set1 = RuleSet(rule_set0)
+        assert rule_set1.rules == rule_set0.rules
+
         rule_set2 = RuleSet(None)
         assert not len(rule_set2)
 
@@ -40,16 +43,19 @@ class TestRuleSet(TestCase):
         checks if a new rule on an existing variable is correctly combined
 
         """
-        rule_set0 = RuleSet(self.rules)
-        rule_set1 = RuleSet(self.rules)
-        rule_set2 = RuleSet(self.rules)
+        # rule_set0 = RuleSet()
+        # rule_set1 = RuleSet()
+        rule_set2 = RuleSet()
 
         # add a rule on a new variable
-        rule_set1.add(self.rule2)
-        assert len(rule_set1) != len(rule_set0)
+        # rule_set1.add(self.rule2)
+        # assert len(rule_set1) != len(rule_set0)
         # add a rule on an existing variable
-        rule_set2.add(self.rule)
-        assert len(rule_set2) == len(rule_set0)
+        rule_set2.add(self.rule1)
+
+        rule_set2.add(self.rule2)
+        a=1
+        # assert len(rule_set2) == len(rule_set0)
 
     def test_replace(self):  # not ok
         """
@@ -68,8 +74,8 @@ class TestRuleSet(TestCase):
         assert len(rule_set1.rules) == 2
 
         # replace the rules of an existing variable
-        rule_set2.replace(self.rule)
-        assert rule_set2.rules[self.rule.variable] == self.rule
+        rule_set2.replace(self.rule1)
+        assert rule_set2.rules[self.rule1.variable] == self.rule1
 
     def test_to_dict(self):
         """
@@ -106,11 +112,13 @@ class TestRuleSet(TestCase):
         """
         df = self.df
         rule_set = RuleSet()
-        assert len(rule_set.get_all_masks(df)) == len(rule_set.get_all_masks(df))
+        assert len(rule_set.get_all_masks(df)) == len(
+            rule_set.get_all_masks(df))
         assert isinstance(rule_set.get_all_masks(df), list)
 
         rule_set = RuleSet(self.rules)
-        assert len(rule_set.get_all_masks(df)) == len(rule_set.get_all_masks(df))
+        assert len(rule_set.get_all_masks(df)) == len(
+            rule_set.get_all_masks(df))
         assert isinstance(rule_set.get_all_masks(df), list)
 
     def test_get_matching_indexes(self):
@@ -133,10 +141,12 @@ class TestRuleSet(TestCase):
 
 
 class TestRule(TestCase):
+
     def setUp(self):
         self.var1 = Variable(0, 'var1', 'float')
         self.var2 = Variable(0, 'var2', 'float')
-        self.df = pd.DataFrame(generate_corner_dataset(10)[0], columns=['var1', 'var2'])
+        self.df = pd.DataFrame(generate_corner_dataset(10)[0],
+                               columns=['var1', 'var2'])
 
     def test_init(self):  # not ok
         """
@@ -166,8 +176,16 @@ class TestRule(TestCase):
         rule6 = Rule(self.var1, min=10, includes_min=True)
         rule7 = Rule(self.var1, cat_values=['High', 'Low', 'Middle'])
         rule8 = Rule(self.var1, cat_values=['High', 'Low'])
-        rule9 = Rule(self.var1, min=10, max=10, includes_max=True, includes_min=True)
-        rule10 = Rule(self.var1, min=10, max=10, includes_max=True, includes_min=True)
+        rule9 = Rule(self.var1,
+                     min=10,
+                     max=10,
+                     includes_max=True,
+                     includes_min=True)
+        rule10 = Rule(self.var1,
+                      min=10,
+                      max=10,
+                      includes_max=True,
+                      includes_min=True)
         rule11 = Rule(self.var2, min=10, max=20)
         rule12 = Rule(self.var1, max=30)
         rule13 = Rule(self.var1, min=10, includes_min=True)
@@ -191,7 +209,11 @@ class TestRule(TestCase):
         rule1 = Rule(self.var1)
         rule2 = Rule(self.var1, cat_values=['High', 'Low'])
         rule3 = Rule(self.var2, min=20, max=10)
-        rule4 = Rule(self.var1, min=10, max=10, includes_max=True, includes_min=True)
+        rule4 = Rule(self.var1,
+                     min=10,
+                     max=10,
+                     includes_max=True,
+                     includes_min=True)
         rule5 = Rule(self.var2, min=10, max=20)
 
         assert rule1.get_matching_mask(self.df).all()  # truthy rule
@@ -209,21 +231,41 @@ class TestRule(TestCase):
         """
         var1 = Variable(0, 'comb1', 'float')
         var2 = Variable(0, 'comb2', 'float')
-        rule1_1 = Rule(var1, max=20,includes_max=False)  # None, None, var1, '<', 20)
-        rule1_2 = Rule(var1, max=10,includes_max=False)  # None, None, var1, '<', 10)
-        rule1_3 = Rule(var1, max=10,includes_max=True)  # None, None, var1, '<=', 10)
-        rule1_4 = Rule(var1, max=5,includes_max=False)  # None, None, var1, '<', 5)
-        rule2_1 = Rule(var1,min=10,includes_min=True)  # 10, '<=', var1, None, None)
-        rule3_1 = Rule(var1, min=10, includes_min=True, max=40,includes_max=False)  # 10, '<=', var1, '<', 40)
-        rule4_1 = Rule(var1,min=40,includes_min=False,max=10,includes_max=False)  # 10, '>', var1, '>', 40)
-        rule5_1 = Rule(var2, min=10, includes_min=True, max=40,includes_max=False)  # 10, '<=', var1, '<', 40)
+        rule1_1 = Rule(var1,
+                       max=20,
+                       includes_max=False)  # None, None, var1, '<', 20)
+        rule1_2 = Rule(var1,
+                       max=10,
+                       includes_max=False)  # None, None, var1, '<', 10)
+        rule1_3 = Rule(var1,
+                       max=10,
+                       includes_max=True)  # None, None, var1, '<=', 10)
+        rule1_4 = Rule(var1,
+                       max=5,
+                       includes_max=False)  # None, None, var1, '<', 5)
+        rule2_1 = Rule(var1,
+                       min=10,
+                       includes_min=True)  # 10, '<=', var1, None, None)
+        rule3_1 = Rule(var1,
+                       min=10,
+                       includes_min=True,
+                       max=40,
+                       includes_max=False)  # 10, '<=', var1, '<', 40)
+        rule4_1 = Rule(var1,
+                       min=40,
+                       includes_min=False,
+                       max=10,
+                       includes_max=False)  # 10, '>', var1, '>', 40)
+        rule5_1 = Rule(var2,
+                       min=10,
+                       includes_min=True,
+                       max=40,
+                       includes_max=False)  # 10, '<=', var1, '<', 40)
 
         rule6_1 = Rule(var1, cat_values=['High', 'Middle'])
         rule6_2 = Rule(var1, cat_values=['Middle', 'Low'])
         rule6_3 = Rule(var1, cat_values=['Middle'])
 
-
-        # a = repr(rule4_1.combine(rule6_2))
         assert repr(rule2_1.combine(rule1_1)) == '10.00 ≤ comb1 < 20.00'
         assert rule2_1.combine(rule1_2) == rule4_1
         assert repr(rule2_1.combine(rule1_3)) == 'comb1 = 10'

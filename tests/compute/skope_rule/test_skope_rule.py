@@ -9,6 +9,7 @@ from tests.utils_fct import dummy_mask
 
 
 class TestSkopeRule(TestCase):
+
     def setUp(self):
         pass
 
@@ -17,6 +18,6 @@ class TestSkopeRule(TestCase):
         mask = dummy_mask(df)
         var1 = Variable(0, 'type1', 'float')
         var2 = Variable(0, 'type2', 'float')
-        variables = DataVariables([var1,var2])
+        variables = DataVariables([var1, var2])
 
-        # skope_rules(mask, df, variables)
+        skope_rules(mask, df, variables)

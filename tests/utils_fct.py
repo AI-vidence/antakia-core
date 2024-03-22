@@ -1,12 +1,15 @@
 import pandas as pd
 import numpy as np
 
+
 class DummyCallable:
+
     def __init__(self):
         self.calls = []
 
     def call(self, *args):
         self.calls.append(args)
+
 
 class DummyModel:
 
@@ -34,12 +37,15 @@ class DummyProgress(DummyCallable):
         self.progress = args[0]
 
 
-def dummy_mask(X: pd.DataFrame, random_seed: int | None = None) -> pd.Series:
+def dummy_mask(data: pd.DataFrame | pd.Series, random_seed: int | None = None) -> pd.Series:
     """
     Generates a random mask from a dataframe
-    :param X: data frame the mask is created from
+    :param data: data frame the mask is created from
     :param random_seed: random seed
     :return: mask Series
     """
     np.random.seed(random_seed)
-    return pd.Series(np.random.randint(0, 2, X.shape[0]*X.shape[1]))
+    if isinstance(data,pd.Series):
+        return pd.Series(np.random.randint(0, 2, data.shape[0]))
+    else:
+        return pd.Series(np.random.randint(0, 2, data.shape[0] * data.shape[1]))
