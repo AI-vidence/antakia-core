@@ -186,7 +186,7 @@ class TestDimReduction(TestCase):
                 }
             })
 
-    def test_compute_projection(self):  # not ok
+    def test_compute_projection(self):
         X = pd.DataFrame(np.random.random((30, 5)),
                          index=np.random.choice(np.random.randint(100,
                                                                   size=40),

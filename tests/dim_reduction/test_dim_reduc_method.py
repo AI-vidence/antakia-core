@@ -99,7 +99,7 @@ class TestDimReducMethod(TestCase):
         assert drm.parameters() == {}
 
     def test_compute(self):  # ok rajouter test sur publish_progress
-        X = pd.DataFrame(np.random.randn(500, 4),
+        X = pd.DataFrame(np.random.randn(200, 4),
                          columns=['var1', 'var2', 'var3', 'var4'])
 
         #test with PCA
