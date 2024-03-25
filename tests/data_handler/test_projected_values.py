@@ -10,6 +10,7 @@ from tests.utils_fct import DummyCallable
 
 
 class TestProjectedValues(TestCase):
+
     def setUp(self):
         self.X, self.y = generate_corner_dataset(10)
         self.X = pd.DataFrame(self.X)

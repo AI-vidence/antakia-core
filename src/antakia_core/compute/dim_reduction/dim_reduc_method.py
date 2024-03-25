@@ -24,6 +24,7 @@ class DimReducMethod(LongTask):
     dimreduc_method = -1
 
     allowed_kwargs: list[str] = []
+    has_progress_callback = False
 
     def __init__(
             self,

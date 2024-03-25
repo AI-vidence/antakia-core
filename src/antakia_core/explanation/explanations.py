@@ -42,7 +42,7 @@ class SHAPExplanation(ExplanationMethod):
                                              self.X.sample(
                                                  min(200, len(self.X))),
                                              link=self.link)
-        chunck_size = 200
+        chunck_size = int(max(200, len(self.X) / 100))
         shap_val_list = []
         for i in range(0, len(self.X), chunck_size):
             explanations = explainer.shap_values(self.X.iloc[i:i +
@@ -54,7 +54,7 @@ class SHAPExplanation(ExplanationMethod):
                 pd.DataFrame(explanations,
                              columns=self.X.columns,
                              index=self.X.index[i:i + chunck_size]))
-            self.publish_progress(int(100 * (i * chunck_size) / len(self.X)))
+            self.publish_progress(int(100 * i / len(self.X)))
         shap_values = pd.concat(shap_val_list)
         self.publish_progress(100)
         return shap_values
@@ -117,13 +117,15 @@ class LIMExplanation(ExplanationMethod):
 
 
 def compute_explanations(X: pd.DataFrame, model, explanation_method: int,
-                         task_type, callback: Callable | None) -> pd.DataFrame:
+                         task_type,
+                         progress_callback: Callable | None) -> pd.DataFrame:
     """ Generic method to compute explanations, SHAP or LIME
     """
     if explanation_method == ExplanationMethod.SHAP:
-        return SHAPExplanation(X, model, task_type, callback).compute()
+        return SHAPExplanation(X, model, task_type,
+                               progress_callback).compute()
     elif explanation_method == ExplanationMethod.LIME:
-        return LIMExplanation(X, model, task_type, callback).compute()
+        return LIMExplanation(X, model, task_type, progress_callback).compute()
     else:
         raise ValueError(
             f"This explanation method {explanation_method} is not valid!")

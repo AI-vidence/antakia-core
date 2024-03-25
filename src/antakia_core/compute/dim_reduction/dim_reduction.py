@@ -1,6 +1,6 @@
 from typing import Callable
 
-import pacmap
+from .pacmap_progress import PaCMAP
 import pandas as pd
 from sklearn.decomposition import PCA
 from openTSNE import TSNE
@@ -185,6 +185,7 @@ class PaCMAPDimReduc(DimReducMethod):
         'pair_FP', 'distance', 'lr', 'num_iters', 'apply_pca', 'intermediate',
         'intermediate_snapshots', 'random_state'
     ]
+    has_progress_callback = True
 
     def __init__(self,
                  X: pd.DataFrame,
@@ -193,13 +194,14 @@ class PaCMAPDimReduc(DimReducMethod):
                  fit_sample_num: int | None = None
                  ):
         super().__init__(self.dimreduc_method,
-                         pacmap.PaCMAP,
+                         PaCMAP,
                          dimension,
                          X,
                          progress_updated=callback,
                          fit_sample_num=fit_sample_num,
                          default_parameters={
                              'n_components': dimension,
+                             'progress_callback': callback
                          })
 
     @classmethod
