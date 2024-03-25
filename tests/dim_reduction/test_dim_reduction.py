@@ -7,7 +7,8 @@ import pytest
 import umap
 
 from sklearn.decomposition import PCA
-from antakia_core.compute.dim_reduction.dim_reduction import compute_projection, dim_reduc_factory, PCADimReduc, TSNEwrapper, \
+from antakia_core.compute.dim_reduction.dim_reduction import compute_projection, dim_reduc_factory, PCADimReduc, \
+    TSNEwrapper, \
     TSNEDimReduc, UMAPDimReduc, PaCMAPDimReduc
 from tests.dummy_datasets import generate_corner_dataset
 from tests.utils_fct import DummyCallable
@@ -20,7 +21,6 @@ class TestDimReduction(TestCase):
         self.callback = DummyCallable()
 
     def test_init_PCA(self):
-
         dr_pca = PCADimReduc(self.X, 2, self.callback.call)
         assert dr_pca.dimreduc_method == 1
         np.testing.assert_array_equal(dr_pca.default_parameters,
@@ -201,7 +201,7 @@ class TestDimReduction(TestCase):
             compute_projection(X, y, 1, 2, self.callback.call).index, X.index)
 
     def test_dim_reduction(
-        self
+            self
     ):  # ok sauf PaCMAP : windows fatal error (access violation File) pour PaCMAP
         X = pd.DataFrame(np.random.random((10, 5)),
                          index=np.random.choice(np.random.randint(100,
@@ -218,13 +218,22 @@ class TestDimReduction(TestCase):
             params = {k: v['default'] for k, v in params.items()}
 
             cpt_proj_2D = compute_projection(X, y, dim_method, 2,
-                                             self.callback.call, **params)
+                                             progress_callback=self.callback.call, **params)
             assert cpt_proj_2D.shape == (len(X), 2)
             assert X.index.equals(cpt_proj_2D.index)
             assert self.callback.calls[-1][0] == 100
 
+            #test PCA 2D with sample train
+            cpt_proj_2D = compute_projection(X, y, dim_method, 2,
+                                             sample_size= 5,
+                                             progress_callback=self.callback.call, **params)
+            assert cpt_proj_2D.shape == (len(X), 2)
+            assert X.index.equals(cpt_proj_2D.index)
+            assert self.callback.calls[-1][0] == 100
+
+
             cpt_proj_3D = compute_projection(X, y, dim_method, 3,
-                                             self.callback.call, **params)
+                                             progress_callback=self.callback.call, **params)
             assert cpt_proj_3D.shape == (len(X), 3)
             assert X.index.equals(cpt_proj_3D.index)
             assert self.callback.calls[-1][0] == 100

@@ -9,8 +9,8 @@ class DummyCallable:
     def call(self, *args):
         self.calls.append(args)
 
-    def __call__(self, *args):
-        self.calls.append(args)
+    def __call__(self, *args, **kwargs):
+        self.calls.append((args, kwargs))
 
 def generate_df_series():
     X = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],

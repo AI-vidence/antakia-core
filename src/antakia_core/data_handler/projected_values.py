@@ -31,8 +31,7 @@ class ProjectedValues:
         -------
 
         """
-        assert projection.reduction_method in DimReducMethod.dimreduc_methods_as_list(
-        )
+        assert projection.reduction_method in DimReducMethod.dimreduc_methods_as_list()
         assert projection.dimension in [2, 3]
 
         if self._parameters.get(projection) is None:
@@ -84,6 +83,7 @@ class ProjectedValues:
 
     def get_projection(self,
                        projection: Proj,
+                       sample_size: int | None = None,
                        progress_callback: Callable | None = None):
         """
         get a projection value
@@ -99,7 +99,7 @@ class ProjectedValues:
 
         """
         if not self.is_present(projection):
-            self.compute(projection, progress_callback)
+            self.compute(projection, progress_callback, sample_size)
         return self._projected_values[projection]
 
     def is_present(self, projection: Proj) -> bool:
@@ -116,7 +116,7 @@ class ProjectedValues:
         """
         return self._projected_values.get(projection) is not None
 
-    def compute(self, projection: Proj, progress_callback: Callable | None, sample_size: int | None = None):
+    def compute(self, projection: Proj, progress_callback: Callable | None, sample_size: int | None):
         """
         computes a projection and store it
         Parameters
@@ -130,7 +130,7 @@ class ProjectedValues:
 
         """
         projected_values = compute_projection(
-            self.X, self.y, projection.reduction_method, projection.dimension, sample_size,
-            progress_callback,
+            self.X, self.y, projection.reduction_method, projection.dimension,
+            progress_callback, sample_size,
             **self.get_parameters(projection)['current'])
         self._projected_values[projection] = projected_values
