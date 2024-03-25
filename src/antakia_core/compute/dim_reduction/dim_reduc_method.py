@@ -33,7 +33,7 @@ class DimReducMethod(LongTask):
             X: pd.DataFrame,
             default_parameters: dict | None = None,
             progress_updated: Callable | None = None,
-            sample_size: int | None = None,
+            fit_sample_num: int | None = None,
     ):
         """
         Constructor for the DimReducMethod class.
@@ -66,7 +66,7 @@ class DimReducMethod(LongTask):
         self.default_parameters = default_parameters
         self.dimension = dimension
         self.dimreduc_model = dimreduc_model
-        self.sample_size = sample_size
+        self.sample_size = fit_sample_num
         # IMPORTANT : we set the topic as for ex 'PCA/2' or 't-SNE/3' -> subscribers have to follow this scheme
         LongTask.__init__(self, X, progress_updated)
 
@@ -129,23 +129,6 @@ class DimReducMethod(LongTask):
     def parameters(cls) -> dict[str, dict[str, typing.Any]]:
         return {}
 
-    # compute OBSOLETE STABLE
-    # def compute(self, **kwargs) -> pd.DataFrame:
-    #     self.publish_progress(0)
-    #     kwargs['n_components'] = self.get_dimension()
-    #     param = self.default_parameters.copy()
-    #     param.update(kwargs)
-    #
-    #     dim_red_model = self.dimreduc_model(**param)
-    #     if hasattr(dim_red_model, 'fit_transform'):
-    #         X_red = dim_red_model.fit_transform(self.X)
-    #     else:
-    #         X_red = dim_red_model.fit(self.X).transform(self.X)
-    #     X_red = pd.DataFrame(X_red)
-    #
-    #     self.publish_progress(100)
-    #     return X_red
-
     def compute(self, sample_size = None, **kwargs) -> pd.DataFrame:
         if sample_size is None:
             sample_size = self.X.shape[0]
@@ -158,10 +141,7 @@ class DimReducMethod(LongTask):
 
         dim_red_model = self.dimreduc_model(**param)
         #UMAP has fit_transform attribute but forced to be computed with fit than transorm
-        if hasattr(dim_red_model, 'fit_transform') and self.dimreduc_method != 2:
-            X_red = dim_red_model.fit_transform(self.X, sample_size)
-        else:
-            X_red = dim_red_model.fit(self.X.sample(n=sample_size)).transform(self.X)
+        X_red = dim_red_model.fit(self.X.sample(n=sample_size)).transform(self.X)
         X_red = pd.DataFrame(X_red)
 
         self.publish_progress(100)

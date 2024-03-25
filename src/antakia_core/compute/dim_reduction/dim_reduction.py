@@ -27,14 +27,14 @@ class PCADimReduc(DimReducMethod):
                  X: pd.DataFrame,
                  dimension: int = 2,
                  callback: Callable | None = None,
-                 sample_size: int | None = None
+                 fit_sample_num: int | None = None
                  ):
         super().__init__(self.dimreduc_method,
                          PCA,
                          dimension,
                          X,
                          progress_updated=callback,
-                         sample_size=sample_size,
+                         fit_sample_num=fit_sample_num,
                          default_parameters={
                              'n_components': dimension,
                          })
@@ -61,14 +61,14 @@ class TSNEDimReduc(DimReducMethod):
                  X: pd.DataFrame,
                  dimension: int = 2,
                  callback: Callable | None = None,
-                 sample_size: int | None = None
+                 fit_sample_num: int | None = None
                  ):
         super().__init__(self.dimreduc_method,
                          TSNEwrapper,
                          dimension,
                          X,
                          progress_updated=callback,
-                         sample_size=sample_size,
+                         fit_sample_num=fit_sample_num,
                          default_parameters={
                              'n_components': dimension,
                              'n_jobs': -1
@@ -142,7 +142,7 @@ class UMAPDimReduc(DimReducMethod):
                  X: pd.DataFrame,
                  dimension: int = 2,
                  callback: Callable | None = None,
-                 sample_size: int | None = None
+                 fit_sample_num: int | None = None
                  ):
         import umap
         super().__init__(self.dimreduc_method,
@@ -150,7 +150,7 @@ class UMAPDimReduc(DimReducMethod):
                          dimension,
                          X,
                          progress_updated=callback,
-                         sample_size=sample_size,
+                         fit_sample_num=fit_sample_num,
                          default_parameters={
                              'n_components': dimension,
                              'n_jobs': -1
@@ -190,14 +190,14 @@ class PaCMAPDimReduc(DimReducMethod):
                  X: pd.DataFrame,
                  dimension: int = 2,
                  callback: Callable | None = None,
-                 sample_size: int | None = None
+                 fit_sample_num: int | None = None
                  ):
         super().__init__(self.dimreduc_method,
                          pacmap.PaCMAP,
                          dimension,
                          X,
                          progress_updated=callback,
-                         sample_size=sample_size,
+                         fit_sample_num=fit_sample_num,
                          default_parameters={
                              'n_components': dimension,
                          })
