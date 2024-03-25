@@ -6,9 +6,12 @@ class DummyCallable:
 
     def __init__(self):
         self.calls = []
+    def __call__(self, *args, **kwargs):
+        self.calls.append((args, kwargs))
 
     def call(self, *args):
         self.calls.append(args)
+
 
 
 class DummyModel:

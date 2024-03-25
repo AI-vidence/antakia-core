@@ -165,7 +165,8 @@ class Region:
     def get_color_serie(self) -> pd.Series:
         """
 
-        Returns a pd Series
+        Returns a pd Series containing the color of each data point in the
+        region
         -------
 
         """

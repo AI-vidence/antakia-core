@@ -28,7 +28,7 @@ class TestInterpretableModels(TestCase):
         self.X_test = pd.DataFrame(X_test)
         self.y_test = pd.Series(y_test)
 
-    def test_init(self):
+    def test_init(self):#not ok
         pass
 
     def test_get_available_models(self):
@@ -64,7 +64,8 @@ class TestInterpretableModels(TestCase):
         int_mod._train_models(self.X, self.y, self.X_test, self.y_test)
 
     def test_compute_score_type(self):  # not ok
-        pass
+        int_mod = InterpretableModels('MSE')
+
 
     def test_get_model_performance(self):  # not ok
         int_mod = InterpretableModels('MSE')

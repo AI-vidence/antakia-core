@@ -71,12 +71,36 @@ class InterpretableModels:
         ]
 
     def _init_models(self, task_type):
+        """
+        fills the empty dict with all available models
+        Parameters
+        ----------
+        task_type
+
+        Returns
+        -------
+
+        """
         for model_class in self._get_available_models(task_type):
             model = model_class()
             if model.name not in self.models:
                 self.models[pretty_model_name(model.name)] = model
 
     def _init_scores(self, customer_model, task_type, X_test, y_test):
+        """
+        fills the empty dict with all available models
+
+        Parameters
+        ----------
+        customer_model
+        task_type
+        X_test
+        y_test
+
+        Returns
+        -------
+
+        """
         if self.score_type == 'compute':
             self._compute_score_type(customer_model, X_test, y_test)
         if task_type == ProblemCategory.regression:

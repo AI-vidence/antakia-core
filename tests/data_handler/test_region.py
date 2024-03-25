@@ -56,8 +56,19 @@ class TestRegion(TestCase):
         assert not region.auto_cluster
         region.color = 'Blue'
         assert region.color == 'Blue'
-
         assert region.name == '2.00 ≤ var1 < 10.00'
+
+        #test the name of a leftouf region
+        region2 = RegionSet(self.X)._compute_left_out_region()
+        assert region2.name == 'left outs'
+
+        #test the name of a autoclustered region with and without rule set
+        region3 = Region(self.X)
+        region3.auto_cluster = True
+        assert region3.name == 'auto-cluster'
+        region3 = Region(self.X, rule_set)
+        region3.auto_cluster = True
+        assert region3.name == 'AC: 2.00 ≤ var1 < 10.00'
 
     def test_to_dict(self):
         rule_set = RuleSet([self.r1_1])
@@ -115,8 +126,12 @@ class TestRegion(TestCase):
         assert len(region.rules) == 0
 
     def test_get_color_series(self):
-        pass
-
+        rule_set = RuleSet([self.r1_1])
+        region = Region(self.X, rule_set)
+        assert isinstance(region.get_color_serie(),pd.Series)
+        region.color = 'grey'
+        region.get_color_serie()
+        assert region.color == 'blue'
 
 class TestModelRegion(TestCase):
 
