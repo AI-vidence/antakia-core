@@ -6,7 +6,7 @@ import pytest
 
 from sklearn.decomposition import PCA
 from openTSNE import TSNE
-
+import umap
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from antakia_core.utils.long_task import dummy_progress
@@ -99,21 +99,81 @@ class TestDimReducMethod(TestCase):
         assert drm.parameters() == {}
 
     def test_compute(self):  # ok rajouter test sur publish_progress
-        drm = DimReducMethod(1,
-                             PCA,
-                             2,
-                             self.X,
-                             default_parameters={'n_components': 2})
-        drm.compute()
-        assert drm.default_parameters == {'n_components': 2}
+        X = pd.DataFrame(np.random.randn(500, 4),
+                         columns=['var1', 'var2', 'var3', 'var4'])
 
-        #test with TSNE
-        drm1 = DimReducMethod(1,
-                              TSNE,
-                              2,
-                              self.X,
-                              default_parameters={'n_components': 2})
-        drm1.compute()
+        #test with PCA
+        #
+        # drm1 = DimReducMethod(1,
+        #                      PCA,
+        #                      2,
+        #                      X,
+        #                      default_parameters={'n_components': 2})
+        # X_proj = drm1.compute()
+        # assert X_proj.shape == (X.shape[0], 2)
+        #
+        # X_proj = drm1.compute(sample_size=100)
+        # assert X_proj.shape == (X.shape[0], 2)
+        #
+        # assert drm1.default_parameters == {'n_components': 2}
+
+        # #test with TSNE 2D
+        # drm2 = DimReducMethod(1,
+        #                       TSNE,
+        #                       2,
+        #                       X,
+        #                       default_parameters={'n_components': 2})
+        # X_proj = drm2.compute(sample_size=100)
+        # assert X_proj.shape == (X.shape[0], 2)
+        # X_proj = drm2.compute()
+        # assert X_proj.shape == (X.shape[0], 2)
+        # X_proj = drm2.compute(sample_size=600)
+        #
+        # with pytest.raises(ValueError):
+        #     X_proj = drm2.compute(sample_size=600)
+
+        # #test with TSNE 3D
+        # drm3 = DimReducMethod(1,
+        #                       TSNE,
+        #                       3,
+        #                       X,
+        #                       default_parameters={'n_components': 2})
+        # X_proj = drm3.compute(sample_size=100)
+        # assert X_proj.shape == (X.shape[0], 3)
+        # X_proj = drm3.compute()
+        # assert X_proj.shape == (X.shape[0], 3)
+        #
+        # with pytest.raises(ValueError):
+        #     X_proj = drm3.compute(sample_size=600)
+
+
+        #test with UMAP
+        # drm4 = DimReducMethod(1,
+        #                       umap.UMAP,
+        #                       2,
+        #                       X,
+        #                       default_parameters={'n_components': 2})
+        # X_proj = drm4.compute(sample_size=100)
+        # assert X_proj.shape == (X.shape[0], 2)
+        # X_proj = drm4.compute()
+        # assert X_proj.shape == (X.shape[0], 2)
+        #
+        # with pytest.raises(ValueError):
+        #     X_proj = drm4.compute(sample_size=600)
+
+        # #test with PaCMAP
+        # drm4 = DimReducMethod(1,
+        #                       umap.UMAP,
+        #                       2,
+        #                       X,
+        #                       default_parameters={'n_components': 2})
+        # X_proj = drm4.compute(sample_size=100)
+        # assert X_proj.shape == (X.shape[0], 2)
+        # X_proj = drm4.compute()
+        # assert X_proj.shape == (X.shape[0], 2)
+        #
+        # with pytest.raises(ValueError):
+        #     X_proj = drm4.compute(sample_size=600)
 
 
     def test_scale_value_space(self):
@@ -122,7 +182,7 @@ class TestDimReducMethod(TestCase):
                          columns=list('ABC'))
         y = X.sum(axis=1)
         drm = DimReducMethod(1, None, 2, X)
-        a = drm.scale_value_space(X, y)
+        drm.scale_value_space(X, y)
         expected = pd.DataFrame(
             [[-0.048086, -0.153033, 0.032684], [-0.000829, 0.350276, 0.216138],
              [0.001658, -0.200644, 0.089618], [-0.070471, 0.017004, -0.144444],

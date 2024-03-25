@@ -17,18 +17,18 @@ class TestDimReduction(TestCase):
 
     def setUp(self):
         self.X = pd.DataFrame(generate_corner_dataset(10)[0])
+        self.callback = DummyCallable()
 
     def test_init_PCA(self):
-        callback = DummyCallable()
 
-        dr_pca = PCADimReduc(self.X, 2, callback.call)
+        dr_pca = PCADimReduc(self.X, 2, self.callback.call)
         assert dr_pca.dimreduc_method == 1
         np.testing.assert_array_equal(dr_pca.default_parameters,
                                       {'n_components': 2})
         assert dr_pca.dimension == 2
         assert dr_pca.dimreduc_model == PCA
         assert dr_pca.X.equals(self.X)
-        assert dr_pca.progress_updated == callback.call
+        assert dr_pca.progress_updated == self.callback.call
         np.testing.assert_array_equal(dr_pca.allowed_kwargs, [
             'copy', 'whiten', 'svd_solver', 'tol', 'iterated_power',
             'n_oversamples', 'power_iteration_normalizer', 'random_state'
@@ -39,9 +39,7 @@ class TestDimReduction(TestCase):
         tsn.fit_transform(self.X)
 
     def test_init_TSNEDimReduc(self):
-        callback = DummyCallable()
-
-        tsne = TSNEDimReduc(self.X, 2, callback.call)
+        tsne = TSNEDimReduc(self.X, 2, self.callback.call)
         assert tsne.dimreduc_method == -1
         np.testing.assert_array_equal(tsne.default_parameters, {
             'n_components': 2,
@@ -50,7 +48,7 @@ class TestDimReduction(TestCase):
         assert tsne.dimension == 2
         assert tsne.dimreduc_model == TSNEwrapper
         assert tsne.X.equals(self.X)
-        assert tsne.progress_updated == callback.call
+        assert tsne.progress_updated == self.callback.call
         np.testing.assert_array_equal(tsne.allowed_kwargs, [
             'perplexity', 'early_exaggeration', 'learning_rate', 'n_iter',
             'n_iter_without_progress', 'min_grad_norm', 'metric',
@@ -59,8 +57,7 @@ class TestDimReduction(TestCase):
         ])
 
     def test_parameters_TSNEDimReduc(self):
-        callback = DummyCallable()
-        tsne = TSNEDimReduc(self.X, 2, callback.call)
+        tsne = TSNEDimReduc(self.X, 2, self.callback.call)
         expected_parameters = {
             'perplexity': {
                 'type': float,
@@ -78,8 +75,7 @@ class TestDimReduction(TestCase):
         np.testing.assert_array_equal(tsne.parameters(), expected_parameters)
 
     def test_init_UMAPDimReduc(self):
-        callback = DummyCallable()
-        umap_dr = UMAPDimReduc(self.X, 2, callback.call)
+        umap_dr = UMAPDimReduc(self.X, 2, self.callback.call)
 
         assert umap_dr.dimreduc_method == 2
         np.testing.assert_array_equal(umap_dr.default_parameters, {
@@ -89,7 +85,7 @@ class TestDimReduction(TestCase):
         assert umap_dr.dimension == 2
         assert umap_dr.dimreduc_model == umap.UMAP
         assert umap_dr.X.equals(self.X)
-        assert umap_dr.progress_updated == callback.call
+        assert umap_dr.progress_updated == self.callback.call
         np.testing.assert_array_equal(umap_dr.allowed_kwargs, [
             'n_neighbors',
             'metric',
@@ -132,8 +128,7 @@ class TestDimReduction(TestCase):
         ])
 
     def test_parameters_UMAPDimReduc(self):
-        callback = DummyCallable()
-        umap_dr = UMAPDimReduc(self.X, 2, callback.call)
+        umap_dr = UMAPDimReduc(self.X, 2, self.callback.call)
         np.testing.assert_array_equal(
             umap_dr.parameters(), {
                 'n_neighbors': {
@@ -151,16 +146,14 @@ class TestDimReduction(TestCase):
             })
 
     def test_init_PacMAPDimReduc(self):
-        callback = DummyCallable()
-        pacmap_dr = PaCMAPDimReduc(self.X, 2, callback.call)
-
+        pacmap_dr = PaCMAPDimReduc(self.X, 2, self.callback.call)
         assert pacmap_dr.dimreduc_method == 3
         np.testing.assert_array_equal(pacmap_dr.default_parameters,
                                       {'n_components': 2})
         assert pacmap_dr.dimension == 2
         assert pacmap_dr.dimreduc_model == pacmap.PaCMAP
         assert pacmap_dr.X.equals(self.X)
-        assert pacmap_dr.progress_updated == callback.call
+        assert pacmap_dr.progress_updated == self.callback.call
         np.testing.assert_array_equal(pacmap_dr.allowed_kwargs, [
             'n_neighbors', 'MN_ratio', 'FP_ratio', 'pair_neighbors', 'pair_MN',
             'pair_FP', 'distance', 'lr', 'num_iters', 'apply_pca',
@@ -168,8 +161,7 @@ class TestDimReduction(TestCase):
         ])
 
     def test_parameters_PacMAPDimReduc(self):
-        callback = DummyCallable()
-        pacmap_dr = PaCMAPDimReduc(self.X, 2, callback.call)
+        pacmap_dr = PaCMAPDimReduc(self.X, 2, self.callback.call)
         np.testing.assert_array_equal(
             pacmap_dr.parameters(), {
                 'n_neighbors': {
@@ -195,7 +187,6 @@ class TestDimReduction(TestCase):
             })
 
     def test_compute_projection(self):  # not ok
-        callback = DummyCallable()
         X = pd.DataFrame(np.random.random((30, 5)),
                          index=np.random.choice(np.random.randint(100,
                                                                   size=40),
@@ -204,15 +195,14 @@ class TestDimReduction(TestCase):
         y = X.sum(axis=1)
 
         with pytest.raises(ValueError):
-            compute_projection(X, y, 8, 2, callback.call)
+            compute_projection(X, y, 8, 2, self.callback.call)
 
         np.testing.assert_array_equal(
-            compute_projection(X, y, 1, 2, callback.call).index, X.index)
+            compute_projection(X, y, 1, 2, self.callback.call).index, X.index)
 
     def test_dim_reduction(
         self
     ):  # ok sauf PaCMAP : windows fatal error (access violation File) pour PaCMAP
-        callback = DummyCallable()
         X = pd.DataFrame(np.random.random((10, 5)),
                          index=np.random.choice(np.random.randint(100,
                                                                   size=20),
@@ -222,19 +212,19 @@ class TestDimReduction(TestCase):
 
         # for dim_method in DimReducMethod.dimreduc_methods_as_list():
         # for dim_method in [1, 2, 3]:
-        # indice 3 à retirer sous Windows
+        # indice 3 à retirer sous Windows (PaCMAP provoque une erreur)
         for dim_method in [1, 2]:
             params = dim_reduc_factory.get(dim_method).parameters()
             params = {k: v['default'] for k, v in params.items()}
 
             cpt_proj_2D = compute_projection(X, y, dim_method, 2,
-                                             callback.call, **params)
+                                             self.callback.call, **params)
             assert cpt_proj_2D.shape == (len(X), 2)
             assert X.index.equals(cpt_proj_2D.index)
-            assert callback.calls[-1][0] == 100
+            assert self.callback.calls[-1][0] == 100
 
             cpt_proj_3D = compute_projection(X, y, dim_method, 3,
-                                             callback.call, **params)
+                                             self.callback.call, **params)
             assert cpt_proj_3D.shape == (len(X), 3)
             assert X.index.equals(cpt_proj_3D.index)
-            assert callback.calls[-1][0] == 100
+            assert self.callback.calls[-1][0] == 100

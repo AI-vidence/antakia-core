@@ -116,7 +116,7 @@ class ProjectedValues:
         """
         return self._projected_values.get(projection) is not None
 
-    def compute(self, projection: Proj, progress_callback: Callable | None):
+    def compute(self, projection: Proj, progress_callback: Callable | None, sample_size: int | None = None):
         """
         computes a projection and store it
         Parameters
@@ -130,7 +130,7 @@ class ProjectedValues:
 
         """
         projected_values = compute_projection(
-            self.X, self.y, projection.reduction_method, projection.dimension,
+            self.X, self.y, projection.reduction_method, projection.dimension, sample_size,
             progress_callback,
             **self.get_parameters(projection)['current'])
         self._projected_values[projection] = projected_values

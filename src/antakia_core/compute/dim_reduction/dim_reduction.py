@@ -225,6 +225,7 @@ def compute_projection(X: pd.DataFrame,
                        y: pd.Series,
                        dimreduc_method: int,
                        dimension: int,
+                       sample_size : int | None = None,
                        progress_callback: Callable | None = None,
                        **kwargs) -> pd.DataFrame:
     dim_reduc = dim_reduc_factory.get(dimreduc_method)
@@ -245,7 +246,7 @@ def compute_projection(X: pd.DataFrame,
         dim_reduc(  # type:ignore
             X_scaled,  # type:ignore
             dimension,  # type:ignore
-            progress_callback).compute(  # type:ignore
+            progress_callback).compute(sample_size=sample_size,  # type:ignore
                 **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values

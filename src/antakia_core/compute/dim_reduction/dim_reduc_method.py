@@ -127,7 +127,29 @@ class DimReducMethod(LongTask):
     def parameters(cls) -> dict[str, dict[str, typing.Any]]:
         return {}
 
-    def compute(self, **kwargs) -> pd.DataFrame:
+
+    #compute OBSOLETE STABLE
+    # def compute(self, **kwargs) -> pd.DataFrame:
+    #     self.publish_progress(0)
+    #     kwargs['n_components'] = self.get_dimension()
+    #     param = self.default_parameters.copy()
+    #     param.update(kwargs)
+    #
+    #     dim_red_model = self.dimreduc_model(**param)
+    #     if hasattr(dim_red_model, 'fit_transform'):
+    #         X_red = dim_red_model.fit_transform(self.X)
+    #     else:
+    #         X_red = dim_red_model.fit(self.X).transform(self.X)
+    #     X_red = pd.DataFrame(X_red)
+    #
+    #     self.publish_progress(100)
+    #     return X_red
+
+    def compute(self,sample_size=None, **kwargs) -> pd.DataFrame:
+        if sample_size is None :
+            sample_size = self.X.shape[0]
+        if sample_size > self.X.shape[0] :
+            raise ValueError(f"Sample size ({sample_size}) is greater than the Dataset size ({self.X.shape[0]})")
         self.publish_progress(0)
         kwargs['n_components'] = self.get_dimension()
         param = self.default_parameters.copy()
@@ -135,9 +157,9 @@ class DimReducMethod(LongTask):
 
         dim_red_model = self.dimreduc_model(**param)
         if hasattr(dim_red_model, 'fit_transform'):
-            X_red = dim_red_model.fit_transform(self.X)
+            X_red = dim_red_model.fit_transform(self.X, sample_size)
         else:
-            X_red = dim_red_model.fit(self.X).transform(self.X)
+            X_red = dim_red_model.fit(self.X.sample(n=sample_size)).transform(self.X)
         X_red = pd.DataFrame(X_red)
 
         self.publish_progress(100)
