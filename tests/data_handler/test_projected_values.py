@@ -98,19 +98,18 @@ class TestProjectedValues(TestCase):
     def test_get_projection(self):
         pv = ProjectedValues(self.X, self.y)
 
-        #get a pv that is already computed
-        proj = Proj(1, 2) #PCA
+        # get a pv that is already computed
+        proj = Proj(1, 2)  # PCA
         pv.compute(proj, self.callable)
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
 
-        #get a pv that needs to be computed
-        proj = Proj(2, 2) #UMAP
+        # get a pv that needs to be computed
+        proj = Proj(2, 2)  # UMAP
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
-
 
     def test_is_present(self):
         pv = ProjectedValues(self.X, self.y)
-        proj = Proj(1, 2)#PCA
+        proj = Proj(1, 2)  # PCA
         assert not pv.is_present(proj)
 
         pv.compute(proj, self.callable)
@@ -120,4 +119,4 @@ class TestProjectedValues(TestCase):
         pv = ProjectedValues(self.X, self.y)
         proj = Proj(1, 2)
         pv.compute(proj, self.callable)
-        assert isinstance(pv._projected_values[proj],pd.DataFrame )
+        assert isinstance(pv._projected_values[proj], pd.DataFrame)

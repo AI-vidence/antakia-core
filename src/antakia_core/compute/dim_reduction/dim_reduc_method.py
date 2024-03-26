@@ -34,7 +34,6 @@ class DimReducMethod(LongTask):
             X: pd.DataFrame,
             default_parameters: dict | None = None,
             progress_updated: Callable | None = None,
-            fit_sample_num: int | None = None,
     ):
         """
         Constructor for the DimReducMethod class.
@@ -67,7 +66,6 @@ class DimReducMethod(LongTask):
         self.default_parameters = default_parameters
         self.dimension = dimension
         self.dimreduc_model = dimreduc_model
-        self.sample_size = fit_sample_num
         # IMPORTANT : we set the topic as for ex 'PCA/2' or 't-SNE/3' -> subscribers have to follow this scheme
         LongTask.__init__(self, X, progress_updated)
 
@@ -130,19 +128,16 @@ class DimReducMethod(LongTask):
     def parameters(cls) -> dict[str, dict[str, typing.Any]]:
         return {}
 
-    def compute(self, sample_size = None, **kwargs) -> pd.DataFrame:
-        if sample_size is None:
-            sample_size = self.X.shape[0]
-        if sample_size > self.X.shape[0]:
-            raise ValueError(f"Sample size ({sample_size}) is greater than the Dataset size ({self.X.shape[0]})")
+    def compute(self, fit_sample_num: int | None = None, **kwargs) -> pd.DataFrame:
+        if fit_sample_num is None or fit_sample_num > self.X.shape[0]:
+            fit_sample_num = self.X.shape[0]
         self.publish_progress(0)
         kwargs['n_components'] = self.get_dimension()
         param = self.default_parameters.copy()
         param.update(kwargs)
 
         dim_red_model = self.dimreduc_model(**param)
-        #UMAP has fit_transform attribute but forced to be computed with fit than transorm
-        X_red = dim_red_model.fit(self.X.sample(n=sample_size)).transform(self.X)
+        X_red = dim_red_model.fit(self.X.sample(n=fit_sample_num)).transform(self.X)
         X_red = pd.DataFrame(X_red)
 
         self.publish_progress(100)

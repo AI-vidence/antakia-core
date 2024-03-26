@@ -34,7 +34,6 @@ class PCADimReduc(DimReducMethod):
                          dimension,
                          X,
                          progress_updated=callback,
-                         fit_sample_num=fit_sample_num,
                          default_parameters={
                              'n_components': dimension,
                          })
@@ -68,7 +67,6 @@ class TSNEDimReduc(DimReducMethod):
                          dimension,
                          X,
                          progress_updated=callback,
-                         fit_sample_num=fit_sample_num,
                          default_parameters={
                              'n_components': dimension,
                              'n_jobs': -1
@@ -150,7 +148,6 @@ class UMAPDimReduc(DimReducMethod):
                          dimension,
                          X,
                          progress_updated=callback,
-                         fit_sample_num=fit_sample_num,
                          default_parameters={
                              'n_components': dimension,
                              'n_jobs': -1
@@ -198,7 +195,6 @@ class PaCMAPDimReduc(DimReducMethod):
                          dimension,
                          X,
                          progress_updated=callback,
-                         fit_sample_num=fit_sample_num,
                          default_parameters={
                              'n_components': dimension,
                              'progress_callback': callback
@@ -241,7 +237,6 @@ def compute_projection(X: pd.DataFrame,
                        dimreduc_method: int,
                        dimension: int,
                        progress_callback: Callable | None = None,
-                       sample_size: int | None = None,
                        **kwargs) -> pd.DataFrame:
     dim_reduc = dim_reduc_factory.get(dimreduc_method)
 
@@ -255,14 +250,13 @@ def compute_projection(X: pd.DataFrame,
     default_kwargs.update(kwargs)
     dim_reduc_kwargs = {
         k: v
-        for k, v in default_kwargs.items() if k in dim_reduc.allowed_kwargs
+        for k, v in default_kwargs.items() if k in dim_reduc.allowed_kwargs or k == 'fit_sample_num'
     }
     proj_values = pd.DataFrame(
         dim_reduc(  # type:ignore
             X_scaled,  # type:ignore
             dimension,  # type:ignore
-            progress_callback,
-            sample_size).compute(sample_size=sample_size,  # type:ignore
-                                 **dim_reduc_kwargs).values,  # type:ignore
+            progress_callback).compute(  # type:ignore
+            **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values

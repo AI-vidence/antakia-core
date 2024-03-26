@@ -11,9 +11,10 @@ Proj = namedtuple('Proj', ['reduction_method', 'dimension'])
 
 class ProjectedValues:
 
-    def __init__(self, X: pd.DataFrame, y: pd.Series):
+    def __init__(self, X: pd.DataFrame, y: pd.Series, fit_sample_num: int | None = None):
         self.X = X
         self.y = y
+        self.fit_sample_num = fit_sample_num
         self._projected_values: dict[Proj, pd.DataFrame] = {}
         self._parameters: dict[Proj, dict] = {}
 
@@ -83,7 +84,6 @@ class ProjectedValues:
 
     def get_projection(self,
                        projection: Proj,
-                       sample_size: int | None = None,
                        progress_callback: Callable | None = None):
         """
         get a projection value
@@ -99,7 +99,7 @@ class ProjectedValues:
 
         """
         if not self.is_present(projection):
-            self.compute(projection, progress_callback, sample_size)
+            self.compute(projection, progress_callback)
         return self._projected_values[projection]
 
     def is_present(self, projection: Proj) -> bool:
@@ -116,7 +116,7 @@ class ProjectedValues:
         """
         return self._projected_values.get(projection) is not None
 
-    def compute(self, projection: Proj, progress_callback: Callable | None, sample_size: int | None = None):
+    def compute(self, projection: Proj, progress_callback: Callable | None):
         """
         computes a projection and store it
         Parameters
@@ -131,6 +131,5 @@ class ProjectedValues:
         """
         projected_values = compute_projection(
             self.X, self.y, projection.reduction_method, projection.dimension,
-            progress_callback, sample_size,
-            **self.get_parameters(projection)['current'])
+            progress_callback, **self.get_parameters(projection)['current'])
         self._projected_values[projection] = projected_values

@@ -64,7 +64,7 @@ class TestDimReducMethod(TestCase):
 
     def test_dimreduc_methods_as_list(self):
         assert (DimReducMethod.dimreduc_methods_as_list() ==
-                list(range(1,len(DimReducMethod.dim_reduc_methods) + 1)))
+                list(range(1, len(DimReducMethod.dim_reduc_methods) + 1)))
 
     def test_dimreduc_methods_as_str_list(self):
         assert DimReducMethod.dimreduc_methods_as_str_list() == DimReducMethod.dim_reduc_methods
@@ -99,22 +99,19 @@ class TestDimReducMethod(TestCase):
         assert drm.parameters() == {}
 
     def test_compute(self):  # ok rajouter test sur publish_progress
-        X = pd.DataFrame(np.random.randn(200, 4),
+        X = pd.DataFrame(np.random.randn(100, 4),
                          columns=['var1', 'var2', 'var3', 'var4'])
 
-        #test with PCA
-
+        # test with PCA
         drm1 = DimReducMethod(1,
-                             PCA,
-                             2,
-                             X,
-                             default_parameters={'n_components': 2})
+                              PCA,
+                              2,
+                              X,
+                              default_parameters={'n_components': 2})
         X_proj = drm1.compute()
         assert X_proj.shape == (X.shape[0], 2)
-
-        X_proj = drm1.compute(sample_size=100)
+        X_proj = drm1.compute(fit_sample_num=50)
         assert X_proj.shape == (X.shape[0], 2)
-
         assert drm1.default_parameters == {'n_components': 2}
 
         # test with UMAP
@@ -123,40 +120,34 @@ class TestDimReducMethod(TestCase):
                               2,
                               X,
                               default_parameters={'n_components': 2})
-        X_proj = drm4.compute(sample_size=100)
+        X_proj = drm4.compute(fit_sample_num=50)
         assert X_proj.shape == (X.shape[0], 2)
         X_proj = drm4.compute()
         assert X_proj.shape == (X.shape[0], 2)
 
-
-        #test with TSNE 2D
+        # test with TSNE 2D
         drm2 = DimReducMethod(1,
                               TSNE,
                               2,
                               X,
                               default_parameters={'n_components': 2})
-        X_proj = drm2.compute(sample_size=100)
+        X_proj = drm2.compute(fit_sample_num=50)
         assert X_proj.shape == (X.shape[0], 2)
         X_proj = drm2.compute()
         assert X_proj.shape == (X.shape[0], 2)
 
-        with pytest.raises(ValueError):
-            X_proj = drm2.compute(sample_size=600)
-
-        #test with TSNE 3D
+        # test with TSNE 3D
         drm3 = DimReducMethod(1,
                               TSNE,
                               3,
                               X,
                               default_parameters={'n_components': 2})
-        X_proj = drm3.compute(sample_size=100)
+        X_proj = drm3.compute(fit_sample_num=50)
         assert X_proj.shape == (X.shape[0], 3)
         X_proj = drm3.compute()
         assert X_proj.shape == (X.shape[0], 3)
 
-
-
-        #test with PaCMAP
+        # test with PaCMAP
         # à implémenter sous un autre OS que Windows
 
     def test_scale_value_space(self):

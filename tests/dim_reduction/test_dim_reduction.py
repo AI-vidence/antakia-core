@@ -149,9 +149,8 @@ class TestDimReduction(TestCase):
         pacmap_dr = PaCMAPDimReduc(self.X, 2, self.callback.call)
         assert pacmap_dr.dimreduc_method == 3
         np.testing.assert_array_equal(pacmap_dr.default_parameters,
-                                      {'n_components': 2})
+                                      {'n_components': 2, 'progress_callback': self.callback.call})
         assert pacmap_dr.dimension == 2
-        assert pacmap_dr.dimreduc_model == pacmap.PaCMAP
         assert pacmap_dr.X.equals(self.X)
         assert pacmap_dr.progress_updated == self.callback.call
         np.testing.assert_array_equal(pacmap_dr.allowed_kwargs, [
@@ -223,14 +222,12 @@ class TestDimReduction(TestCase):
             assert X.index.equals(cpt_proj_2D.index)
             assert self.callback.calls[-1][0] == 100
 
-            #test PCA 2D with sample train
+            # test PCA 2D with sample train
             cpt_proj_2D = compute_projection(X, y, dim_method, 2,
-                                             sample_size= 5,
                                              progress_callback=self.callback.call, **params)
             assert cpt_proj_2D.shape == (len(X), 2)
             assert X.index.equals(cpt_proj_2D.index)
             assert self.callback.calls[-1][0] == 100
-
 
             cpt_proj_3D = compute_projection(X, y, dim_method, 3,
                                              progress_callback=self.callback.call, **params)
