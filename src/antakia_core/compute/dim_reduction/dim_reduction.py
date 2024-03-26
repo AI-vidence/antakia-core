@@ -7,6 +7,7 @@ from openTSNE import TSNE
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 
+
 # ===========================================================
 #         Projections / Dim Reductions implementations
 # ===========================================================
@@ -25,7 +26,9 @@ class PCADimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: Callable | None = None):
+                 callback: Callable | None = None,
+                 fit_sample_num: int | None = None
+                 ):
         super().__init__(self.dimreduc_method,
                          PCA,
                          dimension,
@@ -56,7 +59,9 @@ class TSNEDimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: Callable | None = None):
+                 callback: Callable | None = None,
+                 fit_sample_num: int | None = None
+                 ):
         super().__init__(self.dimreduc_method,
                          TSNEwrapper,
                          dimension,
@@ -134,7 +139,9 @@ class UMAPDimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: Callable | None = None):
+                 callback: Callable | None = None,
+                 fit_sample_num: int | None = None
+                 ):
         import umap
         super().__init__(self.dimreduc_method,
                          umap.UMAP,
@@ -180,7 +187,9 @@ class PaCMAPDimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: Callable | None = None):
+                 callback: Callable | None = None,
+                 fit_sample_num: int | None = None
+                 ):
         super().__init__(self.dimreduc_method,
                          PaCMAP,
                          dimension,
@@ -241,13 +250,13 @@ def compute_projection(X: pd.DataFrame,
     default_kwargs.update(kwargs)
     dim_reduc_kwargs = {
         k: v
-        for k, v in default_kwargs.items() if k in dim_reduc.allowed_kwargs
+        for k, v in default_kwargs.items() if k in dim_reduc.allowed_kwargs or k == 'fit_sample_num'
     }
     proj_values = pd.DataFrame(
         dim_reduc(  # type:ignore
             X_scaled,  # type:ignore
             dimension,  # type:ignore
             progress_callback).compute(  # type:ignore
-                **dim_reduc_kwargs).values,  # type:ignore
+            **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values

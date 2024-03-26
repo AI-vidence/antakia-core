@@ -6,7 +6,7 @@ import pandas as pd
 
 from antakia_core.data_handler.projected_values import ProjectedValues, Proj
 from tests.dummy_datasets import generate_corner_dataset
-from tests.utils_fct import generate_df_series, DummyCallable
+from tests.utils_fct import DummyCallable
 
 
 class TestProjectedValues(TestCase):
@@ -14,7 +14,8 @@ class TestProjectedValues(TestCase):
     def setUp(self):
         self.X, self.y = generate_corner_dataset(10)
         self.X = pd.DataFrame(self.X)
-        self.y = pd.DataFrame(self.y)
+        self.y = pd.Series(self.y)
+        self.callable = DummyCallable()
 
     def test_init(self):
         pv = ProjectedValues(self.X, self.y)
@@ -25,9 +26,8 @@ class TestProjectedValues(TestCase):
 
     def test_set_parameters(self):
         proj = Proj(1, 2)
-        callback = DummyCallable()
         pv = ProjectedValues(self.X, self.y)
-        pv.compute(proj, callback)
+        pv.compute(proj, self.callable)
         pv.set_parameters(proj, {'n_neighbors': 2})
         assert pv._parameters == {
             proj: {
@@ -37,7 +37,7 @@ class TestProjectedValues(TestCase):
                 'previous': {}
             }
         }
-        pv.compute(proj, callback)
+        pv.compute(proj, self.callable)
         pv.set_parameters(proj, {'MN_ratio': 4})
         assert pv._parameters == {
             proj: {
@@ -96,30 +96,27 @@ class TestProjectedValues(TestCase):
         }
 
     def test_get_projection(self):
-        callback = DummyCallable()
         pv = ProjectedValues(self.X, self.y)
 
-        #get a pv that is already computed
-        proj = Proj(1, 2)
-        pv.compute(proj, callback)
+        # get a pv that is already computed
+        proj = Proj(1, 2)  # PCA
+        pv.compute(proj, self.callable)
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
 
-        #get a pv that needs to be computed
-        proj = Proj(2, 2)
+        # get a pv that needs to be computed
+        proj = Proj(2, 2)  # UMAP
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
 
     def test_is_present(self):
-        callback = DummyCallable()
         pv = ProjectedValues(self.X, self.y)
-        proj = Proj(1, 2)
+        proj = Proj(1, 2)  # PCA
         assert not pv.is_present(proj)
 
-        pv.compute(proj, callback)
+        pv.compute(proj, self.callable)
         assert pv.is_present(proj)
 
     def test_compute(self):
-        callback = DummyCallable()
         pv = ProjectedValues(self.X, self.y)
         proj = Proj(1, 2)
-        pv.compute(proj, callback)
+        pv.compute(proj, self.callable)
         assert isinstance(pv._projected_values[proj], pd.DataFrame)
