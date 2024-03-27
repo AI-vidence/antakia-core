@@ -76,21 +76,21 @@ class Rule:
             txt += ', '.join(self.cat_values)
             txt += "\u27E7"
             return txt
-        if self.rule_type == -1:
+        if self.rule_type == self.TRUTHY_RULE:
             return f'{self.variable.display_name} - True'
-        if self.rule_type == 5:
+        if self.rule_type == self.FALSY_RULE:
             return f'{self.variable.display_name} - False'
-        if self.rule_type == 1:
-            # Rule type 1
+        if self.rule_type == self.MAX_RULE:
+            # Rule type 1 : max rule
             op = '\u2264' if self.includes_max else '<'
             txt = f"{self.variable.display_name} {op} {format_number(self.max)}"
             return txt
-        if self.rule_type == 2:
-            # Rule type 2
+        if self.rule_type == self.MIN_RULE:
+            # Rule type 2 : min rule
             op = '\u2265' if self.includes_min else '>'
             txt = f"{self.variable.display_name} {op} {format_number(self.min)}"
             return txt
-        if self.rule_type == 3:
+        if self.rule_type == self.INTERVAL_RULE:
             # Rule type 3 : the rule is of the form : variable included in [min, max] interval, or min < variable < max
             if os.environ.get("USE_INTERVALS_FOR_RULES"):
                 open_bracket = '\u27E6' if self.includes_min else '['
@@ -172,13 +172,13 @@ class Rule:
     def __call__(self, value: float | pd.DataFrame) -> bool | pd.Series:
         if isinstance(value, pd.DataFrame):
             return self.get_matching_mask(value)
-        if self.rule_type == -1:
+        if self.rule_type == self.TRUTHY_RULE:
             return True
-        if self.rule_type == 0:
+        if self.rule_type == self.CATEGORICAL_RULE:
             return value in self.cat_values  # type:ignore
-        if self.rule_type == 4:
+        if self.rule_type == self.VALUE_RULE:
             return value == self.min
-        if self.rule_type == 5:
+        if self.rule_type == self.FALSY_RULE:
             return False
         return getattr(value, self.operator_max)(self.max) & getattr(
             value, self.operator_min)(self.min)

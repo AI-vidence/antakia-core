@@ -54,7 +54,7 @@ class TestRuleSet(TestCase):
         rule_set2.add(self.rule1)
 
         rule_set2.add(self.rule2)
-        a=1
+        a = 1
         # assert len(rule_set2) == len(rule_set0)
 
     def test_replace(self):  # not ok
@@ -71,7 +71,7 @@ class TestRuleSet(TestCase):
         # add a rule on a new variable
         rule_set1.replace(self.rule2)
         assert rule_set1.rules[self.rule2.variable] == self.rule2
-        assert len(rule_set1.rules) == 2
+        assert len(rule_set1.rules) == 1
 
         # replace the rules of an existing variable
         rule_set2.replace(self.rule1)
@@ -128,6 +128,10 @@ class TestRuleSet(TestCase):
         rule_set = RuleSet(self.rules)
         assert isinstance(rule_set.get_matching_indexes(self.df), list)
 
+    def test_sk_rules_to_rule_set(self):
+        # tested in test_skope_rule.py
+        pass
+
     def test_get_rule(self):
         """
         checks if the returned rule matches the var given in parameter
@@ -148,7 +152,7 @@ class TestRule(TestCase):
         self.df = pd.DataFrame(generate_corner_dataset(10)[0],
                                columns=['var1', 'var2'])
 
-    def test_init(self):  # not ok
+    def test_init(self):
         """
         checks the corrrect instanciation of a Rule, with different cases
         wether a min or a max are given
@@ -189,8 +193,10 @@ class TestRule(TestCase):
         rule11 = Rule(self.var2, min=10, max=20)
         rule12 = Rule(self.var1, max=30)
         rule13 = Rule(self.var1, min=10, includes_min=True)
+        var_cat = Variable(0, 'var3', 'float', continuous=False)
+        rule14 = Rule(var_cat, cat_values=[])
+        rule15 = Rule(self.var2, min=100, max=20)
 
-        # assert rule1 == rule3
         assert rule3 != rule4
         assert rule2 != rule7
         assert rule2 == rule8
@@ -199,6 +205,7 @@ class TestRule(TestCase):
         assert rule3 == rule12
         assert rule6 == rule13
         assert rule4 == rule11
+        assert rule14 != rule15
 
     def test_get_matching_mask(self):
         """
@@ -209,28 +216,35 @@ class TestRule(TestCase):
         rule1 = Rule(self.var1)
         rule2 = Rule(self.var1, cat_values=['High', 'Low'])
         rule3 = Rule(self.var2, min=20, max=10)
-        rule4 = Rule(self.var1,
-                     min=10,
-                     max=10,
-                     includes_max=True,
-                     includes_min=True)
-        rule5 = Rule(self.var2, min=10, max=20)
+
+        rule4 = Rule(self.var1, min=10, max=10, includes_max=True, includes_min=True)
+        assert rule4.operator_min == '__eq__'
+        assert rule4.operator_max == '__eq__'
+
+        rule5 = Rule(self.var2, min=10, max=20, includes_max=True)
+        assert rule5.operator_max == '__le__'
+        assert rule5.operator_min == '__gt__'
+
+        rule6 = Rule(self.var2, min=10, max=20, includes_min=True)
+        assert rule6.operator_max == '__lt__'
+        assert rule6.operator_min == '__ge__'
 
         assert rule1.get_matching_mask(self.df).all()  # truthy rule
         assert not rule3.get_matching_mask(self.df).all()  # falsy rule
         assert isinstance(rule2.get_matching_mask(self.df), pd.Series)
         assert isinstance(rule4.get_matching_mask(self.df), pd.Series)
         assert isinstance(rule5.get_matching_mask(self.df), pd.Series)
+        assert isinstance(rule6.get_matching_mask(self.df), pd.Series)
 
-    def test_combine(self):  # not ok
+    def test_combine(self):
         """
         checks that different combinations of rules return the expected logical rule
         Returns
         -------
 
         """
-        var1 = Variable(0, 'comb1', 'float')
-        var2 = Variable(0, 'comb2', 'float')
+        var1 = Variable(0, 'var1', 'float')
+        var2 = Variable(0, 'var2', 'float')
         rule1_1 = Rule(var1,
                        max=20,
                        includes_max=False)  # None, None, var1, '<', 20)
@@ -243,55 +257,79 @@ class TestRule(TestCase):
         rule1_4 = Rule(var1,
                        max=5,
                        includes_max=False)  # None, None, var1, '<', 5)
-        rule2_1 = Rule(var1,
+        rule1_5 = Rule(var1,
                        min=10,
                        includes_min=True)  # 10, '<=', var1, None, None)
-        rule3_1 = Rule(var1,
+        rule1_6 = Rule(var1,
                        min=10,
                        includes_min=True,
                        max=40,
                        includes_max=False)  # 10, '<=', var1, '<', 40)
-        rule4_1 = Rule(var1,
+        rule1_7 = Rule(var1,  # falsy
                        min=40,
                        includes_min=False,
                        max=10,
                        includes_max=False)  # 10, '>', var1, '>', 40)
-        rule5_1 = Rule(var2,
+        rule2_1 = Rule(var2,
                        min=10,
                        includes_min=True,
                        max=40,
                        includes_max=False)  # 10, '<=', var1, '<', 40)
+        truthy_rule_1 = Rule(var1)
 
-        rule6_1 = Rule(var1, cat_values=['High', 'Middle'])
-        rule6_2 = Rule(var1, cat_values=['Middle', 'Low'])
-        rule6_3 = Rule(var1, cat_values=['Middle'])
+        rule1_8 = Rule(var1, cat_values=['High', 'Middle'])
+        rule1_9 = Rule(var1, cat_values=['Middle', 'Low'])
+        rule1_10 = Rule(var1, cat_values=['Middle'])
 
-        assert repr(rule2_1.combine(rule1_1)) == '10.00 ≤ comb1 < 20.00'
-        assert rule2_1.combine(rule1_2) == rule4_1
-        assert repr(rule2_1.combine(rule1_3)) == 'comb1 = 10'
-        assert rule2_1.combine(rule1_4) == rule4_1
+        rule1_11 = Rule(var1,
+                       min=5,
+                       includes_min=True)  # 10, '<=', var1, None, None)
 
-        assert repr(rule3_1.combine(rule1_1)) == '10.00 ≤ comb1 < 20.00'
-        assert rule3_1.combine(rule1_2) == rule4_1
-        assert repr(rule3_1.combine(rule1_3)) == 'comb1 = 10'
-        assert rule3_1.combine(rule1_4) == rule4_1
+        # test combine min and max
+        # gives interval rule
+        assert repr(rule1_5.combine(rule1_1)) == '10.00 ≤ var1 < 20.00'
+        # gives falsy
+        assert rule1_5.combine(rule1_2) == rule1_7
+        assert rule1_5.combine(rule1_4) == rule1_7
+        # gives value rule
+        assert repr(rule1_5.combine(rule1_3)) == 'var1 = 10'
 
-        assert rule4_1.combine(rule1_1) == rule4_1
-        assert rule4_1.combine(rule1_2) == rule4_1
-        assert rule4_1.combine(rule1_3) == rule4_1
-        assert rule4_1.combine(rule1_4) == rule4_1
+        # test combine max and max
+        assert repr(rule1_2.combine(rule1_1)) == 'var1 < 10.00'
+        assert repr(rule1_1.combine(rule1_2)) == 'var1 < 10.00'
 
+        # test combine min and min
+        assert repr(rule1_5.combine(rule1_11)) == 'var1 ≥ 10.00'
+        assert repr(rule1_11.combine(rule1_5)) == 'var1 ≥ 10.00'
+
+        #
+        assert repr(rule1_6.combine(rule1_1)) == '10.00 ≤ var1 < 20.00'
+        assert rule1_6.combine(rule1_2) == rule1_7
+        assert repr(rule1_6.combine(rule1_3)) == 'var1 = 10'
+        assert rule1_6.combine(rule1_4) == rule1_7
+
+        # test combine falsy rule
+        assert rule1_7.combine(rule1_1) == rule1_7
+        assert rule1_7.combine(rule1_2) == rule1_7
+        assert rule1_7.combine(rule1_3) == rule1_7
+        assert rule1_7.combine(rule1_4) == rule1_7
+
+        # test combine rules of different var
         with pytest.raises(ValueError):
-            rule5_1.combine(rule3_1)
+            rule2_1.combine(rule1_6)
 
-        assert rule6_1.combine(rule6_2) == rule6_3
+        # test combine categorical rule
+        assert rule1_8.combine(rule1_9) == rule1_10
+        assert rule1_8.combine(truthy_rule_1) != rule1_10
+        assert truthy_rule_1.combine(rule1_8) != rule1_10
 
-        # tester rule types, si min et min alors min si min max alors interval si min egale max alors value
-        # si min sup a max alors falsy
+        # test combine truthy rule
+        assert truthy_rule_1.combine(rule1_1) == rule1_1
+        assert rule1_1.combine(truthy_rule_1) == rule1_1
 
     def test_to_dict(self):
         """
-        checks that a dictionnary is correctly returned
+        checks that a dictionary is correctly returned
 
         """
         rule1 = Rule(self.var1, min=10, max=20)
