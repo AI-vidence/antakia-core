@@ -138,6 +138,21 @@ class InterpretableModels:
                                X_test: pd.DataFrame | None,
                                y_test: pd.Series | None,
                                task_type='regression') -> pd.DataFrame:
+        """
+
+        Parameters
+        ----------
+        customer_model
+        X_train
+        y_train
+        X_test
+        y_test
+        task_type
+
+        Returns sorted perf dataframe
+        -------
+
+        """
         if isinstance(task_type, str):
             task_type = ProblemCategory[task_type]
         if len(X_train) <= 50 or len(X_train.T) >= len(X_train):

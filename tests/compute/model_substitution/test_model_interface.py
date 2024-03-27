@@ -1,34 +1,29 @@
-import unittest
-from typing import List
 from unittest import TestCase
 
 import pandas as pd
+import numpy as np
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, accuracy_score, f1_score, \
     precision_score, recall_score
-from sklearn.model_selection import train_test_split
-
-from joblib import Parallel, delayed
 
 from antakia_core.compute.model_subtitution.classification_models import *
 from antakia_core.compute.model_subtitution.model_interface import InterpretableModels
 from antakia_core.compute.model_subtitution.regression_models import *
-import re
 
 from antakia_core.utils.utils import ProblemCategory
-from tests.dummy_datasets import generate_corner_dataset
-
 
 class TestInterpretableModels(TestCase):
     def setUp(self):
-        X, y = generate_corner_dataset(100, random_seed=1234)
-        X_test, y_test = generate_corner_dataset(100, random_seed=4321)
+        X = np.random.randn(500, 4)
+        y = np.sum(X, axis=1)
+        self.X_train = pd.DataFrame(X[:250], columns=['var1', 'var2', 'var3', 'var4'])
+        self.y_train = pd.Series(y[:250])
 
-        self.X = pd.DataFrame(X, columns=['var1', 'var2'])
-        self.y = pd.Series(y)
-        self.X_test = pd.DataFrame(X_test, columns=['var1', 'var2'])
-        self.y_test = pd.Series(y_test)
+        # X, y = generate_corner_dataset(100, random_seed=1234)
+        self.X_test = pd.DataFrame(X[250:], columns=['var1', 'var2', 'var3', 'var4'])
+        self.y_test = pd.Series(y[250:])
+        # = generate_corner_dataset(100, random_seed=4321)
 
-    def test_init(self):#not ok
+    def test_init(self):  # not ok
         pass
 
     def test_get_available_models(self):
@@ -43,69 +38,88 @@ class TestInterpretableModels(TestCase):
         assert len(int_mod.models) == 7
 
     def test_init_scores(self):  # not ok
-        # test with a scoring method wich has a compute method
         int_mod = InterpretableModels(mean_squared_error)
         int_mod._init_models(ProblemCategory.regression)
-        model = int_mod.models['Linear Regression']
-        model.fit(self.X, self.y)
-        int_mod._init_scores(model, ProblemCategory.regression, X_test=self.X_test, y_test=self.y_test)
-
-        model = int_mod.models['Decision Tree']
-        model.fit(self.X, self.y)
-        int_mod._init_scores(model, ProblemCategory.classification, X_test=self.X_test, y_test=self.y_test)
-
-        # assert int_mod.scores == {}
 
         # test with a regression model
-        # int_mod = InterpretableModels('MSE')
-        # int_mod._init_scores()
-        # assert int_mod.scores == {}
-        #
-        # test with not a
-        # int_mod = InterpretableModels('MSE')
-        # int_mod._init_scores()
-        # assert int_mod.scores == {}
+        model = int_mod.models['Linear Regression']
+        model.fit(self.X_train, self.y_train)
+        int_mod._init_scores(model, ProblemCategory.regression, X_test=self.X_test, y_test=self.y_test)
 
-    def test_train_models(self):  # not ok
+        # test with a classification model
+        model = int_mod.models['Decision Tree']
+        model.fit(self.X_train, self.y_train)
+        int_mod._init_scores(model, ProblemCategory.classification, X_test=self.X_test, y_test=self.y_test)
+
+    def test_train_models(self):
         int_mod = InterpretableModels('MSE')
         int_mod._init_models(ProblemCategory.regression)
-        int_mod._train_models(self.X, self.y, self.X_test, self.y_test)
+        model = int_mod.models['Linear Regression']
+        model.fit(self.X_train, self.y_train)
+        int_mod._init_scores(model, ProblemCategory.regression, X_test=self.X_test, y_test=self.y_test)
+        int_mod._train_models(self.X_train, self.y_train, self.X_test, self.y_test)
 
     def test_compute_score_type(self):
         int_mod = InterpretableModels('MSE')
         int_mod._init_models(ProblemCategory.regression)
         model = int_mod.models['Linear Regression']
-        model.fit(self.X, self.y)
-        int_mod._compute_score_type(model, self.X, self.y)
+        model.fit(self.X_train, self.y_train)
+        int_mod._compute_score_type(model, self.X_train, self.y_train)
         assert int_mod.score_type == 'minimize'
 
-    def test_get_model_performance(self):  # not ok
+    def test_get_model_performance(self):
+        # inits
         int_mod = InterpretableModels('MSE')
         int_mod._init_models(ProblemCategory.regression)
         model = int_mod.models['Linear Regression']
-        model.fit(self.X, self.y)
-        peerfs = int_mod.get_models_performance(model, self.X, self.y, self.X_test, self.y_test)
-        a = 1
+        model.fit(self.X_train, self.y_train)
+        int_mod._init_scores(model, ProblemCategory.regression, X_test=self.X_test, y_test=self.y_test)
+
+        # test standard case
+        perfs = int_mod.get_models_performance(model, self.X_train, self.y_train, self.X_test, self.y_test)
+        assert not perfs.equals(pd.DataFrame())
+
+        # test with too small training dataset
+        perfs = int_mod.get_models_performance(model, self.X_train[:40], self.y_train[:40], self.X_test, self.y_test)
+        assert perfs.equals(pd.DataFrame())
+
+        # test with no test set provided
+        perfs = int_mod.get_models_performance(model, self.X_train, self.y_train, X_test=None, y_test=None)
+        assert not perfs.equals(pd.DataFrame())
+
     def test_select_model(self):
         int_mod = InterpretableModels('MSE')
         int_mod.select_model('Linear Regression')
         assert int_mod.selected_model == 'Linear Regression'
 
-    def test_selected_model_str(self):  # not ok apres perf
+    def test_selected_model_str(self):
         int_mod = InterpretableModels('MSE')
         int_mod._init_models(ProblemCategory.regression)
-        int_mod._init_scores()
-        int_mod.select_model('Linear Regression')
-        assert int_mod.selected_model_str()
+        model = int_mod.models['Linear Regression']
+        model.fit(self.X_train, self.y_train)
+        int_mod._init_scores(model, ProblemCategory.regression, X_test=self.X_test, y_test=self.y_test)
+        int_mod.get_models_performance(model, self.X_train, self.y_train, self.X_test, self.y_test)
 
-    def test_reset(self):  # not ok apres perfs et init scores
+        int_mod.select_model('Linear Regression')
+        assert int_mod.selected_model_str() == 'LR - MSE:0.00 (0.00)'
+
+    def test_reset(self):
+        # init
         int_mod = InterpretableModels('MSE')
         int_mod._init_models(ProblemCategory.regression)
-        # init scores
-        # init perfs
-        int_mod.select_model(LinearRegression)
+        model = int_mod.models['Linear Regression']
+        model.fit(self.X_train, self.y_train)
+        int_mod._init_scores(model, ProblemCategory.regression, X_test=self.X_test, y_test=self.y_test)
+        int_mod.get_models_performance(model, self.X_train, self.y_train, self.X_test, self.y_test)
+        int_mod.select_model('Linear Regression')
+        # checks that attributes are initialized
         assert not int_mod.models == {}
+        assert not int_mod.scores == {}
+        assert not int_mod.perfs.equals(pd.DataFrame())
         assert not int_mod.selected_model is None
         int_mod.reset()
+        # checks that attributes are correctly reset
         assert int_mod.models == {}
+        assert int_mod.scores == {}
+        assert int_mod.perfs.equals(pd.DataFrame())
         assert int_mod.selected_model is None
