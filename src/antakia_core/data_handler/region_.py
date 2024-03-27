@@ -293,6 +293,10 @@ class ModelRegion(Region):
                 self.interpretable_models.selected_model, 'delta']
         return 0
 
+    def train_residuals(self, model_name: str):
+        return self.y[self.mask] - self.get_model(model_name).predict(
+            self.X[self.mask])
+
     @property
     def test_mask(self):
         """

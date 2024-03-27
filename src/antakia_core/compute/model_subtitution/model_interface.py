@@ -88,7 +88,8 @@ class InterpretableModels:
 
     def _init_scores(self, customer_model, task_type, X_test, y_test):
         """
-        fills the empty dict with all available models
+        fills the empty dict with score names as key, and tuple
+        (scoring function, score type) as value
 
         Parameters
         ----------
@@ -131,7 +132,7 @@ class InterpretableModels:
         self.score_type = 'maximize' if s1 > s2 else 'minimize'
 
     def get_models_performance(self,
-                               customer_model,
+                               customer_model, #fitted model
                                X_train: pd.DataFrame,
                                y_train: pd.Series,
                                X_test: pd.DataFrame | None,
@@ -171,10 +172,16 @@ class InterpretableModels:
         self.perfs['delta_color'] = self.perfs['delta'].apply(get_delta_color)
         return self.perfs.sort_values('delta', ascending=True)
 
-    def select_model(self, model_name):
+    def select_model(self, model_name : str):
         self.selected_model = model_name
 
     def selected_model_str(self) -> str:
+        """
+
+        Returns a string representation of the selected model's name and his score
+        -------
+
+        """
         perf = self.perfs.loc[self.selected_model]
         reduced_name = reduce_name(self.selected_model)
         display_str = f'{reduced_name} - {self.custom_score_str}:{perf[self.custom_score_str]:.2f} ({perf["delta"]:.2f})'

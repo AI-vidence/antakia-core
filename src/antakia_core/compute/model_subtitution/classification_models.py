@@ -21,7 +21,7 @@ class LogisticRegression(LinearMLModel):
 
     def __init__(self):
         super().__init__(linear_model.LogisticRegression(),
-                         'linear regression')
+                         'logistic regression')
 
 
 class DecisionTreeClassifier(MLModel):

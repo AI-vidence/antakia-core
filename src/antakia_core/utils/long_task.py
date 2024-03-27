@@ -32,8 +32,10 @@ class LongTask(ABC):
             progress_updated = dummy_progress
         self.progress_updated = progress_updated
         self.start_time = time.time()
+        self.progress = 0
 
     def publish_progress(self, progress: int):
+        self.progress = progress
         self.progress_updated(progress, time.time() - self.start_time)
 
     @abstractmethod

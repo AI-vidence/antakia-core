@@ -11,9 +11,9 @@ from scipy.stats import multivariate_normal
 
 
 def generate_corner_dataset(
-        num_samples: int,
-        corner_position: str = "top_right",
-        random_seed: int | None = None) -> (np.ndarray, np.ndarray):
+    num_samples: int,
+    corner_position: str = "top_right",
+    random_seed: int | None = None, columns=2) -> (np.ndarray, np.ndarray):
     """Generate a toy dataset with a corner of the feature space.
 
     Parameters
@@ -34,7 +34,7 @@ def generate_corner_dataset(
         If corner_position is not one of "top_left", "top_right", "bottom_left", "bottom_right".
     """
     np.random.seed(random_seed)
-    X = np.random.uniform(0, 1, (num_samples, 2))
+    X = np.random.uniform(0, 1, (num_samples, columns))
 
     if corner_position == "top_right":
         mask = (X[:, 0] > 0.5) & (X[:, 1] > 0.5)
@@ -51,6 +51,10 @@ def generate_corner_dataset(
         )
 
     y = mask.astype(int)
+
+    X = pd.DataFrame(X, index=np.random.choice(
+        np.arange(2 * num_samples), num_samples), columns=[f'X{i + 1}' for i in range(columns)])
+    y = pd.Series(y, index=X.index)
     return X, y
 
 
@@ -111,11 +115,10 @@ def xor_dataset(num_samples, var=1, **kwargs):
 
 
 def xor_proba(X, var):
-
     def proba_point(p_x, p_y, X, var):
         d_x = (X[:, 0] - p_x)
         d_y = (X[:, 1] - p_y)
-        d_2 = (d_x**2 + d_y**2) / (var**2)
+        d_2 = (d_x ** 2 + d_y ** 2) / (var ** 2)
         return np.exp(-d_2 / 2) / (var * 2 * np.pi)
 
     proba = np.zeros((len(X), 2))

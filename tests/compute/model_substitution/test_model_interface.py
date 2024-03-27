@@ -20,12 +20,12 @@ from tests.dummy_datasets import generate_corner_dataset
 
 class TestInterpretableModels(TestCase):
     def setUp(self):
-        X, y = generate_corner_dataset(10, random_seed=1234)
-        X_test, y_test = generate_corner_dataset(10, random_seed=4321)
+        X, y = generate_corner_dataset(100, random_seed=1234)
+        X_test, y_test = generate_corner_dataset(100, random_seed=4321)
 
         self.X = pd.DataFrame(X, columns=['var1', 'var2'])
         self.y = pd.Series(y)
-        self.X_test = pd.DataFrame(X_test)
+        self.X_test = pd.DataFrame(X_test, columns=['var1', 'var2'])
         self.y_test = pd.Series(y_test)
 
     def test_init(self):#not ok
@@ -45,7 +45,15 @@ class TestInterpretableModels(TestCase):
     def test_init_scores(self):  # not ok
         # test with a scoring method wich has a compute method
         int_mod = InterpretableModels(mean_squared_error)
-        int_mod._init_scores(LinearRegression, ProblemCategory.regression, X_test=self.X_test, y_test=self.y_test)
+        int_mod._init_models(ProblemCategory.regression)
+        model = int_mod.models['Linear Regression']
+        model.fit(self.X, self.y)
+        int_mod._init_scores(model, ProblemCategory.regression, X_test=self.X_test, y_test=self.y_test)
+
+        model = int_mod.models['Decision Tree']
+        model.fit(self.X, self.y)
+        int_mod._init_scores(model, ProblemCategory.classification, X_test=self.X_test, y_test=self.y_test)
+
         # assert int_mod.scores == {}
 
         # test with a regression model
@@ -63,27 +71,34 @@ class TestInterpretableModels(TestCase):
         int_mod._init_models(ProblemCategory.regression)
         int_mod._train_models(self.X, self.y, self.X_test, self.y_test)
 
-    def test_compute_score_type(self):  # not ok
+    def test_compute_score_type(self):
         int_mod = InterpretableModels('MSE')
-
+        int_mod._init_models(ProblemCategory.regression)
+        model = int_mod.models['Linear Regression']
+        model.fit(self.X, self.y)
+        int_mod._compute_score_type(model, self.X, self.y)
+        assert int_mod.score_type == 'minimize'
 
     def test_get_model_performance(self):  # not ok
         int_mod = InterpretableModels('MSE')
         int_mod._init_models(ProblemCategory.regression)
-        int_mod.get_models_performance(LinearRegression, self.X, self.y, self.X_test, self.y_test)
-
+        model = int_mod.models['Linear Regression']
+        model.fit(self.X, self.y)
+        peerfs = int_mod.get_models_performance(model, self.X, self.y, self.X_test, self.y_test)
+        a = 1
     def test_select_model(self):
         int_mod = InterpretableModels('MSE')
-        int_mod.select_model(LinearRegression())
-        assert int_mod.selected_model == LinearRegression
+        int_mod.select_model('Linear Regression')
+        assert int_mod.selected_model == 'Linear Regression'
 
-    def test_selected_model_str(self):  # not ok
+    def test_selected_model_str(self):  # not ok apres perf
         int_mod = InterpretableModels('MSE')
         int_mod._init_models(ProblemCategory.regression)
+        int_mod._init_scores()
         int_mod.select_model('Linear Regression')
         assert int_mod.selected_model_str()
 
-    def test_reset(self):  # not ok
+    def test_reset(self):  # not ok apres perfs et init scores
         int_mod = InterpretableModels('MSE')
         int_mod._init_models(ProblemCategory.regression)
         # init scores

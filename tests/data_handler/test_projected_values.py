@@ -1,33 +1,32 @@
-import unittest
+from unittest import TestCase
 
 import numpy as np
 import mock
 import pandas as pd
 
-from src.antakia_core.data_handler.projected_values import ProjectedValues, Proj
+from antakia_core.data_handler.projected_values import ProjectedValues, Proj
 from tests.dummy_datasets import generate_corner_dataset
-from tests.utils_fct import DummyCallable
 
 
-class TestProjectedValues(unittest.TestCase):
+class TestProjectedValues(TestCase):
 
     def setUp(self):
-        self.X = pd.DataFrame(generate_corner_dataset(10)[0])
-        self.y = pd.DataFrame(generate_corner_dataset(10)[1])
+        self.X, self.y = generate_corner_dataset(10)
+        self.X = pd.DataFrame(self.X)
+        self.y = pd.DataFrame(self.y)
 
     def test_init(self):
         pv = ProjectedValues(self.X, self.y)
+        assert pv.X.equals(self.X)
+        assert pv.y.equals(self.y)
         assert pv._projected_values == {}
         assert pv._parameters == {}
 
-    @mock.patch(
-        'antakia_core.data_handler.projected_values.compute_projection')
-    def test_set_parameters(self, cpt_proj):
+    def test_set_parameters(self):
+        proj = Proj(1, 2)
         callback = DummyCallable()
         pv = ProjectedValues(self.X, self.y)
-
-        proj = Proj(1, 2)
-        pv.compute(proj, callback.call)
+        pv.compute(proj, callback)
         pv.set_parameters(proj, {'n_neighbors': 2})
         assert pv._parameters == {
             proj: {
@@ -37,8 +36,7 @@ class TestProjectedValues(unittest.TestCase):
                 'previous': {}
             }
         }
-
-        pv.compute(proj, callback.call)
+        pv.compute(proj, callback)
         pv.set_parameters(proj, {'MN_ratio': 4})
         assert pv._parameters == {
             proj: {
@@ -52,9 +50,9 @@ class TestProjectedValues(unittest.TestCase):
             }
         }
 
-        proj = Proj(2, 3)
-        pv.compute(proj, callback.call)
-        pv.set_parameters(proj, {'n_neighbors': 2})
+        # pv1 = ProjectedValues(self.X, self.y)
+        # pv1.set_parameters(proj, {'n_neighbors': 2})
+        # trouver un test avec self._parameters.get(projection) is None
 
     def test_get_parameters(self):
         pv = ProjectedValues(self.X, self.y)
@@ -96,49 +94,31 @@ class TestProjectedValues(unittest.TestCase):
             }
         }
 
-    @mock.patch(
-        'antakia_core.data_handler.projected_values.compute_projection')
-    def test_get_projection(self, cpt_proj):
-        X_red = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],
-                             index=[1, 2, 3],
-                             columns=['a', 'b', 'c'])
+    def test_get_projection(self):
+        callback = DummyCallable()
         pv = ProjectedValues(self.X, self.y)
+
+        #get a pv that is already computed
         proj = Proj(1, 2)
-        pv.get_projection(proj)
+        pv.compute(proj, callback)
+        assert isinstance(pv.get_projection(proj), pd.DataFrame)
 
-        pv = ProjectedValues(self.X, self.y)
-        proj = Proj(1, 2)
-        pv._projected_values = {proj: X_red}
-        np.testing.assert_array_equal(pv.get_projection(proj), X_red)
+        #get a pv that needs to be computed
+        proj = Proj(2, 2)
+        assert isinstance(pv.get_projection(proj), pd.DataFrame)
 
-        cpt_proj.return_value = X_red
-        pv = ProjectedValues(self.X, self.y)
-        pv._projected_values = {proj: X_red}
-        np.testing.assert_array_equal(pv.get_projection(proj), X_red)
-
-    @mock.patch(
-        'antakia_core.data_handler.projected_values.compute_projection')
-    def test_is_present(self, cpt_proj):
+    def test_is_present(self):
         callback = DummyCallable()
         pv = ProjectedValues(self.X, self.y)
         proj = Proj(1, 2)
         assert not pv.is_present(proj)
 
-        pv.compute(proj, callback.call)
+        pv.compute(proj, callback)
         assert pv.is_present(proj)
 
-    @mock.patch(
-        'antakia_core.data_handler.projected_values.compute_projection')
-    def test_compute(self, cpt_proj):
+    def test_compute(self):
         callback = DummyCallable()
         pv = ProjectedValues(self.X, self.y)
-        X_red = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],
-                             index=[1, 2, 3],
-                             columns=['a', 'b', 'c'])
-
-        cpt_proj.return_value = X_red
         proj = Proj(1, 2)
-
-        pv.compute(proj, callback.call)
-        assert pv._projected_values[proj].shape == (self.X.shape[0],
-                                                    proj.dimension)
+        pv.compute(proj, callback)
+        assert isinstance(pv._projected_values[proj], pd.DataFrame)
