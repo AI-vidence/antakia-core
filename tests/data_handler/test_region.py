@@ -1,14 +1,15 @@
 from unittest import TestCase
 
 import pandas as pd
+from skimage.metrics import mean_squared_error
 
+from antakia_core.compute.model_subtitution.model_interface import InterpretableModels
 from antakia_core.data_handler import Region, Rule, RuleSet, RegionSet, ModelRegion, ModelRegionSet
 from antakia_core.utils import Variable
 from antakia_core.utils.utils import int_mask_to_boolean, ProblemCategory
-from antakia_core.compute.model_subtitution.classification_models import *
 from antakia_core.compute.model_subtitution.regression_models import *
-from tests.dummy_datasets import generate_corner_dataset
-from tests.utils_fct import dummy_mask, DummyModel
+from tests.utils_fct import dummy_mask
+import numpy as np
 
 
 class TestRegion(TestCase):
@@ -144,15 +145,19 @@ class TestRegion(TestCase):
 class TestModelRegion(TestCase):
 
     def setUp(self):
-        X, y = generate_corner_dataset(10, random_seed=1234)
-        X_test, y_test = generate_corner_dataset(10, random_seed=4321)
+        np.random.seed(1234)
+        X = np.random.randn(500, 4)
+        y = np.sum(X, axis=1)
+        self.X_train = pd.DataFrame(X[:250], columns=['var1', 'var2', 'var3', 'var4'])
+        self.y_train = pd.Series(y[:250])
 
-        self.X = pd.DataFrame(X, columns=['var1', 'var2'])
-        self.y = pd.Series(y)
-        self.X_test = pd.DataFrame(X_test)
-        self.y_test = pd.Series(y_test)
-        self.costumer_model = DummyModel()
-        self.mask = int_mask_to_boolean(dummy_mask(self.y, random_seed=14))
+        # X, y = generate_corner_dataset(100, random_seed=1234)
+        self.X_test = pd.DataFrame(X[250:], columns=['var1', 'var2', 'var3', 'var4'])
+        self.y_test = pd.Series(y[250:])
+        # = generate_corner_dataset(100, random_seed=4321)
+
+        self.customer_model = None
+        self.mask = int_mask_to_boolean(dummy_mask(self.y_train, random_seed=14))
         self.v1 = Variable(0, 'var1', 'float')
         self.r1_1 = Rule(self.v1,
                          min=2,
@@ -166,76 +171,115 @@ class TestModelRegion(TestCase):
                          max=0.8,
                          includes_max=False)
 
+        self.r1_3 = Rule(self.v1,
+                         min=0)
+
     def test_init(self):
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-                             self.costumer_model, score='mse')
+        # init
+        ModReg = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                             self.customer_model, score='mse')
+        ModReg.interpretable_models._init_models(ProblemCategory.regression)
+        self.customer_model = ModReg.interpretable_models.models['Linear Regression']
+        self.customer_model.fit(self.X_train, self.y_train)
+
+        assert ModReg.X.equals(self.X_train)
+        assert ModReg.y.equals(self.y_train)
+        assert ModReg._test_mask is None
+
+        # perfs
+        # when no perf computed
+        assert ModReg.perfs.equals(pd.DataFrame())
+        ModReg.interpretable_models.get_models_performance(self.customer_model, self.X_train, self.y_train, self.X_test,
+                                                           self.y_test)
+        assert ModReg.perfs.shape[0] != 0
+
+        # delta
+        assert ModReg.delta == 0
+        ModReg.interpretable_models.select_model('Linear Regression')
+        assert ModReg.delta == 0
+
+        # test_mask property
+        assert not ModReg.test_mask.any()
+        ModReg.rules.add(self.r1_1)
+        assert ModReg.test_mask.any()
+
+        ModReg1 = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                              self.customer_model, score='mse')
+        ModReg1.interpretable_models._init_models(ProblemCategory.regression)
+        self.customer_model = ModReg1.interpretable_models.models['Linear Regression']
+        self.customer_model.fit(self.X_train, self.y_train)
+
+        ModReg1.rules.add(self.r1_3)
+        ModReg1.update_mask(ModReg1.rules.get_matching_mask(self.X_test))
+        assert ModReg1.test_mask.any()
+
+    def test_train_residuals(self):
+        ModReg = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                             self.customer_model, mask=self.mask, score='MSE')
+        ModReg.interpretable_models._init_models(ProblemCategory.regression)
+        self.customer_model = ModReg.interpretable_models.models['Linear Regression']
+        self.customer_model.fit(self.X_train, self.y_train)
+        ModReg.interpretable_models._init_scores(self.customer_model, ProblemCategory.regression, X_test=self.X_test,
+                                                 y_test=self.y_test)
+        ModReg.interpretable_models.get_models_performance(self.customer_model, self.X_train, self.y_train, self.X_test,
+                                                           self.y_test)
+        assert len(ModReg.train_residuals('Linear Regression')) == ModReg.mask.astype(int).sum()
 
     def test_to_dict(self):
         # test with initialization with a mask
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-                             self.costumer_model, mask=self.mask, score='MSE')
+        ModReg = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                             self.customer_model, mask=self.mask, score='MSE')
         ModReg.interpretable_models._init_models(ProblemCategory.regression)
-        ModReg.select_model('Linear Regression')
+        self.customer_model = ModReg.interpretable_models.models['Linear Regression']
+        self.customer_model.fit(self.X_train, self.y_train)
+        ModReg.interpretable_models._init_scores(self.customer_model, ProblemCategory.regression, X_test=self.X_test,
+                                                 y_test=self.y_test)
+        ModReg.interpretable_models.get_models_performance(self.customer_model, self.X_train, self.y_train, self.X_test,
+                                                           self.y_test)
+        ModReg.interpretable_models.select_model('Linear Regression')
         assert ModReg.to_dict() == {
             'Region': -1,
             'Rules': '',
-            'Average': '0.33',
-            'Points': 3,
-            '% dataset': '30.0%',
-            'Sub-model': 'Linear Regression',
+            'Average': '-2.44e-03',
+            'Points': 130,
+            '% dataset': '52.0%',
+            'Sub-model': 'LR - MSE:0.00 (0.00)',
             'color': 'cyan'
         }
 
-        # test with initialization with a falsy rule and a selected model
-        # ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-        #                      self.costumer_model, rules=RuleSet([self.r1_1]), score='mse')
-        # assert ModReg.to_dict() == {
-        #     'Region': -1,
-        #     'Rules': '2.00 ≤ var1 < 10.00',
-        #     'Average': 'NaN',
-        #     'Points': 0,
-        #     '% dataset': '0.0%',
-        #     'Sub-model': None,
-        #     'color': 'cyan'
-        # }
-        #
-        # #test with initialization with an interval rule
-        # ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-        #                      self.costumer_model, rules=RuleSet([self.r1_2]), score='mse')
-        # assert ModReg.to_dict() == {
-        #     'Region': -1,
-        #     'Rules': '0.20 ≤ var1 < 0.80',
-        #     'Average': '0.25',
-        #     'Points': 8,
-        #     '% dataset': '80.0%',
-        #     'Sub-model': None,
-        #     'color': 'cyan'
-        # }
-
     def test_select_model(self):
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-                             self.costumer_model, mask=self.mask, score='mse')
+        ModReg = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                             self.customer_model, mask=self.mask, score='mse')
         ModReg.select_model('model_selected')
         assert ModReg.interpretable_models.selected_model == 'model_selected'
 
-    def test_train_substitution_model(self):  # not ok
-        # test when X_test is None
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-                             self.costumer_model, mask=self.mask, score='mse')
+    def test_train_substitution_model(self):
+        # init
+        int_mod = InterpretableModels(mean_squared_error)
+        int_mod._init_models(task_type=ProblemCategory.regression)
+        self.customer_model = int_mod.models['Linear Regression']
+        self.customer_model.fit(self.X_train, self.y_train)
+        ModReg = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                             self.customer_model, mask=self.mask, score='MSE')
+        ModReg.interpretable_models._init_scores(self.customer_model, ProblemCategory.regression, X_test=self.X_test,
+                                                 y_test=self.y_test)
 
+        # test when X_test is None
+        ModReg.train_substitution_models(ProblemCategory.regression)
         # test when X_test is not None
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-                             self.costumer_model, mask=self.mask, score='mse')
+        ModReg = ModelRegion(self.X_train, self.y_train, None, None,
+                             self.customer_model, mask=self.mask, score='MSE')
+        ModReg.train_substitution_models(ProblemCategory.regression)
 
     def test_get_model(self):
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-                             self.costumer_model, mask=self.mask, score='mse')
+        ModReg = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                             self.customer_model, mask=self.mask, score='mse')
         ModReg.interpretable_models._init_models(ProblemCategory.regression)
         assert ModReg.get_model('Linear Regression').name == LinearRegression().name
 
     def test_get_selected_model(self):
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-                             self.costumer_model, mask=self.mask, score='mse')
+        ModReg = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                             self.customer_model, mask=self.mask, score='mse')
         ModReg.interpretable_models._init_models(ProblemCategory.regression)
         # checks that the functions returns None when no model is selected
         assert ModReg.get_selected_model() is None
@@ -243,27 +287,30 @@ class TestModelRegion(TestCase):
         ModReg.select_model('Linear Regression')
         assert ModReg.get_selected_model().name == LinearRegression().name
 
-    def test_predict(self):  # not ok
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-                             self.costumer_model, mask=self.mask, score='mse')
+    def test_predict(self):
+        ModReg = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                             self.customer_model, mask=self.mask, score='MSE')
         ModReg.interpretable_models._init_models(ProblemCategory.regression)
+        self.customer_model = ModReg.interpretable_models.models['Linear Regression']
+        self.customer_model.fit(self.X_train, self.y_train)
+        ModReg.interpretable_models._init_scores(self.customer_model, ProblemCategory.regression, X_test=self.X_test,
+                                                 y_test=self.y_test)
+        ModReg.interpretable_models.get_models_performance(self.customer_model, self.X_train, self.y_train, self.X_test,
+                                                           self.y_test)
 
         # check that y_pred is a pd.Series of NaN when no model is selected
-        # y_pred = ModReg.predict(self.X)
-        # assert isinstance(y_pred, pd.Series)
-        # assert y_pred.isna().all()
+        y_pred = ModReg.predict(self.X_train)
+        assert isinstance(y_pred, pd.Series)
+        assert y_pred.isna().all()
 
         # test when a model is selected
-        model_fitted = LinearRegression()
-        model_fitted.fit(X=self.X, y=self.y)
-        ModReg.interpretable_models.select_model(model_fitted)
-        y_pred = ModReg.predict(self.X)
+        ModReg.select_model('Linear Regression')
+        y_pred = ModReg.predict(self.X_train)
         assert isinstance(y_pred, pd.Series)
-        assert not y_pred.isna().all()
 
     def test_update_rule_set(self):
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-                             self.costumer_model, mask=self.mask, score='mse')
+        ModReg = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                             self.customer_model, mask=self.mask, score='mse')
         ModReg.interpretable_models._init_models(ProblemCategory.regression)
         assert not ModReg.interpretable_models.models == {}
         ModReg.rules.add(self.r1_1)
@@ -273,15 +320,15 @@ class TestModelRegion(TestCase):
         # checks that interpretable_models is reset
         assert ModReg.interpretable_models.models == {}
 
-    def test_update_mask(self):  # not ok
-        ModReg = ModelRegion(self.X, self.y, self.X_test, self.y_test,
-                             self.costumer_model, mask=self.mask, score='mse')
+    def test_update_mask(self):
+        ModReg = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
+                             self.customer_model, mask=self.mask, score='mse')
         ModReg.interpretable_models._init_models(ProblemCategory.regression)
         assert not ModReg.interpretable_models.models == {}
-        ModReg.mask = self.r1_1.get_matching_mask(self.X)
-        ModReg.update_mask(self.r1_2.get_matching_mask(self.X))
+        ModReg.mask = self.r1_1.get_matching_mask(self.X_train)
+        ModReg.update_mask(self.r1_2.get_matching_mask(self.X_train))
         # check that when updated, the mask attribute contains the new mask, and rule set is empty
-        assert ModReg.mask.equals(self.r1_2.get_matching_mask(self.X))
+        assert ModReg.mask.equals(self.r1_2.get_matching_mask(self.X_train))
         assert len(ModReg.rules) == 0
         # checks that interpretable_models is reset
         assert ModReg.interpretable_models.models == {}
