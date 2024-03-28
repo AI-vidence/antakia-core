@@ -25,7 +25,7 @@ class TestDimReducMethod(TestCase):
                              self.X,
                              progress_updated=dummy_progress)
         assert drm.dimreduc_method == 1
-        assert drm.default_parameters is None
+        assert drm.default_parameters == {}
         assert drm.dimension == 2
         assert drm.dimreduc_model is None
         assert drm.progress_updated is dummy_progress
@@ -36,7 +36,7 @@ class TestDimReducMethod(TestCase):
                               self.X,
                               progress_updated=callback.call)
         assert drm1.dimreduc_method == 2
-        assert drm1.default_parameters is None
+        assert drm1.default_parameters == {}
         assert drm1.dimension == 2
         assert drm1.dimreduc_model is None
         assert drm1.progress_updated == callback.call
@@ -118,7 +118,7 @@ class TestDimReducMethod(TestCase):
                               2,
                               self.X,
                               default_parameters={'n_components': 2})
-        drm1.compute()
+        assert isinstance(drm1.compute(), pd.DataFrame)
 
     def test_scale_value_space(self):
         np.random.seed(10)

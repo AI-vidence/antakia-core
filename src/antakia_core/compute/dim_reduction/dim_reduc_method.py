@@ -138,8 +138,7 @@ class DimReducMethod(LongTask):
         if hasattr(dim_red_model, 'fit_transform'):
             X_red = dim_red_model.fit_transform(self.X)
         else:
-            dim_red_model.fit(self.X)
-            X_red = dim_red_model.transform(self.X)
+            X_red = dim_red_model.fit(self.X).transform(self.X)
         X_red = pd.DataFrame(X_red)
 
         self.publish_progress(100)

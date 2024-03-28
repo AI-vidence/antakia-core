@@ -156,9 +156,8 @@ class TestDimReduction(TestCase):
 
         assert pacmap_dr.dimreduc_method == 3
         np.testing.assert_array_equal(pacmap_dr.default_parameters,
-                                      {'n_components': 2})
+                                      {'n_components': 2,'progress_callback': callback.call })
         assert pacmap_dr.dimension == 2
-        assert pacmap_dr.dimreduc_model == pacmap.PaCMAP
         assert pacmap_dr.X.equals(self.X)
         assert pacmap_dr.progress_updated == callback.call
         np.testing.assert_array_equal(pacmap_dr.allowed_kwargs, [

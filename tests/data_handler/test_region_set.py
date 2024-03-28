@@ -149,8 +149,8 @@ class TestRegionSet(TestCase):
         assert isinstance(rs.get_color_serie(), pd.Series)
 
         color = rs.get_color_serie()
-        assert (color == pd.Series(['red', 'red', 'grey',
-                                    'grey', 'grey'])).all()
+        assert color.equals(pd.Series(['red', 'red', 'grey',
+                                    'grey', 'grey']))
 
     def test_get(self):
         rs = RegionSet(self.X)
