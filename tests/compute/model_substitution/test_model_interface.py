@@ -11,6 +11,7 @@ from antakia_core.compute.model_subtitution.regression_models import *
 
 from antakia_core.utils.utils import ProblemCategory
 
+
 class TestInterpretableModels(TestCase):
     def setUp(self):
         X = np.random.randn(500, 4)
@@ -18,10 +19,8 @@ class TestInterpretableModels(TestCase):
         self.X_train = pd.DataFrame(X[:250], columns=['var1', 'var2', 'var3', 'var4'])
         self.y_train = pd.Series(y[:250])
 
-        # X, y = generate_corner_dataset(100, random_seed=1234)
         self.X_test = pd.DataFrame(X[250:], columns=['var1', 'var2', 'var3', 'var4'])
         self.y_test = pd.Series(y[250:])
-        # = generate_corner_dataset(100, random_seed=4321)
 
     def test_init(self):  # not ok
         pass

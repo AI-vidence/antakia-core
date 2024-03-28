@@ -78,6 +78,7 @@ class TestRegionSet(TestCase):
         region = Region(self.X, RuleSet([self.r1_2]))
         region.num = 1
         rs.add(region)
+        assert len(rs) == 1
 
     def test_add_region(self):
         # add with a mask
@@ -123,8 +124,7 @@ class TestRegionSet(TestCase):
         rs = RegionSet(self.X)
         rs.add_region(mask=self.mask)
         assert isinstance(rs.to_dict(), list)
-        if not len(rs.to_dict()):
-            assert isinstance(rs.to_dict()[0], dict)
+        assert isinstance(rs.to_dict()[0], dict)
 
     def test_get_masks(self):  # not ok
         # test empty region set
@@ -132,7 +132,7 @@ class TestRegionSet(TestCase):
         assert rs.get_masks() == []
 
         rs.add_region(mask=self.mask)
-        assert rs.get_masks() == [self.mask]
+        assert rs.get_masks() == [rs.regions[1].mask]
 
     def test_get_colors(self):
         rs = RegionSet(self.X)
@@ -152,7 +152,7 @@ class TestRegionSet(TestCase):
         assert (color == pd.Series(['red', 'red', 'grey',
                                     'grey', 'grey'])).all()
 
-    def test_get(self):  # not ok
+    def test_get(self):
         rs = RegionSet(self.X)
         rs.add_region(rules=RuleSet([self.r1_1]))
         assert repr(rs.get(1).rules) == repr(Region(self.X, rules=RuleSet([self.r1_1])).rules)
@@ -194,7 +194,7 @@ class TestRegionSet(TestCase):
         # checks that removing from empty region set returns None
         assert rs.pop_last() is None
 
-    def test_sort(self):  # not ok
+    def test_sort(self):
         # create 3 regions, sort by id, size, insert order and check the order in the rs
         r1_1 = Rule(self.v1, max=4, includes_max=False)
         r1_2 = Rule(self.v1, min=2, includes_min=True)
@@ -203,20 +203,20 @@ class TestRegionSet(TestCase):
         rs = RegionSet(self.X)
         region1 = Region(self.X, rules=RuleSet([r1_1]))
         region2 = Region(self.X, rules=RuleSet([r1_2]))
-        # region2.num = 3
+        region2.num = 3
         region3 = Region(self.X, rules=RuleSet([r2_1]))
         rs.add(region1)
         rs.add(region2)
         rs.add(region3)
-        # assert rs.display_order == [region1,region2,region3]
-        # rs.sort('region_num')
-        # assert rs.display_order == [region1,region3,region2]
-        # rs.sort('region_num', ascending=False)
-        # assert rs.display_order == [region2,region3,region1]
-        # rs.sort('size')
-        # assert rs.display_order == [region1,region3,region2]
+        assert rs.display_order == [region1, region2, region3]
+        rs.sort('region_num')
+        assert rs.display_order == [region1, region3, region2]
+        rs.sort('region_num', ascending=False)
+        assert rs.display_order == [region2, region3, region1]
+        rs.sort('size')
+        assert rs.display_order == [region1, region3, region2]
         rs.sort('insert')
-        assert rs.display_order == [region1,region2,region3]
+        assert rs.display_order == [region1, region2, region3]
 
     def test_stats(self):
         rs = RegionSet(self.X)
@@ -226,7 +226,6 @@ class TestRegionSet(TestCase):
         assert rs.stats()['points'] == 5
         rs.add_region(rules=RuleSet([self.r2_1]))
         assert rs.stats()['coverage'] == 100
-
 
     def test_compute_left_out_region(self):
         # test if combining mask and leftout mask gives
@@ -245,64 +244,64 @@ class TestRegionSet(TestCase):
         rs2.add_region(rules=RuleSet([TruthyRule(self.v1)]))
         assert not rs2._compute_left_out_region().mask.all()
 
-#
-# class TestModelRegionSet(TestCase):
-#
-#     def setUp(self):
-#         self.X = pd.DataFrame([
-#             [1, 2],
-#             [2, 1],
-#             [4, 2],
-#             [10, 1],
-#             [20, 2],
-#         ],
-#             columns=['var1', 'var2'])
-#         self.y = pd.Series([1, 2, 1, 2, 1])
-#         self.X_test = pd.DataFrame([
-#             [1, 2],
-#             [2, 1],
-#             [4, 2],
-#             [10, 1],
-#             [20, 2],
-#         ],
-#             columns=['var1', 'var2'],
-#             index=range(5, 10))
-#         self.y_test = pd.Series([1, 2, 1, 2, 1], index=range(5, 10))
-#         self.model = DummyModel()
-#         self.v1 = Variable(0, 'var1', 'float')
-#         self.v2 = Variable(0, 'var2', 'float')
-#
-#         self.r1_1 = Rule(self.v1, max=10, includes_max=False)
-#         self.r1_2 = Rule(self.v1, min=2, includes_max=True)
-#         self.rs1 = RuleSet([self.r1_1, self.r1_2])
-#         self.r2_1 = Rule(self.v2, min=1.5, includes_min=False)
-#
-#         self.region_set = ModelRegionSet(self.X, self.y, self.X_test,
-#                                          self.y_test, self.model,
-#                                          lambda *args: 1)
-#         self.problem_category = ProblemCategory.regression
-#
-#     def test_init(self):  # not ok
-#         pass
-#
-#     def test_upgrade_region_to_model_region(self):  # not ok
-#         pass
-#
-#     def test_add(self):  # not ok
-#         pass
-#
-#     def test_add_region(self):  # not ok
-#         pass
-#
-#     def test_get(self):  # not ok
-#         pass
-#
-#     def test_stats(self):  # not ok
-#         pass
-#
-#     def test_predict(self):  # not ok
-#         pass
-#
-#     def test_left_out(self):
-#         self.region_set.left_out_region.train_substitution_models(
-#             task_type=self.problem_category)
+
+class TestModelRegionSet(TestCase):
+
+    def setUp(self):
+        self.X = pd.DataFrame([
+            [1, 2],
+            [2, 1],
+            [4, 2],
+            [10, 1],
+            [20, 2],
+        ],
+            columns=['var1', 'var2'])
+        self.y = pd.Series([1, 2, 1, 2, 1])
+        self.X_test = pd.DataFrame([
+            [1, 2],
+            [2, 1],
+            [4, 2],
+            [10, 1],
+            [20, 2],
+        ],
+            columns=['var1', 'var2'],
+            index=range(5, 10))
+        self.y_test = pd.Series([1, 2, 1, 2, 1], index=range(5, 10))
+        self.model = DummyModel()
+        self.v1 = Variable(0, 'var1', 'float')
+        self.v2 = Variable(0, 'var2', 'float')
+
+        self.r1_1 = Rule(self.v1, max=10, includes_max=False)
+        self.r1_2 = Rule(self.v1, min=2, includes_max=True)
+        self.rs1 = RuleSet([self.r1_1, self.r1_2])
+        self.r2_1 = Rule(self.v2, min=1.5, includes_min=False)
+
+        self.region_set = ModelRegionSet(self.X, self.y, self.X_test,
+                                         self.y_test, self.model,
+                                         lambda *args: 1)
+        self.problem_category = ProblemCategory.regression
+
+    def test_init(self):  # not ok
+        pass
+
+    def test_upgrade_region_to_model_region(self):  # not ok
+        pass
+
+    def test_add(self):  # not ok
+        pass
+
+    def test_add_region(self):  # not ok
+        pass
+
+    def test_get(self):  # not ok
+        pass
+
+    def test_stats(self):  # not ok
+        pass
+
+    def test_predict(self):  # not ok
+        pass
+
+    def test_left_out(self):
+        self.region_set.left_out_region.train_substitution_models(
+            task_type=self.problem_category)

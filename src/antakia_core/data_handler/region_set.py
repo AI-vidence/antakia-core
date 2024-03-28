@@ -259,7 +259,7 @@ class RegionSet:
         elif by == 'size':
             key = lambda x: x.num_points()
         elif by == 'insert':
-            key = lambda x: self.insert_order.index(x)
+            key = lambda x: self.insert_order.index(x.num)
         self.display_order.sort(key=key, reverse=not ascending)
 
     def stats(self) -> dict:
