@@ -62,9 +62,6 @@ def boolean_mask(X: pd.DataFrame, value: bool = True):
     return pd.Series([value] * len(X), index=X.index)
 
 
-def int_mask_to_boolean(mask: pd.Series) -> pd.Series:
-    return mask.astype(bool)
-
 
 def timeit(method):
     def timed(*args, **kw):

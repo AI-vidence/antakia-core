@@ -6,7 +6,7 @@ from skimage.metrics import mean_squared_error
 from antakia_core.compute.model_subtitution.model_interface import InterpretableModels
 from antakia_core.data_handler import Region, Rule, RuleSet, RegionSet, ModelRegion, ModelRegionSet
 from antakia_core.utils import Variable
-from antakia_core.utils.utils import int_mask_to_boolean, ProblemCategory
+from antakia_core.utils.utils import ProblemCategory
 from antakia_core.compute.model_subtitution.regression_models import *
 from tests.utils_fct import dummy_mask
 import numpy as np
@@ -151,13 +151,11 @@ class TestModelRegion(TestCase):
         self.X_train = pd.DataFrame(X[:250], columns=['var1', 'var2', 'var3', 'var4'])
         self.y_train = pd.Series(y[:250])
 
-        # X, y = generate_corner_dataset(100, random_seed=1234)
         self.X_test = pd.DataFrame(X[250:], columns=['var1', 'var2', 'var3', 'var4'])
         self.y_test = pd.Series(y[250:])
-        # = generate_corner_dataset(100, random_seed=4321)
 
         self.customer_model = None
-        self.mask = int_mask_to_boolean(dummy_mask(self.y_train, random_seed=14))
+        self.mask = dummy_mask(self.y_train, random_seed=14).astype(bool)
         self.v1 = Variable(0, 'var1', 'float')
         self.r1_1 = Rule(self.v1,
                          min=2,
