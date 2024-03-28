@@ -12,6 +12,13 @@ class Rule:
     """
     class to represent logical rule over a variable
     """
+    TRUTHY_RULE = -1
+    CATEGORICAL_RULE = 0
+    MAX_RULE = 1
+    MIN_RULE = 2
+    INTERVAL_RULE = 3
+    VALUE_RULE = 4
+    FALSY_RULE = 5
 
     def __init__(self,
                  variable: Variable,
@@ -47,16 +54,16 @@ class Rule:
     def __eq__(self, other):
         if self.rule_type != other.rule_type or self.variable != other.variable:
             return False
-        if self.rule_type in (-1, 5):
+        if self.rule_type in (self.TRUTHY_RULE, self.FALSY_RULE):
             return True
-        if self.rule_type == 0:
+        if self.rule_type == self.CATEGORICAL_RULE:
             return len(self.cat_values.symmetric_difference(
                 other.cat_values)) == 0
-        if self.rule_type == 4:
+        if self.rule_type == self.VALUE_RULE:
             return self.min == other.min
-        if self.rule_type == 1:
+        if self.rule_type == self.MAX_RULE:
             return self.max == other.max and self.includes_max == other.includes_max
-        if self.rule_type == 2:
+        if self.rule_type == self.MIN_RULE:
             return self.min == other.min and self.includes_min == other.includes_min
         return (self.max == other.max
                 and self.includes_max == other.includes_max) and (
@@ -69,21 +76,21 @@ class Rule:
             txt += ', '.join(self.cat_values)
             txt += "\u27E7"
             return txt
-        if self.rule_type == -1:
+        if self.rule_type == self.TRUTHY_RULE:
             return f'{self.variable.display_name} - True'
-        if self.rule_type == 5:
+        if self.rule_type == self.FALSY_RULE:
             return f'{self.variable.display_name} - False'
-        if self.rule_type == 1:
-            # Rule type 1
+        if self.rule_type == self.MAX_RULE:
+            # Rule type 1 : max rule
             op = '\u2264' if self.includes_max else '<'
             txt = f"{self.variable.display_name} {op} {format_number(self.max)}"
             return txt
-        if self.rule_type == 2:
-            # Rule type 2
+        if self.rule_type == self.MIN_RULE:
+            # Rule type 2 : min rule
             op = '\u2265' if self.includes_min else '>'
             txt = f"{self.variable.display_name} {op} {format_number(self.min)}"
             return txt
-        if self.rule_type == 3:
+        if self.rule_type == self.INTERVAL_RULE:
             # Rule type 3 : the rule is of the form : variable included in [min, max] interval, or min < variable < max
             if os.environ.get("USE_INTERVALS_FOR_RULES"):
                 open_bracket = '\u27E6' if self.includes_min else '['
@@ -114,24 +121,24 @@ class Rule:
         """
         if self.is_categorical_rule:
             if self.cat_values:
-                return 0
+                return self.CATEGORICAL_RULE
             else:
-                return 5
+                return self.FALSY_RULE
         if self.min == -np.inf and self.max == np.inf:
-            return -1
+            return self.TRUTHY_RULE
         if self.min == -np.inf:
-            return 1
+            return self.MAX_RULE
         if self.max == np.inf:
-            return 2
+            return self.MIN_RULE
         if self.max > self.min:
-            return 3
+            return self.INTERVAL_RULE
         if self.max == self.min and self.includes_max and self.includes_min:
-            return 4
-        return 5
+            return self.VALUE_RULE
+        return self.FALSY_RULE
 
     @property
     def operator_max(self):
-        if self.rule_type == 4:
+        if self.rule_type == self.VALUE_RULE:
             return '__eq__'
         if self.includes_max:
             return '__le__'
@@ -139,7 +146,7 @@ class Rule:
 
     @property
     def operator_min(self):
-        if self.rule_type == 4:
+        if self.rule_type == self.VALUE_RULE:
             return '__eq__'
         if self.includes_min:
             return '__ge__'
@@ -151,13 +158,13 @@ class Rule:
 
     def get_matching_mask(self, X: pd.DataFrame) -> pd.Series:
         col = X.loc[:, self.variable.column_name]
-        if self.rule_type == -1:
+        if self.rule_type == self.TRUTHY_RULE:
             return boolean_mask(X, True)
-        if self.rule_type == 0:
+        if self.rule_type == self.CATEGORICAL_RULE:
             return col.isin(self.cat_values)  # type:ignore
-        if self.rule_type == 4:
+        if self.rule_type == self.VALUE_RULE:
             return col == self.min
-        if self.rule_type == 5:
+        if self.rule_type == self.FALSY_RULE:
             return boolean_mask(X, False)
         return getattr(col, self.operator_max)(self.max) & getattr(
             col, self.operator_min)(self.min)
@@ -165,13 +172,13 @@ class Rule:
     def __call__(self, value: float | pd.DataFrame) -> bool | pd.Series:
         if isinstance(value, pd.DataFrame):
             return self.get_matching_mask(value)
-        if self.rule_type == -1:
+        if self.rule_type == self.TRUTHY_RULE:
             return True
-        if self.rule_type == 0:
+        if self.rule_type == self.CATEGORICAL_RULE:
             return value in self.cat_values  # type:ignore
-        if self.rule_type == 4:
+        if self.rule_type == self.VALUE_RULE:
             return value == self.min
-        if self.rule_type == 5:
+        if self.rule_type == self.FALSY_RULE:
             return False
         return getattr(value, self.operator_max)(self.max) & getattr(
             value, self.operator_min)(self.min)
@@ -235,6 +242,12 @@ class Rule:
         return self.combine(other)
 
     def to_dict(self):
+        """
+
+        Returns a dictionnary of the rule's parameters
+        -------
+
+        """
         return {
             'Variable': self.variable.display_name,
             'Unit': self.variable.unit,
@@ -249,12 +262,18 @@ class Rule:
 
 
 class TruthyRule(Rule):
+    """
+    class to represent logical rule that is always True over a variable
+    """
 
     def __init__(self, var: Variable):
         super().__init__(var)
 
 
 class FalsyRule(Rule):
+    """
+    class to represent logical rule that is always False over a variable
+    """
 
     def __init__(self, var: Variable):
         super().__init__(var, min=5, max=4)

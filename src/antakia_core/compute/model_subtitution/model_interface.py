@@ -14,11 +14,11 @@ import re
 from antakia_core.utils.utils import ProblemCategory
 
 
-def pretty_model_name(model_name):
+def pretty_model_name(model_name : str) -> str:
     return model_name.replace('_', ' ').title()
 
 
-def reduce_name(model_name):
+def reduce_name(model_name : str) -> str:
     parts = re.split(r'\W+', model_name)
     name = ''
     for part in parts:
@@ -71,12 +71,37 @@ class InterpretableModels:
         ]
 
     def _init_models(self, task_type):
+        """
+        fills the empty dict with all available models
+        Parameters
+        ----------
+        task_type
+
+        Returns
+        -------
+
+        """
         for model_class in self._get_available_models(task_type):
             model = model_class()
             if model.name not in self.models:
                 self.models[pretty_model_name(model.name)] = model
 
     def _init_scores(self, customer_model, task_type, X_test, y_test):
+        """
+        fills the empty dict with score names as key, and tuple
+        (scoring function, score type) as value
+
+        Parameters
+        ----------
+        customer_model
+        task_type
+        X_test
+        y_test
+
+        Returns
+        -------
+
+        """
         if self.score_type == 'compute':
             self._compute_score_type(customer_model, X_test, y_test)
         if task_type == ProblemCategory.regression:
@@ -107,12 +132,27 @@ class InterpretableModels:
         self.score_type = 'maximize' if s1 > s2 else 'minimize'
 
     def get_models_performance(self,
-                               customer_model,
+                               customer_model, #fitted model
                                X_train: pd.DataFrame,
                                y_train: pd.Series,
                                X_test: pd.DataFrame | None,
                                y_test: pd.Series | None,
                                task_type='regression') -> pd.DataFrame:
+        """
+
+        Parameters
+        ----------
+        customer_model
+        X_train
+        y_train
+        X_test
+        y_test
+        task_type
+
+        Returns sorted perf dataframe
+        -------
+
+        """
         if isinstance(task_type, str):
             task_type = ProblemCategory[task_type]
         if len(X_train) <= 50 or len(X_train.T) >= len(X_train):
@@ -147,10 +187,16 @@ class InterpretableModels:
         self.perfs['delta_color'] = self.perfs['delta'].apply(get_delta_color)
         return self.perfs.sort_values('delta', ascending=True)
 
-    def select_model(self, model_name):
+    def select_model(self, model_name : str):
         self.selected_model = model_name
 
     def selected_model_str(self) -> str:
+        """
+
+        Returns a string representation of the selected model's name and his score
+        -------
+
+        """
         perf = self.perfs.loc[self.selected_model]
         reduced_name = reduce_name(self.selected_model)
         display_str = f'{reduced_name} - {self.custom_score_str}:{perf[self.custom_score_str]:.2f} ({perf["delta"]:.2f})'
@@ -164,7 +210,7 @@ class InterpretableModels:
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('../../../../antakia/data/california_housing.csv'
+    df = pd.read_csv('C:/1_Programmation/python/aividence/antakia/examples/data/california_housing.csv'
                      ).set_index('Unnamed: 0')
     df = df.sample(len(df))
     limit = int(2000 / 0.8)
