@@ -47,6 +47,7 @@ class Variable:
         self.continuous = continuous
         self.lat = lat
         self.lon = lon
+        self.main_feature = False
 
     @property
     def display_name(self):
@@ -144,6 +145,10 @@ class DataVariables:
                 return False
         return True
 
+    def set_main_variables(self, main_var_names):
+        for var in main_var_names:
+            self.get_var(var).main_feature = True
+
     @staticmethod
     def import_variable_df(df: pd.DataFrame) -> 'DataVariables':
         """
@@ -162,7 +167,7 @@ class DataVariables:
         if 'type' not in df.columns:
             raise KeyError('type column is mandatory')
         variables = df.apply(lambda row: Variable(**row),
-                             axis=1).to_list()  #type:ignore
+                             axis=1).to_list()  # type:ignore
         return DataVariables(variables)
 
     @staticmethod

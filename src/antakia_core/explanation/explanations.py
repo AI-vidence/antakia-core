@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import Callable
 
 import lime
 import numpy as np
@@ -7,6 +6,7 @@ import pandas as pd
 import shap
 
 from antakia_core.explanation.explanation_method import ExplanationMethod
+from antakia_core.utils.splittable_callback import ProgressCallback
 from antakia_core.utils.utils import ProblemCategory
 
 # ===========================================================
@@ -23,7 +23,7 @@ class SHAPExplanation(ExplanationMethod):
                  X: pd.DataFrame,
                  model,
                  task_type,
-                 progress_updated: Callable | None = None):
+                 progress_updated: ProgressCallback | None = None):
         super().__init__(ExplanationMethod.SHAP, X, model, task_type,
                          progress_updated)
 
@@ -69,7 +69,7 @@ class LIMExplanation(ExplanationMethod):
                  X: pd.DataFrame,
                  model,
                  task_type,
-                 progress_updated: Callable | None = None):
+                 progress_updated: ProgressCallback | None = None):
         super().__init__(ExplanationMethod.LIME, X, model, task_type,
                          progress_updated)
 
@@ -116,9 +116,9 @@ class LIMExplanation(ExplanationMethod):
         return values_lime
 
 
-def compute_explanations(X: pd.DataFrame, model, explanation_method: int,
-                         task_type,
-                         progress_callback: Callable | None) -> pd.DataFrame:
+def compute_explanations(
+        X: pd.DataFrame, model, explanation_method: int, task_type,
+        progress_callback: ProgressCallback | None) -> pd.DataFrame:
     """ Generic method to compute explanations, SHAP or LIME
     """
     if explanation_method == ExplanationMethod.SHAP:

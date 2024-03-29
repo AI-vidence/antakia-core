@@ -3,7 +3,6 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 import pytest
-
 from sklearn.decomposition import PCA
 from openTSNE import TSNE
 import umap

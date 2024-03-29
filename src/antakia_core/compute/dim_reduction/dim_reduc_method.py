@@ -1,10 +1,10 @@
 import typing
-from typing import Callable
 
 import pandas as pd
 from sklearn.base import TransformerMixin
 
 from antakia_core.utils.long_task import LongTask
+from antakia_core.utils.splittable_callback import ProgressCallback
 
 
 class DimReducMethod(LongTask):
@@ -27,13 +27,13 @@ class DimReducMethod(LongTask):
     has_progress_callback = False
 
     def __init__(
-            self,
-            dimreduc_method: int,
-            dimreduc_model: type[TransformerMixin],
-            dimension: int,
-            X: pd.DataFrame,
-            default_parameters: dict | None = None,
-            progress_updated: Callable | None = None,
+        self,
+        dimreduc_method: int,
+        dimreduc_model: type[TransformerMixin],
+        dimension: int,
+        X: pd.DataFrame,
+        default_parameters: dict | None = None,
+        progress_callback: ProgressCallback | None = None,
     ):
         """
         Constructor for the DimReducMethod class.
@@ -48,7 +48,7 @@ class DimReducMethod(LongTask):
             We store it here (not in implementation class)
         X : pd.DataFrame
             Stored in LongTask instance
-        progress_updated : callable
+        progress_updated : ProgressCallback
             Stored in LongTask instance
         """
         if not DimReducMethod.is_valid_dimreduc_method(dimreduc_method):
@@ -67,7 +67,7 @@ class DimReducMethod(LongTask):
         self.dimension = dimension
         self.dimreduc_model = dimreduc_model
         # IMPORTANT : we set the topic as for ex 'PCA/2' or 't-SNE/3' -> subscribers have to follow this scheme
-        LongTask.__init__(self, X, progress_updated)
+        LongTask.__init__(self, X, progress_callback)
 
     @classmethod
     def dimreduc_method_as_str(cls, method: int | None) -> str | None:
@@ -128,9 +128,7 @@ class DimReducMethod(LongTask):
     def parameters(cls) -> dict[str, dict[str, typing.Any]]:
         return {}
 
-    def compute(self, fit_sample_num: int | None = None, **kwargs) -> pd.DataFrame:
-        if fit_sample_num is None or fit_sample_num > self.X.shape[0]:
-            fit_sample_num = self.X.shape[0]
+    def compute(self, **kwargs) -> pd.DataFrame:
         self.publish_progress(0)
         kwargs['n_components'] = self.get_dimension()
         param = self.default_parameters.copy()
@@ -144,12 +142,22 @@ class DimReducMethod(LongTask):
         return X_red
 
     @classmethod
-    def scale_value_space(cls, X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
+    def scale_value_space(
+            cls, X: pd.DataFrame, y: pd.Series,
+            progress_callback: ProgressCallback | None) -> pd.DataFrame:
         """
         Scale the values in X so that it's reduced and centered and weighted with mi
         """
         std = X.std()
         std[std == 0] = 1
         from sklearn.feature_selection import mutual_info_regression
-        mi = mutual_info_regression(X, y)
+        chunck_size = 20
+        mutual_info_scores = []
+        for i in range(0, len(X.T), chunck_size):
+            chunck_mi = mutual_info_regression(X.iloc[:, i:i + chunck_size], y)
+            mutual_info_scores.append(
+                pd.Series(chunck_mi, index=X.columns[i:i + chunck_size]))
+            if progress_callback is not None:
+                progress_callback(i / len(X.T) * 100)
+        mi = pd.concat(mutual_info_scores)
         return (X - X.mean()) / std * mi

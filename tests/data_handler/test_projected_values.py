@@ -6,7 +6,7 @@ import pandas as pd
 
 from antakia_core.data_handler.projected_values import ProjectedValues, Proj
 from tests.dummy_datasets import generate_corner_dataset
-from tests.utils_fct import DummyCallable
+from tests.utils_fct import DummyProgress
 
 
 class TestProjectedValues(TestCase):
@@ -15,7 +15,7 @@ class TestProjectedValues(TestCase):
         self.X, self.y = generate_corner_dataset(10)
         self.X = pd.DataFrame(self.X)
         self.y = pd.Series(self.y)
-        self.callable = DummyCallable()
+        self.callable = DummyProgress()
 
     def test_init(self):
         pv = ProjectedValues(self.X, self.y)
