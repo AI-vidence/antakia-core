@@ -41,7 +41,8 @@ class ProjectedValues:
         self._parameters[projection]['previous'] = \
             self._parameters[projection]['current'].copy()
         self._parameters[projection]['current'].update(parameters)
-        del self._projected_values[projection]
+        if projection in self._projected_values:
+            del self._projected_values[projection]
 
     def get_parameters(self, projection: Proj):
         """

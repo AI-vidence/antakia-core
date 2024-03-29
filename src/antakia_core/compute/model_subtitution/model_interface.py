@@ -118,7 +118,7 @@ class InterpretableModels:
                                               self.score_type)
 
     def _train_models(self, X_train, y_train, X_test, y_test):
-        Parallel(n_jobs=1)(delayed(model.fit_and_compute_fi)
+        Parallel(n_jobs=-2)(delayed(model.fit_and_compute_fi)
                            (X_train, y_train, X_test, y_test,
                             self.custom_score, self.score_type)
                            for model_name, model in self.models.items()

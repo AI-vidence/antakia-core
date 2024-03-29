@@ -51,9 +51,8 @@ class TestProjectedValues(TestCase):
             }
         }
 
-        # pv1 = ProjectedValues(self.X, self.y)
-        # pv1.set_parameters(proj, {'n_neighbors': 2})
-        # trouver un test avec self._parameters.get(projection) is None
+        pv1 = ProjectedValues(self.X, self.y)
+        pv1.set_parameters(proj, {'n_neighbors': 2})
 
     def test_get_parameters(self):
         pv = ProjectedValues(self.X, self.y)
