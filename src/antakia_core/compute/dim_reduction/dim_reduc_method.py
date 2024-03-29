@@ -33,7 +33,7 @@ class DimReducMethod(LongTask):
         dimension: int,
         X: pd.DataFrame,
         default_parameters: dict | None = None,
-        progress_updated: ProgressCallback | None = None,
+        progress_callback: ProgressCallback | None = None,
     ):
         """
         Constructor for the DimReducMethod class.
@@ -67,7 +67,7 @@ class DimReducMethod(LongTask):
         self.dimension = dimension
         self.dimreduc_model = dimreduc_model
         # IMPORTANT : we set the topic as for ex 'PCA/2' or 't-SNE/3' -> subscribers have to follow this scheme
-        LongTask.__init__(self, X, progress_updated)
+        LongTask.__init__(self, X, progress_callback)
 
     @classmethod
     def dimreduc_method_as_str(cls, method: int) -> str:
@@ -146,8 +146,9 @@ class DimReducMethod(LongTask):
         return X_red
 
     @classmethod
-    def scale_value_space(cls, X: pd.DataFrame, y: pd.Series,
-                          progress_callback: ProgressCallback | None) -> pd.DataFrame:
+    def scale_value_space(
+            cls, X: pd.DataFrame, y: pd.Series,
+            progress_callback: ProgressCallback | None) -> pd.DataFrame:
         """
         Scale the values in X so that it's reduced and centered and weighted with mi
         """

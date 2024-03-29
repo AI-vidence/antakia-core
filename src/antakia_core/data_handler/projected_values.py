@@ -116,7 +116,8 @@ class ProjectedValues:
         """
         return self._projected_values.get(projection) is not None
 
-    def compute(self, projection: Proj, progress_callback: ProgressCallback | None):
+    def compute(self, projection: Proj,
+                progress_callback: ProgressCallback | None):
         """
         computes a projection and store it
         Parameters

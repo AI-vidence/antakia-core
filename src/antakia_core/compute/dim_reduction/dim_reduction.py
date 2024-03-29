@@ -6,7 +6,6 @@ from openTSNE import TSNE
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from ...utils.splittable_callback import ProgressCallback
 
-
 # ===========================================================
 #         Projections / Dim Reductions implementations
 # ===========================================================
@@ -25,12 +24,12 @@ class PCADimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: ProgressCallback | None = None):
+                 progress_callback: ProgressCallback | None = None):
         super().__init__(self.dimreduc_method,
                          PCA,
                          dimension,
                          X,
-                         progress_updated=callback,
+                         progress_callback=progress_callback,
                          default_parameters={
                              'n_components': dimension,
                          })
@@ -56,12 +55,12 @@ class TSNEDimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: ProgressCallback | None = None):
+                 progress_callback: ProgressCallback | None = None):
         super().__init__(self.dimreduc_method,
                          TSNEwrapper,
                          dimension,
                          X,
-                         progress_updated=callback,
+                         progress_callback=progress_callback,
                          default_parameters={
                              'n_components': dimension,
                              'n_jobs': -1
@@ -134,13 +133,13 @@ class UMAPDimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: ProgressCallback | None = None):
+                 progress_callback: ProgressCallback | None = None):
         import umap
         super().__init__(self.dimreduc_method,
                          umap.UMAP,
                          dimension,
                          X,
-                         progress_updated=callback,
+                         progress_callback=progress_callback,
                          default_parameters={
                              'n_components': dimension,
                              'n_jobs': -1
@@ -180,15 +179,15 @@ class PaCMAPDimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: ProgressCallback | None = None):
+                 progress_callback: ProgressCallback | None = None):
         super().__init__(self.dimreduc_method,
                          PaCMAP,
                          dimension,
                          X,
-                         progress_updated=callback,
+                         progress_callback=progress_callback,
                          default_parameters={
                              'n_components': dimension,
-                             'progress_callback': callback
+                             'progress_callback': progress_callback
                          })
 
     @classmethod
@@ -251,6 +250,6 @@ def compute_projection(X: pd.DataFrame,
             X_scaled,  # type:ignore
             dimension,  # type:ignore
             pb2).compute(  # type:ignore
-            **dim_reduc_kwargs).values,  # type:ignore
+                **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values

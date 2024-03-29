@@ -116,9 +116,9 @@ class LIMExplanation(ExplanationMethod):
         return values_lime
 
 
-def compute_explanations(X: pd.DataFrame, model, explanation_method: int,
-                         task_type,
-                         progress_callback: ProgressCallback | None) -> pd.DataFrame:
+def compute_explanations(
+        X: pd.DataFrame, model, explanation_method: int, task_type,
+        progress_callback: ProgressCallback | None) -> pd.DataFrame:
     """ Generic method to compute explanations, SHAP or LIME
     """
     if explanation_method == ExplanationMethod.SHAP:
