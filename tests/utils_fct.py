@@ -38,8 +38,12 @@ class DummyProgress(DummyCallable):
     def __init__(self):
         super().__init__()
         self.progress = 0
-        self.calls = []
 
     def __call__(self, *args, **kwargs):
         super().__call__(*args, **kwargs)
         self.progress = args[0]
+
+    def split(self, value):
+        if isinstance(value, list):
+            return [self for _ in value]
+        return self, self

@@ -1,11 +1,11 @@
-from typing import Callable
-
 from .pacmap_progress import PaCMAP
 import pandas as pd
 from sklearn.decomposition import PCA
 from openTSNE import TSNE
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
+from ...utils.splittable_callback import ProgressCallback
+
 
 # ===========================================================
 #         Projections / Dim Reductions implementations
@@ -25,7 +25,7 @@ class PCADimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: Callable | None = None):
+                 callback: ProgressCallback | None = None):
         super().__init__(self.dimreduc_method,
                          PCA,
                          dimension,
@@ -56,7 +56,7 @@ class TSNEDimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: Callable | None = None):
+                 callback: ProgressCallback | None = None):
         super().__init__(self.dimreduc_method,
                          TSNEwrapper,
                          dimension,
@@ -134,7 +134,7 @@ class UMAPDimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: Callable | None = None):
+                 callback: ProgressCallback | None = None):
         import umap
         super().__init__(self.dimreduc_method,
                          umap.UMAP,
@@ -180,7 +180,7 @@ class PaCMAPDimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 callback: Callable | None = None):
+                 callback: ProgressCallback | None = None):
         super().__init__(self.dimreduc_method,
                          PaCMAP,
                          dimension,
@@ -227,15 +227,18 @@ def compute_projection(X: pd.DataFrame,
                        y: pd.Series,
                        dimreduc_method: int,
                        dimension: int,
-                       progress_callback: Callable | None = None,
+                       progress_callback: ProgressCallback | None = None,
                        **kwargs) -> pd.DataFrame:
     dim_reduc = dim_reduc_factory.get(dimreduc_method)
 
     if dim_reduc is None or not DimReducMethod.is_valid_dim_number(dimension):
         raise ValueError("Cannot compute proj method #", dimreduc_method,
                          " in ", dimension, " dimensions")
-
-    X_scaled = DimReducMethod.scale_value_space(X, y)
+    if progress_callback is None:
+        pb1, pb2 = None, None
+    else:
+        pb1, pb2 = progress_callback.split(50)
+    X_scaled = DimReducMethod.scale_value_space(X, y, pb1)
 
     default_kwargs = {'random_state': 9}
     default_kwargs.update(kwargs)
@@ -247,7 +250,7 @@ def compute_projection(X: pd.DataFrame,
         dim_reduc(  # type:ignore
             X_scaled,  # type:ignore
             dimension,  # type:ignore
-            progress_callback).compute(  # type:ignore
-                **dim_reduc_kwargs).values,  # type:ignore
+            pb2).compute(  # type:ignore
+            **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values

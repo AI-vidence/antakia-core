@@ -6,7 +6,7 @@ import pandas as pd
 
 from antakia_core.data_handler.projected_values import ProjectedValues, Proj
 from tests.dummy_datasets import generate_corner_dataset
-from tests.utils_fct import generate_df_series, DummyCallable
+from tests.utils_fct import generate_df_series, DummyProgress
 
 
 class TestProjectedValues(TestCase):
@@ -25,7 +25,7 @@ class TestProjectedValues(TestCase):
 
     def test_set_parameters(self):
         proj = Proj(1, 2)
-        callback = DummyCallable()
+        callback = DummyProgress()
         pv = ProjectedValues(self.X, self.y)
         pv.compute(proj, callback)
         pv.set_parameters(proj, {'n_neighbors': 2})
@@ -96,7 +96,7 @@ class TestProjectedValues(TestCase):
         }
 
     def test_get_projection(self):
-        callback = DummyCallable()
+        callback = DummyProgress()
         pv = ProjectedValues(self.X, self.y)
 
         #get a pv that is already computed
@@ -109,7 +109,7 @@ class TestProjectedValues(TestCase):
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
 
     def test_is_present(self):
-        callback = DummyCallable()
+        callback = DummyProgress()
         pv = ProjectedValues(self.X, self.y)
         proj = Proj(1, 2)
         assert not pv.is_present(proj)
@@ -118,7 +118,7 @@ class TestProjectedValues(TestCase):
         assert pv.is_present(proj)
 
     def test_compute(self):
-        callback = DummyCallable()
+        callback = DummyProgress()
         pv = ProjectedValues(self.X, self.y)
         proj = Proj(1, 2)
         pv.compute(proj, callback)

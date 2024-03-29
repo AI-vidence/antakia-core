@@ -120,11 +120,12 @@ def test_scale_value_space():
                      columns=list('ABC'))
     y = X.sum(axis=1)
     drm = DimReducMethod(1, None, 2, X)
-    a = drm.scale_value_space(X, y)
+    a = drm.scale_value_space(X, y, None)
+    #TODO test callback
     expected = pd.DataFrame(
         [[-0.048086, -0.153033, 0.032684], [-0.000829, 0.350276, 0.216138],
          [0.001658, -0.200644, 0.089618], [-0.070471, 0.017004, -0.144444],
          [-0.030676, -0.180239, -0.030576], [0.148405, 0.166636, -0.163422]],
         index=list(range(0, 6)),
         columns=list('ABC'))
-    assert np.round(drm.scale_value_space(X, y)[::], 6).equals(expected)
+    assert np.round(drm.scale_value_space(X, y, None)[::], 6).equals(expected)

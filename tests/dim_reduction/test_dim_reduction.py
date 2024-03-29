@@ -8,12 +8,12 @@ from sklearn.decomposition import PCA
 from antakia_core.compute.dim_reduction.dim_reduction import compute_projection, dim_reduc_factory, PCADimReduc, \
     TSNEwrapper, \
     TSNEDimReduc, UMAPDimReduc, PaCMAPDimReduc
-from tests.utils_fct import generate_df_series, DummyCallable
+from tests.utils_fct import generate_df_series, DummyProgress
 
 
 def test_init_PCA():
     X, _ = generate_df_series()
-    callback = DummyCallable()
+    callback = DummyProgress()
 
     dr_pca = PCADimReduc(X, 2, callback)
     assert dr_pca.dimreduc_method == 1
@@ -37,7 +37,7 @@ def test_fit_TSNEwrapper():
 
 def test_init_TSNEDimReduc():
     X, _ = generate_df_series()
-    callback = DummyCallable()
+    callback = DummyProgress()
 
     tsne = TSNEDimReduc(X, 2, callback)
 
@@ -59,7 +59,7 @@ def test_init_TSNEDimReduc():
 
 def test_parameters_TSNEDimReduc():
     X, _ = generate_df_series()
-    callback = DummyCallable()
+    callback = DummyProgress()
     tsne = TSNEDimReduc(X, 2, callback)
     expected_parameters = {
         'perplexity': {
@@ -80,7 +80,7 @@ def test_parameters_TSNEDimReduc():
 
 def test_init_UMAPDimReduc():
     X, _ = generate_df_series()
-    callback = DummyCallable()
+    callback = DummyProgress()
     umap_dr = UMAPDimReduc(X, 2, callback)
 
     assert umap_dr.dimreduc_method == 2
@@ -136,7 +136,7 @@ def test_init_UMAPDimReduc():
 
 def test_parameters_UMAPDimReduc():
     X, _ = generate_df_series()
-    callback = DummyCallable()
+    callback = DummyProgress()
     umap_dr = UMAPDimReduc(X, 2, callback)
     np.testing.assert_array_equal(
         umap_dr.parameters(), {
@@ -157,12 +157,14 @@ def test_parameters_UMAPDimReduc():
 
 def test_init_PacMAPDimReduc():
     X, _ = generate_df_series()
-    callback = DummyCallable()
+    callback = DummyProgress()
     pacmap_dr = PaCMAPDimReduc(X, 2, callback)
 
     assert pacmap_dr.dimreduc_method == 3
-    np.testing.assert_array_equal(pacmap_dr.default_parameters,
-                                  {'n_components': 2, 'progress_callback': callback})
+    np.testing.assert_array_equal(pacmap_dr.default_parameters, {
+        'n_components': 2,
+        'progress_callback': callback
+    })
     assert pacmap_dr.dimension == 2
     assert pacmap_dr.dimreduc_model == PaCMAP
     assert pacmap_dr.X.equals(X)
@@ -176,7 +178,7 @@ def test_init_PacMAPDimReduc():
 
 def test_parameters_PacMAPDimReduc():
     X, _ = generate_df_series()
-    callback = DummyCallable()
+    callback = DummyProgress()
     pacmap_dr = PaCMAPDimReduc(X, 2, callback)
     np.testing.assert_array_equal(
         pacmap_dr.parameters(), {
@@ -204,7 +206,7 @@ def test_parameters_PacMAPDimReduc():
 
 
 def test_compute_projection():  # not ok
-    callback = DummyCallable()
+    callback = DummyProgress()
     X = pd.DataFrame(np.random.random((30, 5)),
                      index=np.random.choice(np.random.randint(100, size=40),
                                             size=30),
@@ -220,7 +222,7 @@ def test_compute_projection():  # not ok
 
 def test_dim_reduction(
 ):  # ok sauf PaCMAP : windows fatal error (access violation File) pour PaCMAP
-    callback = DummyCallable()
+    callback = DummyProgress()
     X = pd.DataFrame(np.random.random((10, 5)),
                      index=np.random.choice(np.random.randint(100, size=20),
                                             size=10),

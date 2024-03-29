@@ -1,10 +1,10 @@
 from collections import namedtuple
-from typing import Callable
 
 import pandas as pd
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from antakia_core.compute.dim_reduction.dim_reduction import compute_projection, dim_reduc_factory
+from antakia_core.utils.splittable_callback import ProgressCallback
 
 Proj = namedtuple('Proj', ['reduction_method', 'dimension'])
 
@@ -84,7 +84,7 @@ class ProjectedValues:
 
     def get_projection(self,
                        projection: Proj,
-                       progress_callback: Callable | None = None):
+                       progress_callback: ProgressCallback | None = None):
         """
         get a projection value
         computes it if necessary
@@ -116,7 +116,7 @@ class ProjectedValues:
         """
         return self._projected_values.get(projection) is not None
 
-    def compute(self, projection: Proj, progress_callback: Callable | None):
+    def compute(self, projection: Proj, progress_callback: ProgressCallback | None):
         """
         computes a projection and store it
         Parameters
