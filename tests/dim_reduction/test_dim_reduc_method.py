@@ -4,7 +4,7 @@ import pytest
 from sklearn.decomposition import PCA
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
-from antakia_core.utils.long_task import dummy_progress
+from antakia_core.utils.long_task import DummyProgressCallback
 from tests.utils_fct import generate_df_series, DummyCallable
 
 
@@ -17,9 +17,9 @@ def test_init():
     assert drm.dimension == 2
     assert drm.dimreduc_model is None
     assert drm.X.equals(X)
-    assert drm.progress_updated is dummy_progress
+    assert isinstance(drm.progress_updated,DummyProgressCallback)
 
-    drm1 = DimReducMethod(2, None, 2, X, progress_updated=callback)
+    drm1 = DimReducMethod(2, None, 2, X, progress_callback=callback)
     assert drm1.dimreduc_method == 2
     assert len(drm.default_parameters) == 0
     assert drm1.dimension == 2
@@ -27,10 +27,10 @@ def test_init():
     assert drm1.progress_updated == callback
 
     with pytest.raises(ValueError):
-        DimReducMethod(6, None, 2, X, progress_updated=callback)
+        DimReducMethod(6, None, 2, X, progress_callback=callback)
 
     with pytest.raises(ValueError):
-        DimReducMethod(2, None, 4, X, progress_updated=callback)
+        DimReducMethod(2, None, 4, X, progress_callback=callback)
 
 
 def test_dimreduc_method_as_str():
