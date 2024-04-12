@@ -2,6 +2,7 @@
 Utils module for the antakia package.
 """
 import math
+import os
 import time
 from enum import EnumMeta, Enum
 from numbers import Number
@@ -11,6 +12,27 @@ from functools import wraps
 
 import pandas as pd
 from pandas.api.types import is_bool_dtype, is_integer_dtype
+
+
+def timeit(method):
+
+    def timed(*args, **kw):
+        if os.environ.get('ATK_DEV') == 'TRUE':
+            ts = time.time()
+            result = method(*args, **kw)
+            te = time.time()
+            if 'log_time' in kw:
+                name = kw.get('log_name', method.__name__.upper())
+                kw['log_time'][name] = int((te - ts) * 1000)
+            else:
+                if te - ts > 0.001:
+                    print(
+                        f'{method.__module__}.{method.__name__}  {(te - ts) * 1000:2.2f} ms'
+                    )
+            return result
+        return method(*args, **kw)
+
+    return timed
 
 
 def in_index(indexes: list, X: pd.DataFrame) -> bool:
@@ -41,6 +63,7 @@ def indexes_to_rows(X: pd.DataFrame, indexes_list: list) -> list:
     return index.loc[indexes_list].tolist()
 
 
+@timeit
 def mask_to_rows(mask: pd.Series) -> list:
     """
     converts a mask to row indices (i.e. iloc)
@@ -55,27 +78,11 @@ def mask_to_index(mask: pd.Series) -> list:
     return mask[mask].index.tolist()
 
 
-def boolean_mask(X: pd.DataFrame, value: bool = True):
+def boolean_mask(X: pd.DataFrame | pd.Series, value: bool = True):
     """
     builds a constant series indexed on X with value as value
     """
     return pd.Series([value] * len(X), index=X.index)
-
-
-def timeit(method):
-
-    def timed(*args, **kw):
-        ts = time.time()
-        result = method(*args, **kw)
-        te = time.time()
-        if 'log_time' in kw:
-            name = kw.get('log_name', method.__name__.upper())
-            kw['log_time'][name] = int((te - ts) * 1000)
-        else:
-            print('%r  %2.2f ms' % (method.__name__, (te - ts) * 1000))
-        return result
-
-    return timed
 
 
 def debug(func):

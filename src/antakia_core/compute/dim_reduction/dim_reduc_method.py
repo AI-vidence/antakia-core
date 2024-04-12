@@ -158,7 +158,8 @@ class DimReducMethod(LongTask):
         chunck_size = 20
         mutual_info_scores = []
         for i in range(0, len(X.T), chunck_size):
-            chunck_mi = mutual_info_regression(X.iloc[:, i:i + chunck_size], y)
+            chunck_mi = mutual_info_regression(X.iloc[:, i:i + chunck_size],
+                                               y.iloc[:])
             mutual_info_scores.append(
                 pd.Series(chunck_mi, index=X.columns[i:i + chunck_size]))
             if progress_callback is not None:
