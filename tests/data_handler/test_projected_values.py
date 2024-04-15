@@ -1,7 +1,5 @@
 from unittest import TestCase
 
-import numpy as np
-import mock
 import pandas as pd
 
 from antakia_core.data_handler.projected_values import ProjectedValues, Proj

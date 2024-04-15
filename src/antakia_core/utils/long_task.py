@@ -1,13 +1,10 @@
 from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
-from typing import Callable
 
 import pandas as pd
 
-
-def dummy_progress(*args, **kwargs):
-    pass
+from antakia_core.utils.splittable_callback import ProgressCallback, DummyProgressCallback
 
 
 class LongTask(ABC):
@@ -24,13 +21,13 @@ class LongTask(ABC):
 
     def __init__(self,
                  X: pd.DataFrame | None = None,
-                 progress_updated: Callable | None = None):
+                 progress_callback: ProgressCallback | None = None):
         if X is None:
             raise ValueError("You must provide a dataframe for a LongTask")
         self.X = X
-        if progress_updated is None:
-            progress_updated = dummy_progress
-        self.progress_updated = progress_updated
+        if progress_callback is None:
+            progress_callback = DummyProgressCallback()
+        self.progress_updated: ProgressCallback = progress_callback
         self.start_time = time.time()
         self.progress = 0
 

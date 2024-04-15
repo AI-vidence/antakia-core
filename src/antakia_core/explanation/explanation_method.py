@@ -1,9 +1,9 @@
 from __future__ import annotations
-from typing import Callable
 
 import pandas as pd
 
 from antakia_core.utils.long_task import LongTask
+from antakia_core.utils.splittable_callback import ProgressCallback
 
 
 class ExplanationMethod(LongTask):
@@ -26,7 +26,7 @@ class ExplanationMethod(LongTask):
         X: pd.DataFrame,
         model,
         task_type,
-        progress_updated: Callable | None = None,
+        progress_updated: ProgressCallback | None = None,
     ):
         if not ExplanationMethod.is_valid_explanation_method(
                 explanation_method):

@@ -29,7 +29,7 @@ def rows_to_mask(X: pd.DataFrame, rows_list: list[int]) -> pd.Series:
     Converts DataFrame row numbers to Index numbers
     """
     mask = boolean_mask(X, False)
-    mask.iloc[rows_list] = 1
+    mask.iloc[rows_list] = True
     return mask.astype(bool)
 
 
