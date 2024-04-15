@@ -1,255 +1,164 @@
-from .pacmap_progress import PaCMAP
+import typing
+
 import pandas as pd
-from sklearn.decomposition import PCA
-from openTSNE import TSNE
+from sklearn.base import TransformerMixin
 
-from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
-from ...utils.splittable_callback import ProgressCallback
-
-# ===========================================================
-#         Projections / Dim Reductions implementations
-# ===========================================================
+from antakia_core.utils.long_task import LongTask
+from antakia_core.utils.splittable_callback import ProgressCallback
 
 
-class PCADimReduc(DimReducMethod):
+class DimReducMethod(LongTask):
     """
-    PCA computation class.
+    Class that allows to reduce the dimensionality of the data.
+
+    Attributes
+    ----------
+    dimreduc_method : int, can be PCA, TSNE etc.
+    dimension : int
+        Dimension reduction methods require a dimension parameter
+        We store it in the abstract class
     """
-    dimreduc_method = DimReducMethod.dimreduc_method_as_int('PCA')
-    allowed_kwargs = [
-        'copy', 'whiten', 'svd_solver', 'tol', 'iterated_power',
-        'n_oversamples', 'power_iteration_normalizer', 'random_state'
-    ]
 
-    def __init__(self,
-                 X: pd.DataFrame,
-                 dimension: int = 2,
-                 progress_callback: ProgressCallback | None = None):
-        super().__init__(self.dimreduc_method,
-                         PCA,
-                         dimension,
-                         X,
-                         progress_callback=progress_callback,
-                         default_parameters={
-                             'n_components': dimension,
-                         })
+    # Class attributes methods
+    dim_reduc_methods = ['PCA', 'UMAP', 'PaCMAP']
+    dimreduc_method = -1
 
+    allowed_kwargs: list[str] = []
+    has_progress_callback = False
 
-class TSNEwrapper(TSNE):
+    def __init__(
+        self,
+        dimreduc_method: int,
+        dimreduc_model: type[TransformerMixin],
+        dimension: int,
+        X: pd.DataFrame,
+        default_parameters: dict | None = None,
+        progress_callback: ProgressCallback | None = None,
+    ):
+        """
+        Constructor for the DimReducMethod class.
 
-    def fit_transform(self, X):
-        return pd.DataFrame(self.fit(X.values), index=X.index)
+        Parameters
+        ----------
+        dimreduc_method : int
+            Dimension reduction methods among DimReducMethod.PCA, DimReducMethod.TSNE, DimReducMethod.UMAP or DimReducMethod.PaCMAP
+            We store it here (not in implementation class)
+        dimension : int
+            Target dimension. Can be DIM_TWO or DIM_THREE
+            We store it here (not in implementation class)
+        X : pd.DataFrame
+            Stored in LongTask instance
+        progress_updated : ProgressCallback
+            Stored in LongTask instance
+        """
+        if not DimReducMethod.is_valid_dimreduc_method(dimreduc_method):
+            if dimreduc_method == -1:
+                print('warning - method is not yet supported')
+            else:
+                raise ValueError(dimreduc_method,
+                                 " is a bad dimensionality reduction method")
+        if not DimReducMethod.is_valid_dim_number(dimension):
+            raise ValueError(dimension, " is a bad dimension number")
 
-
-class TSNEDimReduc(DimReducMethod):
-    """
-    T-SNE computation class.
-    """
-    dimreduc_method = -1  # DimReducMethod.dimreduc_method_as_int('TSNE')
-    allowed_kwargs = [
-        'perplexity', 'early_exaggeration', 'learning_rate', 'n_iter',
-        'n_iter_without_progress', 'min_grad_norm', 'metric', 'metric_params',
-        'init', 'verbose', 'random_state', 'method', 'angle', 'n_jobs'
-    ]
-
-    def __init__(self,
-                 X: pd.DataFrame,
-                 dimension: int = 2,
-                 progress_callback: ProgressCallback | None = None):
-        super().__init__(self.dimreduc_method,
-                         TSNEwrapper,
-                         dimension,
-                         X,
-                         progress_callback=progress_callback,
-                         default_parameters={
-                             'n_components': dimension,
-                             'n_jobs': -1
-                         })
+        self.dimreduc_method = dimreduc_method
+        if default_parameters is None:
+            default_parameters = {}
+        self.default_parameters = default_parameters
+        self.dimension = dimension
+        self.dimreduc_model = dimreduc_model
+        # IMPORTANT : we set the topic as for ex 'PCA/2' or 't-SNE/3' -> subscribers have to follow this scheme
+        LongTask.__init__(self, X, progress_callback)
 
     @classmethod
-    def parameters(cls) -> dict:
-        return {
-            'perplexity': {
-                'type': float,
-                'min': 5,
-                'max': 50,
-                'default': 12
-            },
-            'learning_rate': {
-                'type': [float, str],
-                'min': 10,
-                'max': 1000,
-                'default': 'auto'
-            }
-        }
-
-
-class UMAPDimReduc(DimReducMethod):
-    """
-    UMAP computation class.
-    """
-    dimreduc_method = DimReducMethod.dimreduc_method_as_int('UMAP')
-    allowed_kwargs = [
-        'n_neighbors',
-        'metric',
-        'metric_kwds',
-        'output_metric',
-        'output_metric_kwds',
-        'n_epochs',
-        'learning_rate',
-        'init',
-        'min_dist',
-        'spread',
-        'low_memory',
-        'n_jobs',
-        'set_op_mix_ratio',
-        'local_connectivity',
-        'repulsion_strength',
-        'negative_sample_rate',
-        'transform_queue_size',
-        'a',
-        'b',
-        'random_state',
-        'angular_rp_forest',
-        'target_n_neighbors',
-        'target_metric',
-        'target_metric_kwds',
-        'target_weight',
-        'transform_seed',
-        'transform_mode',
-        'force_approximation_algorithm',
-        'verbose',
-        'tqdm_kwds',
-        'unique',
-        'densmap',
-        'dens_lambda',
-        'dens_frac',
-        'dens_var_shift',
-        'output_dens',
-        'disconnection_distance',
-        'precomputed_knn',
-    ]
-
-    def __init__(self,
-                 X: pd.DataFrame,
-                 dimension: int = 2,
-                 progress_callback: ProgressCallback | None = None):
-        import umap
-        super().__init__(self.dimreduc_method,
-                         umap.UMAP,
-                         dimension,
-                         X,
-                         progress_callback=progress_callback,
-                         default_parameters={
-                             'n_components': dimension,
-                             'n_jobs': -1
-                         })
+    def dimreduc_method_as_str(cls, method: int | None) -> str | None:
+        if method is None:
+            return None
+        elif 0 < method <= len(cls.dim_reduc_methods):
+            return cls.dim_reduc_methods[method - 1]
+        else:
+            raise ValueError(
+                f"{method} is an invalid dimensionality reduction method")
 
     @classmethod
-    def parameters(cls) -> dict:
-        return {
-            'n_neighbors': {
-                'type': int,
-                'min': 1,
-                'max': 200,
-                'default': 15
-            },
-            'min_dist': {
-                'type': float,
-                'min': 0.1,
-                'max': 0.99,
-                'default': 0.1
-            }
-        }
-
-
-class PaCMAPDimReduc(DimReducMethod):
-    """
-    PaCMAP computation class.
-
-    """
-    dimreduc_method = DimReducMethod.dimreduc_method_as_int('PaCMAP')
-    allowed_kwargs = [
-        'n_neighbors', 'MN_ratio', 'FP_ratio', 'pair_neighbors', 'pair_MN',
-        'pair_FP', 'distance', 'lr', 'num_iters', 'apply_pca', 'intermediate',
-        'intermediate_snapshots', 'random_state'
-    ]
-    has_progress_callback = True
-
-    def __init__(self,
-                 X: pd.DataFrame,
-                 dimension: int = 2,
-                 progress_callback: ProgressCallback | None = None):
-        super().__init__(self.dimreduc_method,
-                         PaCMAP,
-                         dimension,
-                         X,
-                         progress_callback=progress_callback,
-                         default_parameters={
-                             'n_components': dimension,
-                             'progress_callback': progress_callback
-                         })
+    def dimreduc_method_as_int(cls, method: str | None) -> int | None:
+        if method is None:
+            return None
+        try:
+            i = cls.dim_reduc_methods.index(method) + 1
+            return i
+        except ValueError:
+            raise ValueError(
+                f"{method} is an invalid dimensionality reduction method")
 
     @classmethod
-    def parameters(cls) -> dict:
-        return {
-            'n_neighbors': {
-                'type': int,
-                'min': 1,
-                'max': 200,
-                'default': 15
-            },
-            'MN_ratio': {
-                'type': float,
-                'min': 0.1,
-                'max': 10,
-                'default': 0.5,
-                'scale': 'log'
-            },
-            'FP_ratio': {
-                'type': float,
-                'min': 0.1,
-                'max': 10,
-                'default': 2,
-                'scale': 'log'
-            }
-        }
+    def dimreduc_methods_as_list(cls) -> list[int]:
+        return list(map(lambda x: x + 1, range(len(cls.dim_reduc_methods))))
 
+    @classmethod
+    def dimreduc_methods_as_str_list(cls) -> list[str]:
+        return cls.dim_reduc_methods.copy()
 
-dim_reduc_factory: dict[int, type[DimReducMethod]] = {
-    dm.dimreduc_method: dm
-    for dm in [PCADimReduc, TSNEDimReduc, UMAPDimReduc, PaCMAPDimReduc]
-}
+    @staticmethod
+    def dimension_as_str(dim) -> str:
+        if dim == 2:
+            return "2D"
+        elif dim == 3:
+            return "3D"
+        else:
+            raise ValueError(f"{dim}, is a bad dimension")
 
+    @classmethod
+    def is_valid_dimreduc_method(cls, method: int) -> bool:
+        """
+        Returns True if it is a valid dimensionality reduction method.
+        """
+        return 0 <= method - 1 < len(cls.dim_reduc_methods)
 
-def compute_projection(X: pd.DataFrame,
-                       y: pd.Series,
-                       dimreduc_method: int,
-                       dimension: int,
-                       progress_callback: ProgressCallback | None = None,
-                       **kwargs) -> pd.DataFrame:
-    dim_reduc = dim_reduc_factory.get(dimreduc_method)
+    @staticmethod
+    def is_valid_dim_number(dim: int) -> bool:
+        """
+        Returns True if dim is a valid dimension number.
+        """
+        return dim in [2, 3]
 
-    if dim_reduc is None or not DimReducMethod.is_valid_dim_number(dimension):
-        raise ValueError("Cannot compute proj method #", dimreduc_method,
-                         " in ", dimension, " dimensions")
-    if progress_callback is None:
-        pb1, pb2 = None, None
-    else:
-        pb1, pb2 = progress_callback.split(50)
-    X_scaled = DimReducMethod.scale_value_space(X, y, pb1)
+    def get_dimension(self) -> int:
+        return self.dimension
 
-    default_kwargs = {'random_state': 9}
-    default_kwargs.update(kwargs)
-    dim_reduc_kwargs = {
-        k: v
-        for k, v in default_kwargs.items() if k in dim_reduc.allowed_kwargs
-    }
-    proj_values = pd.DataFrame(
-        dim_reduc(  # type:ignore
-            X_scaled,  # type:ignore
-            dimension,  # type:ignore
-            pb2).compute(  # type:ignore
-                **dim_reduc_kwargs).values,  # type:ignore
-        index=X.index)
-    return proj_values
+    @classmethod
+    def parameters(cls) -> dict[str, dict[str, typing.Any]]:
+        return {}
+
+    def compute(self,fit_sample_num: int | None = None, **kwargs) -> pd.DataFrame:
+        if fit_sample_num is None or fit_sample_num > self.X.shape[0]:
+            fit_sample_num = self.X.shape[0]
+        self.publish_progress(0)
+        kwargs['n_components'] = self.get_dimension()
+        param = self.default_parameters.copy()
+        param.update(kwargs)
+        dim_red_model = self.dimreduc_model(**param)
+        X_red = dim_red_model.fit(self.X.sample(n=fit_sample_num)).transform(self.X)
+        X_red = pd.DataFrame(X_red)
+
+        self.publish_progress(100)
+        return X_red
+
+    @classmethod
+    def scale_value_space(
+            cls, X: pd.DataFrame, y: pd.Series,
+            progress_callback: ProgressCallback | None) -> pd.DataFrame:
+        """
+        Scale the values in X so that it's reduced and centered and weighted with mi
+        """
+        std = X.std()
+        std[std == 0] = 1
+        from sklearn.feature_selection import mutual_info_regression
+        chunck_size = 20
+        mutual_info_scores = []
+        for i in range(0, len(X.T), chunck_size):
+            chunck_mi = mutual_info_regression(X.iloc[:, i:i + chunck_size], y)
+            mutual_info_scores.append(
+                pd.Series(chunck_mi, index=X.columns[i:i + chunck_size]))
+            if progress_callback is not None:
+                progress_callback(i / len(X.T) * 100)
+        mi = pd.concat(mutual_info_scores)
+        return (X - X.mean()) / std * mi

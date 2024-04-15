@@ -70,7 +70,7 @@ class DimReducMethod(LongTask):
         LongTask.__init__(self, X, progress_callback)
 
     @classmethod
-    def dimreduc_method_as_str(cls, method: int) -> str:
+    def dimreduc_method_as_str(cls, method: int | None) -> str | None:
         if method is None:
             return None
         elif 0 < method <= len(cls.dim_reduc_methods):
@@ -80,7 +80,7 @@ class DimReducMethod(LongTask):
                 f"{method} is an invalid dimensionality reduction method")
 
     @classmethod
-    def dimreduc_method_as_int(cls, method: str) -> int:
+    def dimreduc_method_as_int(cls, method: str | None) -> int | None:
         if method is None:
             return None
         try:
@@ -128,17 +128,15 @@ class DimReducMethod(LongTask):
     def parameters(cls) -> dict[str, dict[str, typing.Any]]:
         return {}
 
-    def compute(self, **kwargs) -> pd.DataFrame:
+    def compute(self,fit_sample_num: int | None = None, **kwargs) -> pd.DataFrame:
+        if fit_sample_num is None or fit_sample_num > self.X.shape[0]:
+            fit_sample_num = self.X.shape[0]
         self.publish_progress(0)
         kwargs['n_components'] = self.get_dimension()
         param = self.default_parameters.copy()
         param.update(kwargs)
-
         dim_red_model = self.dimreduc_model(**param)
-        if hasattr(dim_red_model, 'fit_transform'):
-            X_red = dim_red_model.fit_transform(self.X)
-        else:
-            X_red = dim_red_model.fit(self.X).transform(self.X)
+        X_red = dim_red_model.fit(self.X.sample(n=fit_sample_num)).transform(self.X)
         X_red = pd.DataFrame(X_red)
 
         self.publish_progress(100)
