@@ -1,9 +1,5 @@
 from unittest import TestCase
-
 import numpy as np
-from antakia_core.compute.dim_reduction.pacmap_progress.pacmap_progress import PaCMAP
-import pacmap
-
 import pandas as pd
 import pytest
 import umap
