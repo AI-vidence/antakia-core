@@ -118,7 +118,7 @@ class InterpretableModels:
                                               self.score_type)
 
     def _train_models(self, X_train, y_train, X_test, y_test):
-        Parallel(n_jobs=-2)(delayed(model.fit_and_compute_fi)
+        Parallel(n_jobs=1)(delayed(model.fit_and_compute_fi)
                            (X_train, y_train, X_test, y_test,
                             self.custom_score, self.score_type)
                            for model_name, model in self.models.items()
@@ -210,7 +210,7 @@ class InterpretableModels:
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('C:/1_Programmation/python/aividence/antakia/examples/data/california_housing.csv'
+    df = pd.read_csv('../../../../antakia/data/california_housing.csv'
                      ).set_index('Unnamed: 0')
     df = df.sample(len(df))
     limit = int(2000 / 0.8)

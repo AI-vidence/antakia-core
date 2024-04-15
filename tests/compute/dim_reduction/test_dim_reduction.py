@@ -24,14 +24,13 @@ class TestDimReduction(TestCase):
         self.callback = DummyProgress()
 
     def test_init_PCA(self):
-        dr_pca = PCADimReduc(self.X, 2, self.callback)
+        dr_pca = PCADimReduc(self.X, 2)
         assert dr_pca.dimreduc_method == 1
         np.testing.assert_array_equal(dr_pca.default_parameters,
                                       {'n_components': 2})
         assert dr_pca.dimension == 2
         assert dr_pca.dimreduc_model == PCA
         assert dr_pca.X.equals(self.X)
-        assert dr_pca.progress_updated == self.callback
         np.testing.assert_array_equal(dr_pca.allowed_kwargs, [
             'copy', 'whiten', 'svd_solver', 'tol', 'iterated_power',
             'n_oversamples', 'power_iteration_normalizer', 'random_state'
@@ -42,7 +41,7 @@ class TestDimReduction(TestCase):
         tsn.fit_transform(self.X)
 
     def test_init_TSNEDimReduc(self):
-        tsne = TSNEDimReduc(self.X, 2, self.callback)
+        tsne = TSNEDimReduc(self.X, 2)
         assert tsne.dimreduc_method == -1
         np.testing.assert_array_equal(tsne.default_parameters, {
             'n_components': 2,
@@ -51,7 +50,6 @@ class TestDimReduction(TestCase):
         assert tsne.dimension == 2
         assert tsne.dimreduc_model == TSNEwrapper
         assert tsne.X.equals(self.X)
-        assert tsne.progress_updated == self.callback
         np.testing.assert_array_equal(tsne.allowed_kwargs, [
             'perplexity', 'early_exaggeration', 'learning_rate', 'n_iter',
             'n_iter_without_progress', 'min_grad_norm', 'metric',
@@ -60,7 +58,7 @@ class TestDimReduction(TestCase):
         ])
 
     def test_parameters_TSNEDimReduc(self):
-        tsne = TSNEDimReduc(self.X, 2, self.callback)
+        tsne = TSNEDimReduc(self.X, 2)
         expected_parameters = {
             'perplexity': {
                 'type': float,
@@ -78,7 +76,7 @@ class TestDimReduction(TestCase):
         np.testing.assert_array_equal(tsne.parameters(), expected_parameters)
 
     def test_init_UMAPDimReduc(self):
-        umap_dr = UMAPDimReduc(self.X, 2, self.callback)
+        umap_dr = UMAPDimReduc(self.X, 2)
 
         assert umap_dr.dimreduc_method == 2
         np.testing.assert_array_equal(umap_dr.default_parameters, {
@@ -88,7 +86,6 @@ class TestDimReduction(TestCase):
         assert umap_dr.dimension == 2
         assert umap_dr.dimreduc_model == umap.UMAP
         assert umap_dr.X.equals(self.X)
-        assert umap_dr.progress_updated == self.callback
         np.testing.assert_array_equal(umap_dr.allowed_kwargs, [
             'n_neighbors',
             'metric',
@@ -131,7 +128,7 @@ class TestDimReduction(TestCase):
         ])
 
     def test_parameters_UMAPDimReduc(self):
-        umap_dr = UMAPDimReduc(self.X, 2, self.callback)
+        umap_dr = UMAPDimReduc(self.X, 2)
         np.testing.assert_array_equal(
             umap_dr.parameters(), {
                 'n_neighbors': {
@@ -149,13 +146,12 @@ class TestDimReduction(TestCase):
             })
 
     def test_init_PacMAPDimReduc(self):
-        pacmap_dr = PaCMAPDimReduc(self.X, 2, self.callback)
+        pacmap_dr = PaCMAPDimReduc(self.X, 2)
         assert pacmap_dr.dimreduc_method == 3
         np.testing.assert_array_equal(pacmap_dr.default_parameters,
-                                      {'n_components': 2, 'progress_callback': self.callback})
+                                      {'n_components': 2, 'progress_callback': None})
         assert pacmap_dr.dimension == 2
         assert pacmap_dr.X.equals(self.X)
-        assert pacmap_dr.progress_updated == self.callback
         np.testing.assert_array_equal(pacmap_dr.allowed_kwargs, [
             'n_neighbors', 'MN_ratio', 'FP_ratio', 'pair_neighbors', 'pair_MN',
             'pair_FP', 'distance', 'lr', 'num_iters', 'apply_pca',
@@ -163,7 +159,7 @@ class TestDimReduction(TestCase):
         ])
 
     def test_parameters_PacMAPDimReduc(self):
-        pacmap_dr = PaCMAPDimReduc(self.X, 2, self.callback)
+        pacmap_dr = PaCMAPDimReduc(self.X, 2)
         np.testing.assert_array_equal(
             pacmap_dr.parameters(), {
                 'n_neighbors': {
@@ -223,17 +219,17 @@ class TestDimReduction(TestCase):
                                              progress_callback=self.callback, **params)
             assert cpt_proj_2D.shape == (len(X), 2)
             assert X.index.equals(cpt_proj_2D.index)
-            assert self.callback.calls[-1][0] == 100
+            assert self.callback.calls[-1][0][0] == 100
 
             # test PCA 2D with sample train
             cpt_proj_2D = compute_projection(X, y, dim_method, 2,
                                              progress_callback=self.callback, **params)
             assert cpt_proj_2D.shape == (len(X), 2)
             assert X.index.equals(cpt_proj_2D.index)
-            assert self.callback.calls[-1][0] == 100
+            assert self.callback.calls[-1][0][0] == 100
 
             cpt_proj_3D = compute_projection(X, y, dim_method, 3,
                                              progress_callback=self.callback, **params)
             assert cpt_proj_3D.shape == (len(X), 3)
             assert X.index.equals(cpt_proj_3D.index)
-            assert self.callback.calls[-1][0] == 100
+            assert self.callback.calls[-1][0][0] == 100

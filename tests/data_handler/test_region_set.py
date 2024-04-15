@@ -118,15 +118,13 @@ class TestRegionSet(TestCase):
         rs.remove(1)
         assert len(rs) == 0
 
-        # ajouter test avec leftout region
-
     def test_to_dict(self):
         rs = RegionSet(self.X)
         rs.add_region(mask=self.mask)
         assert isinstance(rs.to_dict(), list)
         assert isinstance(rs.to_dict()[0], dict)
 
-    def test_get_masks(self):  # not ok
+    def test_get_masks(self):
         # test empty region set
         rs = RegionSet(self.X)
         assert rs.get_masks() == []

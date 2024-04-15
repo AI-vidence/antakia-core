@@ -22,9 +22,6 @@ class TestInterpretableModels(TestCase):
         self.X_test = pd.DataFrame(X[250:], columns=['var1', 'var2', 'var3', 'var4'])
         self.y_test = pd.Series(y[250:])
 
-    def test_init(self):  # not ok
-        pass
-
     def test_get_available_models(self):
         int_mod = InterpretableModels('MSE')
         assert LinearRegression in int_mod._get_available_models(ProblemCategory.regression)
@@ -36,7 +33,7 @@ class TestInterpretableModels(TestCase):
         assert isinstance(int_mod.models, dict)
         assert len(int_mod.models) == 7
 
-    def test_init_scores(self):  # not ok
+    def test_init_scores(self):
         int_mod = InterpretableModels(mean_squared_error)
         int_mod._init_models(ProblemCategory.regression)
 

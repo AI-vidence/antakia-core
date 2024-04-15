@@ -26,26 +26,24 @@ class TestDimReducMethod(TestCase):
         assert drm.dimension == 2
         assert drm.dimreduc_model is PCA
         assert drm.X.equals(self.X)
-        # assert drm.progress_updated == self.callback
 
-        drm1 = DimReducMethod(2, PCA, 2, self.X, progress_callback=self.callback)
+        drm1 = DimReducMethod(2, PCA, 2, self.X)
         assert drm1.dimreduc_method == 2
         assert len(drm1.default_parameters) == 0
         assert drm1.dimension == 2
         assert drm1.dimreduc_model is PCA
 
-        drm2 = DimReducMethod(-1, PCA, 2, self.X, progress_callback=self.callback)
+        drm2 = DimReducMethod(-1, PCA, 2, self.X)
         assert drm2.dimreduc_method == -1
         assert len(drm2.default_parameters) == 0
         assert drm2.dimension == 2
         assert drm2.dimreduc_model is PCA
-        assert drm2.progress_updated == self.callback
 
         with pytest.raises(ValueError):
-            DimReducMethod(6, PCA, 2, self.X, progress_callback=self.callback)
+            DimReducMethod(6, PCA, 2, self.X)
 
         with pytest.raises(ValueError):
-            DimReducMethod(2, PCA, 4, self.X, progress_callback=self.callback)
+            DimReducMethod(2, PCA, 4, self.X)
 
     def test_dimreduc_method_as_str(self):
         assert DimReducMethod.dimreduc_method_as_str(None) is None
