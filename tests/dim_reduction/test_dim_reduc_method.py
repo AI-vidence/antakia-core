@@ -8,14 +8,13 @@ from openTSNE import TSNE
 import umap
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
-from antakia_core.utils.long_task import dummy_progress
+from antakia_core.utils.splittable_callback import DummyProgressCallback
 from tests.dummy_datasets import generate_corner_dataset
-from tests.utils_fct import DummyCallable
 
 
 class TestDimReducMethod(TestCase):
     def setUp(self):
-        self.callback = DummyCallable()
+        self.callback = DummyProgressCallback()
         X, y = generate_corner_dataset(10)
         self.X = pd.DataFrame(X)
         self.y = pd.Series(y)
@@ -27,16 +26,15 @@ class TestDimReducMethod(TestCase):
         assert drm.dimension == 2
         assert drm.dimreduc_model is PCA
         assert drm.X.equals(self.X)
-        assert drm.progress_updated is dummy_progress
+        # assert drm.progress_updated == self.callback
 
-        drm1 = DimReducMethod(2, PCA, 2, self.X, progress_updated=self.callback)
+        drm1 = DimReducMethod(2, PCA, 2, self.X, progress_callback=self.callback)
         assert drm1.dimreduc_method == 2
         assert len(drm1.default_parameters) == 0
         assert drm1.dimension == 2
         assert drm1.dimreduc_model is PCA
-        assert drm1.progress_updated == self.callback
 
-        drm2 = DimReducMethod(-1, PCA, 2, self.X, progress_updated=self.callback)
+        drm2 = DimReducMethod(-1, PCA, 2, self.X, progress_callback=self.callback)
         assert drm2.dimreduc_method == -1
         assert len(drm2.default_parameters) == 0
         assert drm2.dimension == 2
@@ -44,10 +42,10 @@ class TestDimReducMethod(TestCase):
         assert drm2.progress_updated == self.callback
 
         with pytest.raises(ValueError):
-            DimReducMethod(6, PCA, 2, self.X, progress_updated=self.callback)
+            DimReducMethod(6, PCA, 2, self.X, progress_callback=self.callback)
 
         with pytest.raises(ValueError):
-            DimReducMethod(2, PCA, 4, self.X, progress_updated=self.callback)
+            DimReducMethod(2, PCA, 4, self.X, progress_callback=self.callback)
 
     def test_dimreduc_method_as_str(self):
         assert DimReducMethod.dimreduc_method_as_str(None) is None
@@ -155,11 +153,11 @@ class TestDimReducMethod(TestCase):
                          columns=list('ABC'))
         y = X.sum(axis=1)
         drm = DimReducMethod(1, None, 2, X)
-        drm.scale_value_space(X, y)
+        drm.scale_value_space(X, y, self.callback)
         expected = pd.DataFrame(
             [[-0.048086, -0.153033, 0.032684], [-0.000829, 0.350276, 0.216138],
              [0.001658, -0.200644, 0.089618], [-0.070471, 0.017004, -0.144444],
              [-0.030676, -0.180239, -0.030576], [0.148405, 0.166636, -0.163422]],
             index=list(range(0, 6)),
             columns=list('ABC'))
-        assert np.round(drm.scale_value_space(X, y)[::], 6).equals(expected)
+        assert np.round(drm.scale_value_space(X, y,self.callback )[::], 6).equals(expected)

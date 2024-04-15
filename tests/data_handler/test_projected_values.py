@@ -1,7 +1,4 @@
 from unittest import TestCase
-
-import numpy as np
-import mock
 import pandas as pd
 
 from antakia_core.data_handler.projected_values import ProjectedValues, Proj
@@ -15,7 +12,7 @@ class TestProjectedValues(TestCase):
         self.X, self.y = generate_corner_dataset(10)
         self.X = pd.DataFrame(self.X)
         self.y = pd.Series(self.y)
-        self.callable = DummyProgress()
+        self.progress_callback = DummyProgress()
 
     def test_init(self):
         pv = ProjectedValues(self.X, self.y)
@@ -27,7 +24,7 @@ class TestProjectedValues(TestCase):
     def test_set_parameters(self):
         proj = Proj(1, 2)
         pv = ProjectedValues(self.X, self.y)
-        pv.compute(proj, self.callable)
+        pv.compute(proj, self.progress_callback)
         pv.set_parameters(proj, {'n_neighbors': 2})
         assert pv._parameters == {
             proj: {
@@ -37,7 +34,7 @@ class TestProjectedValues(TestCase):
                 'previous': {}
             }
         }
-        pv.compute(proj, self.callable)
+        pv.compute(proj, self.progress_callback)
         pv.set_parameters(proj, {'MN_ratio': 4})
         assert pv._parameters == {
             proj: {
@@ -51,9 +48,6 @@ class TestProjectedValues(TestCase):
             }
         }
 
-        # pv1 = ProjectedValues(self.X, self.y)
-        # pv1.set_parameters(proj, {'n_neighbors': 2})
-        # trouver un test avec self._parameters.get(projection) is None
 
     def test_get_parameters(self):
         pv = ProjectedValues(self.X, self.y)
@@ -100,31 +94,31 @@ class TestProjectedValues(TestCase):
 
         # get a pv that is already computed
         proj = Proj(1, 2)  # PCA
-        pv.compute(proj, self.callable)
-        assert self.callable.calls[-1][0] == 100
+        pv.compute(proj, self.progress_callback)
+        assert self.progress_callback.calls[-1][0] == 100
 
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
 
         # get a pv that needs to be  without callback
         proj = Proj(2, 2)  # UMAP
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
-        assert self.callable.calls[-1][0] == 100
+        assert self.progress_callback.calls[-1][0] == 100
 
         # get a pv that needs to be  with callback
         proj = Proj(2, 2)  # UMAP
-        assert isinstance(pv.get_projection(proj, progress_callback=self.callable), pd.DataFrame)
-        assert self.callable.calls[-1][0] == 100
+        assert isinstance(pv.get_projection(proj, progress_callback=self.progress_callback), pd.DataFrame)
+        assert self.progress_callback.calls[-1][0] == 100
 
     def test_is_present(self):
         pv = ProjectedValues(self.X, self.y)
         proj = Proj(1, 2)  # PCA
         assert not pv.is_present(proj)
 
-        pv.compute(proj, self.callable)
+        pv.compute(proj, self.progress_callback)
         assert pv.is_present(proj)
 
     def test_compute(self):
         pv = ProjectedValues(self.X, self.y)
         proj = Proj(1, 2)
-        pv.compute(proj, self.callable)
+        pv.compute(proj, self.progress_callback)
         assert isinstance(pv._projected_values[proj], pd.DataFrame)

@@ -12,15 +12,16 @@ from sklearn.decomposition import PCA
 from antakia_core.compute.dim_reduction.dim_reduction import compute_projection, dim_reduc_factory, PCADimReduc, \
     TSNEwrapper, \
     TSNEDimReduc, UMAPDimReduc, PaCMAPDimReduc
+from antakia_core.utils.splittable_callback import DummyProgressCallback
 from tests.dummy_datasets import generate_corner_dataset
-from tests.utils_fct import DummyCallable
+from tests.utils_fct import DummyProgress
 
 
 class TestDimReduction(TestCase):
 
     def setUp(self):
         self.X = pd.DataFrame(generate_corner_dataset(10)[0])
-        self.callback = DummyCallable()
+        self.callback = DummyProgress()
 
     def test_init_PCA(self):
         dr_pca = PCADimReduc(self.X, 2, self.callback)
