@@ -54,6 +54,7 @@ class TestInterpretableModels(TestCase):
         model.fit(self.X_train, self.y_train)
         int_mod._init_scores(model, ProblemCategory.regression, X_test=self.X_test, y_test=self.y_test)
         int_mod._train_models(self.X_train, self.y_train, self.X_test, self.y_test)
+        #tester que les modeles sont entrainés i.e avoir l'attribut fitted == True
 
     def test_compute_score_type(self):
         int_mod = InterpretableModels('MSE')
