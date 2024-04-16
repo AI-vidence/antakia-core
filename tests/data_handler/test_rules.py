@@ -217,7 +217,11 @@ class TestRule(TestCase):
         rule2 = Rule(self.var1, cat_values=['High', 'Low'])
         rule3 = Rule(self.var2, min=20, max=10)
 
-        rule4 = Rule(self.var1, min=10, max=10, includes_max=True, includes_min=True)
+        rule4 = Rule(self.var1,
+                     min=10,
+                     max=10,
+                     includes_max=True,
+                     includes_min=True)
         assert rule4.operator_min == '__eq__'
         assert rule4.operator_max == '__eq__'
 
@@ -245,31 +249,27 @@ class TestRule(TestCase):
         """
         var1 = Variable(0, 'var1', 'float')
         var2 = Variable(0, 'var2', 'float')
-        rule1_1 = Rule(var1,
-                       max=20,
+        rule1_1 = Rule(var1, max=20,
                        includes_max=False)  # None, None, var1, '<', 20)
-        rule1_2 = Rule(var1,
-                       max=10,
+        rule1_2 = Rule(var1, max=10,
                        includes_max=False)  # None, None, var1, '<', 10)
-        rule1_3 = Rule(var1,
-                       max=10,
+        rule1_3 = Rule(var1, max=10,
                        includes_max=True)  # None, None, var1, '<=', 10)
-        rule1_4 = Rule(var1,
-                       max=5,
+        rule1_4 = Rule(var1, max=5,
                        includes_max=False)  # None, None, var1, '<', 5)
-        rule1_5 = Rule(var1,
-                       min=10,
+        rule1_5 = Rule(var1, min=10,
                        includes_min=True)  # 10, '<=', var1, None, None)
         rule1_6 = Rule(var1,
                        min=10,
                        includes_min=True,
                        max=40,
                        includes_max=False)  # 10, '<=', var1, '<', 40)
-        rule1_7 = Rule(var1,  # falsy
-                       min=40,
-                       includes_min=False,
-                       max=10,
-                       includes_max=False)  # 10, '>', var1, '>', 40)
+        rule1_7 = Rule(
+            var1,  # falsy
+            min=40,
+            includes_min=False,
+            max=10,
+            includes_max=False)  # 10, '>', var1, '>', 40)
         rule2_1 = Rule(var2,
                        min=10,
                        includes_min=True,
@@ -281,9 +281,8 @@ class TestRule(TestCase):
         rule1_9 = Rule(var1, cat_values=['Middle', 'Low'])
         rule1_10 = Rule(var1, cat_values=['Middle'])
 
-        rule1_11 = Rule(var1,
-                       min=5,
-                       includes_min=True)  # 10, '<=', var1, None, None)
+        rule1_11 = Rule(var1, min=5,
+                        includes_min=True)  # 10, '<=', var1, None, None)
 
         # test combine min and max
         # gives interval rule

@@ -148,8 +148,10 @@ class TestDimReduction(TestCase):
     def test_init_PacMAPDimReduc(self):
         pacmap_dr = PaCMAPDimReduc(self.X, 2)
         assert pacmap_dr.dimreduc_method == 3
-        np.testing.assert_array_equal(pacmap_dr.default_parameters,
-                                      {'n_components': 2, 'progress_callback': None})
+        np.testing.assert_array_equal(pacmap_dr.default_parameters, {
+            'n_components': 2,
+            'progress_callback': None
+        })
         assert pacmap_dr.dimension == 2
         assert pacmap_dr.X.equals(self.X)
         np.testing.assert_array_equal(pacmap_dr.allowed_kwargs, [
@@ -199,7 +201,7 @@ class TestDimReduction(TestCase):
             compute_projection(X, y, 1, 2, self.callback).index, X.index)
 
     def test_dim_reduction(
-            self
+        self
     ):  # ok sauf PaCMAP : windows fatal error (access violation File) pour PaCMAP
         X = pd.DataFrame(np.random.random((10, 5)),
                          index=np.random.choice(np.random.randint(100,
@@ -215,21 +217,33 @@ class TestDimReduction(TestCase):
             params = dim_reduc_factory.get(dim_method).parameters()
             params = {k: v['default'] for k, v in params.items()}
 
-            cpt_proj_2D = compute_projection(X, y, dim_method, 2,
-                                             progress_callback=self.callback, **params)
+            cpt_proj_2D = compute_projection(X,
+                                             y,
+                                             dim_method,
+                                             2,
+                                             progress_callback=self.callback,
+                                             **params)
             assert cpt_proj_2D.shape == (len(X), 2)
             assert X.index.equals(cpt_proj_2D.index)
             assert self.callback.calls[-1][0][0] == 100
 
             # test PCA 2D with sample train
-            cpt_proj_2D = compute_projection(X, y, dim_method, 2,
-                                             progress_callback=self.callback, **params)
+            cpt_proj_2D = compute_projection(X,
+                                             y,
+                                             dim_method,
+                                             2,
+                                             progress_callback=self.callback,
+                                             **params)
             assert cpt_proj_2D.shape == (len(X), 2)
             assert X.index.equals(cpt_proj_2D.index)
             assert self.callback.calls[-1][0][0] == 100
 
-            cpt_proj_3D = compute_projection(X, y, dim_method, 3,
-                                             progress_callback=self.callback, **params)
+            cpt_proj_3D = compute_projection(X,
+                                             y,
+                                             dim_method,
+                                             3,
+                                             progress_callback=self.callback,
+                                             **params)
             assert cpt_proj_3D.shape == (len(X), 3)
             assert X.index.equals(cpt_proj_3D.index)
             assert self.callback.calls[-1][0][0] == 100

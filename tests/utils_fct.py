@@ -6,6 +6,7 @@ class DummyCallable:
 
     def __init__(self):
         self.calls = []
+
     def __call__(self, *args, **kwargs):
         self.calls.append((args, kwargs))
 
@@ -41,7 +42,8 @@ class DummyProgress(DummyCallable):
         return self, self
 
 
-def dummy_mask(data: pd.DataFrame | pd.Series, random_seed: int | None = None) -> pd.Series:
+def dummy_mask(data: pd.DataFrame | pd.Series,
+               random_seed: int | None = None) -> pd.Series:
     """
     Generates a random mask from a dataframe
     :param data: data frame the mask is created from
@@ -49,7 +51,8 @@ def dummy_mask(data: pd.DataFrame | pd.Series, random_seed: int | None = None) -
     :return: mask Series
     """
     np.random.seed(random_seed)
-    if isinstance(data,pd.Series):
+    if isinstance(data, pd.Series):
         return pd.Series(np.random.randint(0, 2, data.shape[0]))
     else:
-        return pd.Series(np.random.randint(0, 2, data.shape[0] * data.shape[1]))
+        return pd.Series(np.random.randint(0, 2,
+                                           data.shape[0] * data.shape[1]))

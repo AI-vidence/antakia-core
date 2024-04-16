@@ -48,7 +48,6 @@ class TestProjectedValues(TestCase):
             }
         }
 
-
     def test_get_parameters(self):
         pv = ProjectedValues(self.X, self.y)
         proj = Proj(1, 2)
@@ -106,7 +105,9 @@ class TestProjectedValues(TestCase):
 
         # get a pv that needs to be  with callback
         proj = Proj(2, 2)  # UMAP
-        assert isinstance(pv.get_projection(proj, progress_callback=self.progress_callback), pd.DataFrame)
+        assert isinstance(
+            pv.get_projection(proj, progress_callback=self.progress_callback),
+            pd.DataFrame)
         assert self.progress_callback.calls[-1][0][0] == 100
 
     def test_is_present(self):

@@ -19,7 +19,7 @@ class TestRegionSet(TestCase):
             [10, 1],
             [20, 2],
         ],
-            columns=['var1', 'var2'])
+                              columns=['var1', 'var2'])
         self.v1 = Variable(0, 'var1', 'float')
         self.v2 = Variable(0, 'var2', 'float')
 
@@ -97,8 +97,8 @@ class TestRegionSet(TestCase):
         rs2 = RegionSet(self.X)
         rs2.add_region(rules=RuleSet([self.r1_1]))
 
-        assert (RegionSet(self.X).add_region(rules=RuleSet([self.r1_1, self.r1_2])).mask.equals(
-            rs.mask))
+        assert (RegionSet(self.X).add_region(
+            rules=RuleSet([self.r1_1, self.r1_2])).mask.equals(rs.mask))
 
     def test_extend(self):
         # extend empty with empty gives empty
@@ -147,14 +147,15 @@ class TestRegionSet(TestCase):
         assert isinstance(rs.get_color_serie(), pd.Series)
 
         color = rs.get_color_serie()
-        assert color.equals(pd.Series(['red', 'red', 'grey',
-                                    'grey', 'grey']))
+        assert color.equals(pd.Series(['red', 'red', 'grey', 'grey', 'grey']))
 
     def test_get(self):
         rs = RegionSet(self.X)
         rs.add_region(rules=RuleSet([self.r1_1]))
-        assert repr(rs.get(1).rules) == repr(Region(self.X, rules=RuleSet([self.r1_1])).rules)
-        assert rs.get(1).mask.equals(Region(self.X, rules=RuleSet([self.r1_1])).mask)
+        assert repr(rs.get(1).rules) == repr(
+            Region(self.X, rules=RuleSet([self.r1_1])).rules)
+        assert rs.get(1).mask.equals(
+            Region(self.X, rules=RuleSet([self.r1_1])).mask)
 
         rs2 = RegionSet(self.X)
         assert rs2.get('-').name == 'left outs'
@@ -178,10 +179,12 @@ class TestRegionSet(TestCase):
         rs.regions[1].validate()
 
         # check that the returned region is the last one
-        assert rs.pop_last().mask.equals(Region(self.X, rules=RuleSet([self.r2_1])).mask)
+        assert rs.pop_last().mask.equals(
+            Region(self.X, rules=RuleSet([self.r2_1])).mask)
         assert len(rs) == 2
         # check that last region is removed from region set
-        assert rs.pop_last().mask.equals(Region(self.X, rules=RuleSet([self.r1_2])).mask)
+        assert rs.pop_last().mask.equals(
+            Region(self.X, rules=RuleSet([self.r1_2])).mask)
         assert len(rs) == 1
         # check that validated regions are not removed but yet returned
         assert isinstance(rs.pop_last(), Region)
@@ -229,8 +232,10 @@ class TestRegionSet(TestCase):
         # test if combining mask and leftout mask gives
         rs = RegionSet(self.X)
         rs.add_region(rules=RuleSet([self.r1_1]))
-        assert not np.array(
-            [rs._compute_left_out_region().mask[i] and rs.mask[i] for i in range(self.X.shape[0])]).all()
+        assert not np.array([
+            rs._compute_left_out_region().mask[i] and rs.mask[i]
+            for i in range(self.X.shape[0])
+        ]).all()
 
         # tester falsy rule
         rs1 = RegionSet(self.X)
@@ -249,10 +254,12 @@ class TestModelRegionSet(TestCase):
         np.random.seed(1234)
         X = np.random.randn(500, 4)
         y = np.sum(X, axis=1)
-        self.X_train = pd.DataFrame(X[:250], columns=['var1', 'var2', 'var3', 'var4'])
+        self.X_train = pd.DataFrame(X[:250],
+                                    columns=['var1', 'var2', 'var3', 'var4'])
         self.y_train = pd.Series(y[:250])
 
-        self.X_test = pd.DataFrame(X[250:], columns=['var1', 'var2', 'var3', 'var4'])
+        self.X_test = pd.DataFrame(X[250:],
+                                   columns=['var1', 'var2', 'var3', 'var4'])
         self.y_test = pd.Series(y[250:])
 
         self.customer_model = None
@@ -270,24 +277,23 @@ class TestModelRegionSet(TestCase):
                             max=0.8,
                             includes_max=False)
 
-        self.rule1_3 = Rule(self.v1,
-                            min=0)
+        self.rule1_3 = Rule(self.v1, min=0)
         self.rules = [self.rule1_1, self.rule1_2, self.rule1_3]
 
         self.problem_category = ProblemCategory.regression
 
     def test_init(self):
-        mod_region_set = ModelRegionSet(self.X_train, self.y_train, self.X_test,
-                                        self.y_test, self.customer_model,
-                                        lambda *args: 1)
+        mod_region_set = ModelRegionSet(self.X_train, self.y_train,
+                                        self.X_test, self.y_test,
+                                        self.customer_model, lambda *args: 1)
         assert mod_region_set.model == self.customer_model
         assert mod_region_set.X_test.equals(self.X_test)
         assert mod_region_set.X.equals(self.X_train)
 
     def test_upgrade_region_to_model_region(self):
-        mod_region_set = ModelRegionSet(self.X_train, self.y_train, self.X_test,
-                                        self.y_test, self.customer_model,
-                                        lambda *args: 1)
+        mod_region_set = ModelRegionSet(self.X_train, self.y_train,
+                                        self.X_test, self.y_test,
+                                        self.customer_model, lambda *args: 1)
 
         region = Region(self.X_train, RuleSet(self.rules))
         region.validate()
@@ -295,26 +301,31 @@ class TestModelRegionSet(TestCase):
         assert ModReg.validated
 
     def test_add(self):
-        mod_region_set = ModelRegionSet(self.X_train, self.y_train, self.X_test,
-                                        self.y_test, self.customer_model,
-                                        lambda *args: 1)
+        mod_region_set = ModelRegionSet(self.X_train, self.y_train,
+                                        self.X_test, self.y_test,
+                                        self.customer_model, lambda *args: 1)
 
         region = Region(self.X_train, RuleSet([self.rule1_2]))
         # test adding a Region object
         mod_region_set.add(region)
         assert len(mod_region_set) == 1
         # test adding a ModelRegion object
-        mod_region = ModelRegion(self.X_train, self.y_train, self.X_test, self.y_test,
-                                 self.customer_model, score='mse')
+        mod_region = ModelRegion(self.X_train,
+                                 self.y_train,
+                                 self.X_test,
+                                 self.y_test,
+                                 self.customer_model,
+                                 score='mse')
         mod_region_set.add(mod_region)
         assert len(mod_region_set) == 2
 
     def test_add_region(self):
-        mod_region_set = ModelRegionSet(self.X_train, self.y_train, self.X_test,
-                                        self.y_test, self.customer_model,
-                                        lambda *args: 1)
+        mod_region_set = ModelRegionSet(self.X_train, self.y_train,
+                                        self.X_test, self.y_test,
+                                        self.customer_model, lambda *args: 1)
         # add with a mask
-        added_region = mod_region_set.add_region(mask=self.mask, auto_cluster=True)
+        added_region = mod_region_set.add_region(mask=self.mask,
+                                                 auto_cluster=True)
         assert isinstance(added_region, ModelRegion)
         assert added_region.auto_cluster
         assert len(mod_region_set.regions) == 1
@@ -324,23 +335,25 @@ class TestModelRegionSet(TestCase):
         assert len(mod_region_set.regions) == 2
 
     def test_get(self):
-        mod_region_set = ModelRegionSet(self.X_train, self.y_train, self.X_test,
-                                        self.y_test, self.customer_model,
-                                        lambda *args: 1)
+        mod_region_set = ModelRegionSet(self.X_train, self.y_train,
+                                        self.X_test, self.y_test,
+                                        self.customer_model, lambda *args: 1)
         mod_region_set.add_region(rules=RuleSet(self.rules))
         assert isinstance(mod_region_set.get(1), ModelRegion)
-        assert repr(mod_region_set.get(1).rules) == repr(Region(self.X_train, rules=RuleSet(self.rules)).rules)
-        assert mod_region_set.get(1).mask.equals(Region(self.X_train, rules=RuleSet(self.rules)).mask)
+        assert repr(mod_region_set.get(1).rules) == repr(
+            Region(self.X_train, rules=RuleSet(self.rules)).rules)
+        assert mod_region_set.get(1).mask.equals(
+            Region(self.X_train, rules=RuleSet(self.rules)).mask)
 
-        mod_region_set = ModelRegionSet(self.X_train, self.y_train, self.X_test,
-                                        self.y_test, self.customer_model,
-                                        lambda *args: 1)
+        mod_region_set = ModelRegionSet(self.X_train, self.y_train,
+                                        self.X_test, self.y_test,
+                                        self.customer_model, lambda *args: 1)
         assert mod_region_set.get('-').name == 'left outs'
 
     def test_stats(self):
-        mod_region_set = ModelRegionSet(self.X_train, self.y_train, self.X_test,
-                                        self.y_test, self.customer_model,
-                                        lambda *args: 1)
+        mod_region_set = ModelRegionSet(self.X_train, self.y_train,
+                                        self.X_test, self.y_test,
+                                        self.customer_model, lambda *args: 1)
         mod_region_set.add_region(rules=RuleSet([self.rule1_1]))
         assert isinstance(mod_region_set.stats(), dict)
         assert mod_region_set.stats()['regions'] == 1
@@ -351,9 +364,10 @@ class TestModelRegionSet(TestCase):
         assert mod_region_set.stats()['delta_score'] == 0.0
 
     def test_predict(self):  # not ok
-        mod_region_set = ModelRegionSet(self.X_train, self.y_train, self.X_test,
-                                        self.y_test, self.customer_model,
-                                        lambda *args: 1)
-        assert mod_region_set.predict(self.X_train).equals(pd.Series(index=self.X_train.index))
+        mod_region_set = ModelRegionSet(self.X_train, self.y_train,
+                                        self.X_test, self.y_test,
+                                        self.customer_model, lambda *args: 1)
+        assert mod_region_set.predict(self.X_train).equals(
+            pd.Series(index=self.X_train.index))
         mod_region_set.add_region(rules=RuleSet([self.rule1_1]))
         assert mod_region_set.predict(self.X_train).shape == self.y_train.shape

@@ -226,7 +226,8 @@ class ModelRegion(Region):
         """
         dict_form = super().to_dict()
         if self.interpretable_models.selected_model is not None:
-            dict_form['Sub-model'] = self.interpretable_models.selected_model_str()
+            dict_form[
+                'Sub-model'] = self.interpretable_models.selected_model_str()
         dict_form["Average"] = format_number(self.y[self.mask].mean())
         return dict_form
 
@@ -335,7 +336,7 @@ class ModelRegion(Region):
             return None
         return self.get_model(self.interpretable_models.selected_model)
 
-    def predict(self, X : pd.DataFrame) -> pd.Series:
+    def predict(self, X: pd.DataFrame) -> pd.Series:
         """
 
         Parameters X_train dataframe

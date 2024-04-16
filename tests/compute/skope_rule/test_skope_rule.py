@@ -19,7 +19,7 @@ class TestSkopeRule(TestCase):
             [10, 1],
             [20, 2],
         ],
-            columns=['var1', 'var2'])
+                              columns=['var1', 'var2'])
 
         self.var1 = Variable(0, 'var1', 'float')
         self.var2 = Variable(0, 'var2', 'float')
@@ -39,11 +39,10 @@ class TestSkopeRule(TestCase):
         assert isinstance(sk_rule1[1], dict)
 
         # test for interval rule
-        mask2 = pd.Series([False, False, True, True,False ])
+        mask2 = pd.Series([False, False, True, True, False])
         sk_rule2 = skope_rules(mask2, self.X, self.variables)
         assert isinstance(sk_rule2[0], RuleSet)
         assert isinstance(sk_rule2[1], dict)
-
 
         # test when variables is None
         sk_rule3 = skope_rules(mask1, self.X)
@@ -64,7 +63,7 @@ class TestSkopeRule(TestCase):
             [10, 4],
             [20, 2],
         ],
-            columns=['var1', 'var2'])
+                          columns=['var1', 'var2'])
 
         mask4 = pd.Series([False, False, True, True, False])
         sk_rule4 = skope_rules(mask4, df, self.variables)

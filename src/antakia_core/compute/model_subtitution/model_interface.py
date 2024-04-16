@@ -14,11 +14,11 @@ import re
 from antakia_core.utils.utils import ProblemCategory
 
 
-def pretty_model_name(model_name : str) -> str:
+def pretty_model_name(model_name: str) -> str:
     return model_name.replace('_', ' ').title()
 
 
-def reduce_name(model_name : str) -> str:
+def reduce_name(model_name: str) -> str:
     parts = re.split(r'\W+', model_name)
     name = ''
     for part in parts:
@@ -131,13 +131,14 @@ class InterpretableModels:
         s2 = self.custom_score(y.sample(len(y)).values, y.values)
         self.score_type = 'maximize' if s1 > s2 else 'minimize'
 
-    def get_models_performance(self,
-                               customer_model, #fitted model
-                               X_train: pd.DataFrame,
-                               y_train: pd.Series,
-                               X_test: pd.DataFrame | None,
-                               y_test: pd.Series | None,
-                               task_type='regression') -> pd.DataFrame:
+    def get_models_performance(
+            self,
+            customer_model,  #fitted model
+            X_train: pd.DataFrame,
+            y_train: pd.Series,
+            X_test: pd.DataFrame | None,
+            y_test: pd.Series | None,
+            task_type='regression') -> pd.DataFrame:
         """
 
         Parameters
@@ -187,7 +188,7 @@ class InterpretableModels:
         self.perfs['delta_color'] = self.perfs['delta'].apply(get_delta_color)
         return self.perfs.sort_values('delta', ascending=True)
 
-    def select_model(self, model_name : str):
+    def select_model(self, model_name: str):
         self.selected_model = model_name
 
     def selected_model_str(self) -> str:

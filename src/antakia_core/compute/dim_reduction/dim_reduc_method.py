@@ -128,7 +128,9 @@ class DimReducMethod(LongTask):
     def parameters(cls) -> dict[str, dict[str, typing.Any]]:
         return {}
 
-    def compute(self,fit_sample_num: int | None = None, **kwargs) -> pd.DataFrame:
+    def compute(self,
+                fit_sample_num: int | None = None,
+                **kwargs) -> pd.DataFrame:
         if fit_sample_num is None or fit_sample_num > self.X.shape[0]:
             fit_sample_num = self.X.shape[0]
         self.publish_progress(0)
@@ -136,7 +138,8 @@ class DimReducMethod(LongTask):
         param = self.default_parameters.copy()
         param.update(kwargs)
         dim_red_model = self.dimreduc_model(**param)
-        X_red = dim_red_model.fit(self.X.sample(n=fit_sample_num)).transform(self.X)
+        X_red = dim_red_model.fit(self.X.sample(n=fit_sample_num)).transform(
+            self.X)
         X_red = pd.DataFrame(X_red)
 
         self.publish_progress(100)

@@ -8,7 +8,6 @@ from openTSNE import TSNE
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from ...utils.splittable_callback import ProgressCallback
 
-
 # ===========================================================
 #         Projections / Dim Reductions implementations
 # ===========================================================
@@ -28,8 +27,7 @@ class PCADimReduc(DimReducMethod):
                  X: pd.DataFrame,
                  dimension: int = 2,
                  progress_callback: ProgressCallback | None = None,
-                 fit_sample_num: int | None = None
-                 ):
+                 fit_sample_num: int | None = None):
         super().__init__(self.dimreduc_method,
                          PCA,
                          dimension,
@@ -57,11 +55,12 @@ class TSNEDimReduc(DimReducMethod):
         'init', 'verbose', 'random_state', 'method', 'angle', 'n_jobs'
     ]
 
-    def __init__(self,
-                 X: pd.DataFrame,
-                 dimension: int = 2,
-                 progress_callback: ProgressCallback | None = None,
-                 ):
+    def __init__(
+        self,
+        X: pd.DataFrame,
+        dimension: int = 2,
+        progress_callback: ProgressCallback | None = None,
+    ):
         super().__init__(self.dimreduc_method,
                          TSNEwrapper,
                          dimension,
@@ -136,11 +135,12 @@ class UMAPDimReduc(DimReducMethod):
         'precomputed_knn',
     ]
 
-    def __init__(self,
-                 X: pd.DataFrame,
-                 dimension: int = 2,
-                 progress_callback: ProgressCallback | None = None,
-                 ):
+    def __init__(
+        self,
+        X: pd.DataFrame,
+        dimension: int = 2,
+        progress_callback: ProgressCallback | None = None,
+    ):
         import umap
         super().__init__(self.dimreduc_method,
                          umap.UMAP,
@@ -183,11 +183,12 @@ class PaCMAPDimReduc(DimReducMethod):
     ]
     has_progress_callback = True
 
-    def __init__(self,
-                 X: pd.DataFrame,
-                 dimension: int = 2,
-                 progress_callback: ProgressCallback | None = None,
-                 ):
+    def __init__(
+        self,
+        X: pd.DataFrame,
+        dimension: int = 2,
+        progress_callback: ProgressCallback | None = None,
+    ):
         super().__init__(self.dimreduc_method,
                          PaCMAP,
                          dimension,
@@ -235,7 +236,7 @@ def compute_projection(X: pd.DataFrame,
                        dimreduc_method: int,
                        dimension: int,
                        progress_callback: ProgressCallback | None = None,
-                       fit_sample_num = None,
+                       fit_sample_num=None,
                        **kwargs) -> pd.DataFrame:
     dim_reduc = dim_reduc_factory.get(dimreduc_method)
 
@@ -248,11 +249,12 @@ def compute_projection(X: pd.DataFrame,
         pb1, pb2 = progress_callback.split(50)
     X_scaled = DimReducMethod.scale_value_space(X, y, pb1)
 
-    default_kwargs = {'random_state': 9, 'fit_sample_num' : fit_sample_num}
+    default_kwargs = {'random_state': 9, 'fit_sample_num': fit_sample_num}
     default_kwargs.update(kwargs)
     dim_reduc_kwargs = {
         k: v
-        for k, v in default_kwargs.items() if k in dim_reduc.allowed_kwargs or k == 'fit_sample_num'
+        for k, v in default_kwargs.items()
+        if k in dim_reduc.allowed_kwargs or k == 'fit_sample_num'
     }
     proj_values = pd.DataFrame(
         dim_reduc(  # type:ignore

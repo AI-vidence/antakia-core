@@ -13,6 +13,7 @@ from tests.dummy_datasets import generate_corner_dataset
 
 
 class TestDimReducMethod(TestCase):
+
     def setUp(self):
         self.callback = DummyProgressCallback()
         X, y = generate_corner_dataset(10)
@@ -47,22 +48,26 @@ class TestDimReducMethod(TestCase):
 
     def test_dimreduc_method_as_str(self):
         assert DimReducMethod.dimreduc_method_as_str(None) is None
-        assert DimReducMethod.dimreduc_method_as_str(1) == DimReducMethod.dim_reduc_methods[0]
+        assert DimReducMethod.dimreduc_method_as_str(
+            1) == DimReducMethod.dim_reduc_methods[0]
         with pytest.raises(ValueError):
             DimReducMethod.dimreduc_method_as_str(0)
 
     def test_dimreduc_method_as_int(self):
         assert DimReducMethod.dimreduc_method_as_int(None) is None
-        assert DimReducMethod.dimreduc_method_as_int(DimReducMethod.dim_reduc_methods[0]) == 1
+        assert DimReducMethod.dimreduc_method_as_int(
+            DimReducMethod.dim_reduc_methods[0]) == 1
         with pytest.raises(ValueError):
             DimReducMethod.dimreduc_method_as_int('Method')
 
     def test_dimreduc_methods_as_list(self):
-        assert (DimReducMethod.dimreduc_methods_as_list() ==
-                list(range(1, len(DimReducMethod.dim_reduc_methods) + 1)))
+        assert (DimReducMethod.dimreduc_methods_as_list() == list(
+            range(1,
+                  len(DimReducMethod.dim_reduc_methods) + 1)))
 
     def test_dimreduc_methods_as_str_list(self):
-        assert DimReducMethod.dimreduc_methods_as_str_list() == DimReducMethod.dim_reduc_methods
+        assert DimReducMethod.dimreduc_methods_as_str_list(
+        ) == DimReducMethod.dim_reduc_methods
 
     def test_dimension_as_str(self):
         assert DimReducMethod.dimension_as_str(2) == '2D'
@@ -155,7 +160,9 @@ class TestDimReducMethod(TestCase):
         expected = pd.DataFrame(
             [[-0.048086, -0.153033, 0.032684], [-0.000829, 0.350276, 0.216138],
              [0.001658, -0.200644, 0.089618], [-0.070471, 0.017004, -0.144444],
-             [-0.030676, -0.180239, -0.030576], [0.148405, 0.166636, -0.163422]],
+             [-0.030676, -0.180239, -0.030576],
+             [0.148405, 0.166636, -0.163422]],
             index=list(range(0, 6)),
             columns=list('ABC'))
-        assert np.round(drm.scale_value_space(X, y,self.callback )[::], 6).equals(expected)
+        assert np.round(drm.scale_value_space(X, y, self.callback)[::],
+                        6).equals(expected)

@@ -62,8 +62,8 @@ def boolean_mask(X: pd.DataFrame, value: bool = True):
     return pd.Series([value] * len(X), index=X.index)
 
 
-
 def timeit(method):
+
     def timed(*args, **kw):
         ts = time.time()
         result = method(*args, **kw)
@@ -79,6 +79,7 @@ def timeit(method):
 
 
 def debug(func):
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         print(
@@ -151,6 +152,7 @@ def format_data(x):
 
 
 def format_number(value: Number) -> str:
+
     def format_str(value):
         if abs(value) < 1e-2 or abs(value) > 1e4:
             return '.2e'
