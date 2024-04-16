@@ -26,8 +26,7 @@ class PCADimReduc(DimReducMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  dimension: int = 2,
-                 progress_callback: ProgressCallback | None = None,
-                 fit_sample_num: int | None = None):
+                 progress_callback: ProgressCallback | None = None):
         super().__init__(self.dimreduc_method,
                          PCA,
                          dimension,

@@ -16,9 +16,11 @@ class TestDimReducMethod(TestCase):
 
     def setUp(self):
         self.callback = DummyProgressCallback()
-        X, y = generate_corner_dataset(10)
-        self.X = pd.DataFrame(X)
-        self.y = pd.Series(y)
+        self.y = pd.Series(np.random.randn(100))
+        self.X = pd.DataFrame(np.random.randn(100, 4),
+                         columns=['var1', 'var2', 'var3', 'var4'])
+
+
 
     def test_init(self):
         drm = DimReducMethod(1, PCA, 2, self.X)
@@ -98,57 +100,55 @@ class TestDimReducMethod(TestCase):
         drm = DimReducMethod(1, PCA, 2, self.X)
         assert drm.parameters() == {}
 
-    def test_compute(self):  # ok rajouter test sur publish_progress
-        X = pd.DataFrame(np.random.randn(100, 4),
-                         columns=['var1', 'var2', 'var3', 'var4'])
-
+    def test_computePCA(self):  # ok rajouter test sur publish_progress
         # test with PCA
         drm1 = DimReducMethod(1,
                               PCA,
                               2,
-                              X,
+                              self.X,
                               default_parameters={'n_components': 2})
         X_proj = drm1.compute()
-        assert X_proj.shape == (X.shape[0], 2)
+        assert X_proj.shape == (self.X.shape[0], 2)
         X_proj = drm1.compute(fit_sample_num=50)
-        assert X_proj.shape == (X.shape[0], 2)
+        assert X_proj.shape == (self.X.shape[0], 2)
         assert drm1.default_parameters == {'n_components': 2}
 
-        # test with UMAP
+    def test_computeUMAP(self):  # ok rajouter test sur publish_progress
         drm4 = DimReducMethod(2,
                               umap.UMAP,
                               2,
-                              X,
+                              self.X,
                               default_parameters={'n_components': 2})
         X_proj = drm4.compute(fit_sample_num=50)
-        assert X_proj.shape == (X.shape[0], 2)
+        assert X_proj.shape == (self.X.shape[0], 2)
         X_proj = drm4.compute()
-        assert X_proj.shape == (X.shape[0], 2)
+        assert X_proj.shape == (self.X.shape[0], 2)
 
+    def test_computeTSNE(self):  # ok rajouter test sur publish_progress
         # test with TSNE 2D
         drm2 = DimReducMethod(1,
                               TSNE,
                               2,
-                              X,
+                              self.X,
                               default_parameters={'n_components': 2})
         X_proj = drm2.compute(fit_sample_num=50)
-        assert X_proj.shape == (X.shape[0], 2)
+        assert X_proj.shape == (self.X.shape[0], 2)
         X_proj = drm2.compute()
-        assert X_proj.shape == (X.shape[0], 2)
+        assert X_proj.shape == (self.X.shape[0], 2)
 
         # test with TSNE 3D
         drm3 = DimReducMethod(1,
                               TSNE,
                               3,
-                              X,
+                              self.X,
                               default_parameters={'n_components': 2})
         X_proj = drm3.compute(fit_sample_num=50)
-        assert X_proj.shape == (X.shape[0], 3)
+        assert X_proj.shape == (self.X.shape[0], 3)
         X_proj = drm3.compute()
-        assert X_proj.shape == (X.shape[0], 3)
+        assert X_proj.shape == (self.X.shape[0], 3)
 
-        # test with PaCMAP
-        # à implémenter sous un autre OS que Windows
+    def test_computePacMAP(self):  # à implémenter sous un autre OS que Windows
+        pass
 
     def test_scale_value_space(self):
         np.random.seed(10)
