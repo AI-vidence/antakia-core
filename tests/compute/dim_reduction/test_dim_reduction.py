@@ -1,6 +1,8 @@
 from unittest import TestCase
 
 import numpy as np
+
+from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from antakia_core.compute.dim_reduction.pacmap_progress.pacmap_progress import PaCMAP
 import pacmap
 
@@ -30,6 +32,8 @@ class TestDimReduction(TestCase):
                                       {'n_components': 2})
         assert dr_pca.dimension == 2
         assert dr_pca.dimreduc_model == PCA
+        assert hasattr(dr_pca.dimreduc_model, 'fit')
+        assert isinstance(dr_pca, DimReducMethod)
         assert dr_pca.X.equals(self.X)
         np.testing.assert_array_equal(dr_pca.allowed_kwargs, [
             'copy', 'whiten', 'svd_solver', 'tol', 'iterated_power',
@@ -49,6 +53,9 @@ class TestDimReduction(TestCase):
         })
         assert tsne.dimension == 2
         assert tsne.dimreduc_model == TSNEwrapper
+        assert hasattr(tsne.dimreduc_model, 'fit')
+        assert isinstance(tsne, DimReducMethod)
+
         assert tsne.X.equals(self.X)
         np.testing.assert_array_equal(tsne.allowed_kwargs, [
             'perplexity', 'early_exaggeration', 'learning_rate', 'n_iter',
@@ -85,6 +92,8 @@ class TestDimReduction(TestCase):
         })
         assert umap_dr.dimension == 2
         assert umap_dr.dimreduc_model == umap.UMAP
+        assert hasattr(umap_dr.dimreduc_model, 'fit')
+        assert isinstance(umap_dr, DimReducMethod)
         assert umap_dr.X.equals(self.X)
         np.testing.assert_array_equal(umap_dr.allowed_kwargs, [
             'n_neighbors',
@@ -153,6 +162,9 @@ class TestDimReduction(TestCase):
             'progress_callback': None
         })
         assert pacmap_dr.dimension == 2
+        assert hasattr(pacmap_dr.dimreduc_model, 'fit')
+        assert isinstance(pacmap_dr, DimReducMethod)
+
         assert pacmap_dr.X.equals(self.X)
         np.testing.assert_array_equal(pacmap_dr.allowed_kwargs, [
             'n_neighbors', 'MN_ratio', 'FP_ratio', 'pair_neighbors', 'pair_MN',
