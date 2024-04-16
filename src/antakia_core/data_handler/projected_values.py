@@ -14,7 +14,6 @@ class ProjectedValues:
     def __init__(self, X: pd.DataFrame, y: pd.Series, fit_sample_num: int | None = None):
         self.X = X
         self.y = y
-        self.fit_sample_num = fit_sample_num
         self._projected_values: dict[Proj, pd.DataFrame] = {}
         self._parameters: dict[Proj, dict] = {}
 

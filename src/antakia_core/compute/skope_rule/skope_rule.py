@@ -44,6 +44,5 @@ def skope_rules(df_mask: pd.Series,
         rules_list, score_dict = RuleSet.sk_rules_to_rule_set(
             sk_classifier.rules_, variables)
         return rules_list, score_dict
-
     else:
         return RuleSet(), {}
