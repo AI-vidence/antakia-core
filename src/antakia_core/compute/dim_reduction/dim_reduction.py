@@ -1,3 +1,5 @@
+import os
+
 from .pacmap_progress import PaCMAP
 import pandas as pd
 from sklearn.decomposition import PCA
@@ -59,7 +61,6 @@ class TSNEDimReduc(DimReducMethod):
                  X: pd.DataFrame,
                  dimension: int = 2,
                  progress_callback: ProgressCallback | None = None,
-                 fit_sample_num: int | None = None
                  ):
         super().__init__(self.dimreduc_method,
                          TSNEwrapper,
@@ -139,7 +140,6 @@ class UMAPDimReduc(DimReducMethod):
                  X: pd.DataFrame,
                  dimension: int = 2,
                  progress_callback: ProgressCallback | None = None,
-                 fit_sample_num: int | None = None
                  ):
         import umap
         super().__init__(self.dimreduc_method,
@@ -187,7 +187,6 @@ class PaCMAPDimReduc(DimReducMethod):
                  X: pd.DataFrame,
                  dimension: int = 2,
                  progress_callback: ProgressCallback | None = None,
-                 fit_sample_num: int | None = None
                  ):
         super().__init__(self.dimreduc_method,
                          PaCMAP,
@@ -236,6 +235,7 @@ def compute_projection(X: pd.DataFrame,
                        dimreduc_method: int,
                        dimension: int,
                        progress_callback: ProgressCallback | None = None,
+                       fit_sample_num = None,
                        **kwargs) -> pd.DataFrame:
     dim_reduc = dim_reduc_factory.get(dimreduc_method)
 
@@ -248,7 +248,7 @@ def compute_projection(X: pd.DataFrame,
         pb1, pb2 = progress_callback.split(50)
     X_scaled = DimReducMethod.scale_value_space(X, y, pb1)
 
-    default_kwargs = {'random_state': 9}
+    default_kwargs = {'random_state': 9, 'fit_sample_num' : fit_sample_num}
     default_kwargs.update(kwargs)
     dim_reduc_kwargs = {
         k: v
