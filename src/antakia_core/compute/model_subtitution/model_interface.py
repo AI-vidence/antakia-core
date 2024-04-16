@@ -93,11 +93,13 @@ class InterpretableModels:
                                               self.score_type)
 
     def _train_models(self, X_train, y_train, X_test, y_test):
-        Parallel(n_jobs=1)(delayed(model.fit_and_compute_fi)
+        models = Parallel(n_jobs=-1)(delayed(model.fit_and_compute_fi)
                            (X_train, y_train, X_test, y_test,
                             self.custom_score, self.score_type)
                            for model_name, model in self.models.items()
                            if not model.fitted)
+        for model in models:
+            self.model[pretty_model_name(model.name)] = model
 
     def _compute_score_type(self, customer_model, X: pd.DataFrame,
                             y: pd.Series):
