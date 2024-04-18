@@ -17,7 +17,7 @@ def test_init():
     assert drm.dimension == 2
     assert drm.dimreduc_model is None
     assert drm.X.equals(X)
-    assert isinstance(drm.progress_updated,DummyProgressCallback)
+    assert isinstance(drm.progress_updated, DummyProgressCallback)
 
     drm1 = DimReducMethod(2, None, 2, X, progress_callback=callback)
     assert drm1.dimreduc_method == 2

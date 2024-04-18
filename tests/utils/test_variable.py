@@ -8,6 +8,7 @@ from antakia_core.utils.variable import Variable, DataVariables
 
 
 class TestVariable(TestCase):
+
     def setUp(self) -> None:
         self.var1 = dict(col_index=0,
                          column_name='var1',
@@ -29,15 +30,15 @@ class TestVariable(TestCase):
                     'Latitude', 'Longitude'
                 ],
                 'col_type': [
-                    'continuous', 'continuous', 'continuous', 'discrete', 'continuous', 'continuous',
-                    'continuous', 'continuous'
+                    'continuous', 'continuous', 'continuous', 'discrete',
+                    'continuous', 'continuous', 'continuous', 'continuous'
                 ],
                 'unit': [
-                    'k$', 'years', 'rooms', 'rooms', 'people', 'ratio', 'degrees',
-                    'degrees'
+                    'k$', 'years', 'rooms', 'rooms', 'people', 'ratio',
+                    'degrees', 'degrees'
                 ],
                 'critical':
-                    [True, False, False, False, False, False, False, False],
+                [True, False, False, False, False, False, False, False],
                 'lat': [False, False, False, False, False, False, True, False],
                 'lon': [False, False, False, False, False, False, False, True]
             },
@@ -59,13 +60,19 @@ class TestVariable(TestCase):
             'col_type': 'discrete'
         }]
         self.X1 = pd.DataFrame()
-        self.X2 = pd.DataFrame({"a": [4, 5, 6], "b": [7, 8, 9], "c": [10, 11, 12]})
+        self.X2 = pd.DataFrame({
+            "a": [4, 5, 6],
+            "b": [7, 8, 9],
+            "c": [10, 11, 12]
+        })
         self.X3 = pd.DataFrame({"lat": [5]})
         self.X4 = pd.DataFrame({"long": [5]})
-        self.X = pd.DataFrame(np.random.random((20, 8)), columns=[
-            'MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population',
-            'AveOccup', 'Latitude', 'Longitude'
-        ])
+        self.X = pd.DataFrame(np.random.random((20, 8)),
+                              columns=[
+                                  'MedInc', 'HouseAge', 'AveRooms',
+                                  'AveBedrms', 'Population', 'AveOccup',
+                                  'Latitude', 'Longitude'
+                              ])
 
     def test_init(self):
         var = Variable(**self.var1)
@@ -97,72 +104,97 @@ class TestVariable(TestCase):
             Variable(1, 'b', col_type='continuous', continuous=True),
             Variable(2, 'c', col_type='continuous', continuous=True)
         ])
-        assert DataVariables.build_variables(self.X3) == DataVariables(
-            [Variable(0, 'lat', col_type='continuous', lat=True, continuous=True)])
-
-        assert DataVariables.build_variables(self.X4) == DataVariables(
-            [Variable(0, 'long', col_type='continuous', lon=True, continuous=True)])
-
-    def test_import_variable_df(self):
-        assert DataVariables.build_variables(self.X, self.variables_df) == DataVariables([
+        assert DataVariables.build_variables(self.X3) == DataVariables([
             Variable(0,
-                     'MedInc',
+                     'lat',
                      col_type='continuous',
-                     descr='Median income',
-                     unit='k$',
-                     critical=True),
-            Variable(1, 'HouseAge', col_type='continuous', descr='House age', unit='years'),
-            Variable(2,
-                     'AveRooms',
-                     col_type='continuous',
-                     descr='Average nb rooms',
-                     unit='rooms'),
-            Variable(3,
-                     'AveBedrms',
-                     col_type='discrete',
-                     descr='Average nb bedrooms',
-                     unit='rooms'),
-            Variable(4, 'Population', col_type='continuous', descr='Population', unit='people'),
-            Variable(5,
-                     'AveOccup',
-                     col_type='continuous',
-                     descr='Average occupancy',
-                     unit='ratio'),
-            Variable(6,
-                     'Latitude',
-                     col_type='continuous',
-                     descr='Latitude',
-                     unit='degrees',
-                     lat=True),
-            Variable(7,
-                     'Longitude',
-                     col_type='continuous',
-                     descr='Longitude',
-                     unit='degrees',
-                     lon=True)
+                     lat=True,
+                     continuous=True)
         ])
 
-        variables_df1 = pd.DataFrame({
-            'col_index': [0],
-            'col_type': ['continuous']
-        }, index=['MedInc'])
+        assert DataVariables.build_variables(self.X4) == DataVariables([
+            Variable(0,
+                     'long',
+                     col_type='continuous',
+                     lon=True,
+                     continuous=True)
+        ])
 
-        assert DataVariables.build_variables(self.X[['MedInc']], variables_df1) == DataVariables(
-            [Variable(0, 'MedInc', col_type='continuous')])
+    def test_import_variable_df(self):
+        assert DataVariables.build_variables(
+            self.X, self.variables_df) == DataVariables([
+                Variable(0,
+                         'MedInc',
+                         col_type='continuous',
+                         descr='Median income',
+                         unit='k$',
+                         critical=True),
+                Variable(1,
+                         'HouseAge',
+                         col_type='continuous',
+                         descr='House age',
+                         unit='years'),
+                Variable(2,
+                         'AveRooms',
+                         col_type='continuous',
+                         descr='Average nb rooms',
+                         unit='rooms'),
+                Variable(3,
+                         'AveBedrms',
+                         col_type='discrete',
+                         descr='Average nb bedrooms',
+                         unit='rooms'),
+                Variable(4,
+                         'Population',
+                         col_type='continuous',
+                         descr='Population',
+                         unit='people'),
+                Variable(5,
+                         'AveOccup',
+                         col_type='continuous',
+                         descr='Average occupancy',
+                         unit='ratio'),
+                Variable(6,
+                         'Latitude',
+                         col_type='continuous',
+                         descr='Latitude',
+                         unit='degrees',
+                         lat=True),
+                Variable(7,
+                         'Longitude',
+                         col_type='continuous',
+                         descr='Longitude',
+                         unit='degrees',
+                         lon=True)
+            ])
 
-        variables_df2 = pd.DataFrame({
-            'colonne': [0],
-            'col_type': ['continuous']
-        },
-            index=['MedInc'])
+        variables_df1 = pd.DataFrame(
+            {
+                'col_index': [0],
+                'col_type': ['continuous']
+            }, index=['MedInc'])
 
-        assert DataVariables.build_variables(self.X[['MedInc']], variables_df2) == DataVariables(
-            [Variable(0, 'MedInc', col_type='continuous')])
+        assert DataVariables.build_variables(
+            self.X[['MedInc']], variables_df1) == DataVariables(
+                [Variable(0, 'MedInc', col_type='continuous')])
+
+        variables_df2 = pd.DataFrame(
+            {
+                'colonne': [0],
+                'col_type': ['continuous']
+            }, index=['MedInc'])
+
+        assert DataVariables.build_variables(
+            self.X[['MedInc']], variables_df2) == DataVariables(
+                [Variable(0, 'MedInc', col_type='continuous')])
 
         with pytest.raises(KeyError):
-            DataVariables.build_variables(self.X[['MedInc']],
-                                          variables_df1.drop('column_name', axis=1).reset_index(drop=True))
-        DataVariables.build_variables(self.X[['MedInc']], variables_df1.drop('col_type', axis=1))
+            DataVariables.build_variables(
+                self.X[['MedInc']],
+                variables_df1.drop('column_name',
+                                   axis=1).reset_index(drop=True))
+        DataVariables.build_variables(self.X[['MedInc']],
+                                      variables_df1.drop('col_type', axis=1))
 
 
 def test_import_variable_list():
@@ -343,7 +375,11 @@ def test_len_dv():
                  descr='Median income',
                  unit='k$',
                  critical=True),
-        Variable(1, 'HouseAge', col_type='int', descr='House age', unit='years'),
+        Variable(1,
+                 'HouseAge',
+                 col_type='int',
+                 descr='House age',
+                 unit='years'),
         Variable(2,
                  'AveRooms',
                  col_type='continuous',
@@ -354,7 +390,11 @@ def test_len_dv():
                  col_type='continuous',
                  descr='Average nb bedrooms',
                  unit='rooms'),
-        Variable(4, 'Population', col_type='int', descr='Population', unit='people'),
+        Variable(4,
+                 'Population',
+                 col_type='int',
+                 descr='Population',
+                 unit='people'),
         Variable(5,
                  'AveOccup',
                  col_type='continuous',
