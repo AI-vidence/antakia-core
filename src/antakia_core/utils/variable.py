@@ -184,7 +184,6 @@ class Variable:
             local_var_dict['column_name'] = column_name
         if 'col_type' not in var_dict or var_dict['col_type'] == 'auto':
             local_var_dict['col_type'] = Variable.get_type(x)
-        print(local_var_dict['col_type'])
         local_var_dict['lat'] = column_name.lower() in ["latitude", "lat"]
         local_var_dict['lon'] = column_name.lower() in [
             "longitude", "long", "lon"
