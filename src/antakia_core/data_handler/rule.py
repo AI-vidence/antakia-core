@@ -151,20 +151,25 @@ class Rule:
 
     def get_matching_mask(self, X: pd.DataFrame) -> pd.Series:
         col = X.loc[:, self.variable.column_name]
+        return self.get_series_matching_mask(col)
+
+    def get_series_matching_mask(self, x: pd.Series) -> pd.Series:
         if self.rule_type == -1:
-            return boolean_mask(X, True)
+            return boolean_mask(x, True)
         if self.rule_type == 0:
-            return col.isin(self.cat_values)  # type:ignore
+            return x.isin(self.cat_values)  # type:ignore
         if self.rule_type == 4:
-            return col == self.min
+            return x == self.min
         if self.rule_type == 5:
-            return boolean_mask(X, False)
-        return getattr(col, self.operator_max)(self.max) & getattr(
-            col, self.operator_min)(self.min)
+            return boolean_mask(x, False)
+        return getattr(x, self.operator_max)(self.max) & getattr(
+            x, self.operator_min)(self.min)
 
     def __call__(self, value: float | pd.DataFrame) -> bool | pd.Series:
         if isinstance(value, pd.DataFrame):
             return self.get_matching_mask(value)
+        if isinstance(value, pd.Series):
+            return self.get_series_matching_mask(value)
         if self.rule_type == -1:
             return True
         if self.rule_type == 0:

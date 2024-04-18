@@ -22,7 +22,7 @@ class SHAPExplanation(ExplanationMethod):
     def __init__(self,
                  X: pd.DataFrame,
                  model,
-                 task_type,
+                 task_type: ProblemCategory,
                  progress_updated: ProgressCallback | None = None):
         super().__init__(ExplanationMethod.SHAP, X, model, task_type,
                          progress_updated)
