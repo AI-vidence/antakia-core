@@ -103,7 +103,7 @@ class ProjectedValues:
 
     def is_present(self, projection: Proj) -> bool:
         """
-        tests if the projection is already computed
+        checks if the projection is already computed
         Parameters
         ----------
         projection_method

@@ -6,6 +6,7 @@ from openTSNE import TSNE
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from ...utils.splittable_callback import ProgressCallback
 
+
 # ===========================================================
 #         Projections / Dim Reductions implementations
 # ===========================================================
@@ -247,6 +248,6 @@ def compute_projection(X: pd.DataFrame,
             X,  # type:ignore
             dimension,  # type:ignore
             progress_callback).compute(  # type:ignore
-                **dim_reduc_kwargs).values,  # type:ignore
+            **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values

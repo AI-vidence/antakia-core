@@ -99,12 +99,12 @@ class TestProjectedValues(TestCase):
 
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
 
-        # get a pv that needs to be  without callback
+        # get a pv that needs to be computed without callback
         proj = Proj(2, 2)  # UMAP
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
         assert self.progress_callback.calls[-1][0] == 100
 
-        # get a pv that needs to be  with callback
+        # get a pv that needs to be computed with callback
         proj = Proj(2, 2)  # UMAP
         assert isinstance(pv.get_projection(proj, progress_callback=self.progress_callback), pd.DataFrame)
         assert self.progress_callback.calls[-1][0] == 100
@@ -122,3 +122,4 @@ class TestProjectedValues(TestCase):
         proj = Proj(1, 2)
         pv.compute(proj, self.progress_callback)
         assert isinstance(pv._projected_values[proj], pd.DataFrame)
+

@@ -27,13 +27,13 @@ class DimReducMethod(LongTask):
     has_progress_callback = False
 
     def __init__(
-        self,
-        dimreduc_method: int,
-        dimreduc_model: type[TransformerMixin],
-        dimension: int,
-        X: pd.DataFrame,
-        default_parameters: dict | None = None,
-        progress_callback: ProgressCallback | None = None,
+            self,
+            dimreduc_method: int,
+            dimreduc_model: type[TransformerMixin],
+            dimension: int,
+            X: pd.DataFrame,
+            default_parameters: dict | None = None,
+            progress_callback: ProgressCallback | None = None,
     ):
         """
         Constructor for the DimReducMethod class.
@@ -138,9 +138,15 @@ class DimReducMethod(LongTask):
         param = self.default_parameters.copy()
         param.update(kwargs)
         dim_red_model = self.dimreduc_model(**param)
-        X_red = dim_red_model.fit(self.X.sample(n=fit_sample_num)).transform(self.X)
+        if hasattr(dim_red_model, 'fit'):
+            fitted_model = dim_red_model.fit(self.X.sample(n=fit_sample_num))
+            if hasattr(fitted_model, 'transform'):
+                X_red = fitted_model.transform(self.X)
+        elif hasattr(dim_red_model, 'fit_transform'):
+            X_red = dim_red_model.fit_transform(self.X)
+        else:
+            raise AttributeError("No fit method implemented for dimensionality reduction method")
         X_red = pd.DataFrame(X_red)
-
         self.publish_progress(100)
         return X_red
 

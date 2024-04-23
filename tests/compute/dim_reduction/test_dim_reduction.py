@@ -237,7 +237,7 @@ class TestDimReduction(TestCase):
                                              **params)
             assert cpt_proj_2D.shape == (len(X), 2)
             assert X.index.equals(cpt_proj_2D.index)
-            assert self.callback.calls[-1][0][0] == 100
+            assert self.callback.calls[-1][0] == 100
 
             # test PCA 2D with sample train
             cpt_proj_2D = compute_projection(X,
@@ -248,7 +248,7 @@ class TestDimReduction(TestCase):
                                              **params)
             assert cpt_proj_2D.shape == (len(X), 2)
             assert X.index.equals(cpt_proj_2D.index)
-            assert self.callback.calls[-1][0][0] == 100
+            assert self.callback.calls[-1][0] == 100
 
             cpt_proj_3D = compute_projection(X,
                                              y,
@@ -258,4 +258,4 @@ class TestDimReduction(TestCase):
                                              **params)
             assert cpt_proj_3D.shape == (len(X), 3)
             assert X.index.equals(cpt_proj_3D.index)
-            assert self.callback.calls[-1][0][0] == 100
+            assert self.callback.calls[-1][0] == 100
