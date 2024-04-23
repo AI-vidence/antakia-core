@@ -5,7 +5,7 @@ from antakia_core.data_handler.rules import Rule, Variable
 
 
 def test_type_1():
-    var = Variable(0, 'type1', 'float')
+    var = Variable(0, 'type1', type='float')
     rule1_1 = Rule(var, max=10, includes_max=False)
     rule1_2 = Rule(var, max=10, includes_max=True)
     rule1_3 = Rule(var, max=20, includes_max=False)
@@ -46,7 +46,7 @@ def test_type_1():
 
 
 def test_type_2():
-    var = Variable(0, 'type2', 'float')
+    var = Variable(0, 'type2', type='float')
     rule2_1 = Rule(var, 10, False)  # 10, '<', var, None, None)
     rule2_2 = Rule(var, 10, True)  # 10, '<=', var, None, None)
     rule2_3 = Rule(var, 20, False)  # 20, '<', var, None, None)
@@ -86,7 +86,7 @@ def test_type_2():
 
 
 def test_type_3():
-    var = Variable(0, 'type3', 'float')
+    var = Variable(0, 'type3', type='float')
     rule3_1 = Rule(var, 10, False, 40, False)  # 10, '<', var, '<', 40)
     rule3_2 = Rule(var, 10, True, 40, True)  # 10, '<=', var, '<=', 40)
     rule3_3 = Rule(var, 20, False, 30, False)  # 20, '<', var, '<', 30)
@@ -118,7 +118,7 @@ def test_type_3():
 
 
 def test_type_5():
-    var = Variable(0, 'type4', 'float')
+    var = Variable(0, 'type4', type='float')
     rule4_1 = Rule(var, 40, False, 10, False)  # 10, '>', var, '>', 40)
     rule4_2 = Rule(var, 40, True, 10, True)  # 10, '>=', var, '>=', 40)
     rule4_3 = Rule(var, 30, False, 20, False)  # 20, '>', var, '>', 30)
@@ -151,7 +151,7 @@ def test_type_5():
 
 
 def test_combine():
-    var1 = Variable(0, 'comb1', 'float')
+    var1 = Variable(0, 'comb1', type='float')
     rule1_1 = Rule(var1, max=20,
                    includes_max=False)  # None, None, var1, '<', 20)
     rule1_2 = Rule(var1, max=10,
