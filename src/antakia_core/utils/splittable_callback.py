@@ -6,15 +6,14 @@ class ProgressCallback:
     def __call__(self, *args, **kwargs):
         raise NotImplemented
 
-    def split(self,
-              value: float | list[float]) -> Sequence['ProgressCallback']:
+    def split(self, value: float | list[float]) -> Sequence['ProgressCallback']:
         raise NotImplemented
 
 
 class DummyProgressCallback(ProgressCallback):
 
     def __call__(self, *args, **kwargs):
-        pass
+        self.progress = 0
 
     def split(self, value: float | list[float]) -> Sequence[ProgressCallback]:
         if isinstance(value, list):

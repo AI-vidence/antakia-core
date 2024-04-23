@@ -1,12 +1,9 @@
 from unittest import TestCase
-
-import numpy as np
-import mock
 import pandas as pd
 
 from antakia_core.data_handler.projected_values import ProjectedValues, Proj
 from tests.dummy_datasets import generate_corner_dataset
-from tests.utils_fct import generate_df_series, DummyProgress
+from tests.utils_fct import DummyProgress
 
 
 class TestProjectedValues(TestCase):
@@ -14,7 +11,8 @@ class TestProjectedValues(TestCase):
     def setUp(self):
         self.X, self.y = generate_corner_dataset(10)
         self.X = pd.DataFrame(self.X)
-        self.y = pd.DataFrame(self.y)
+        self.y = pd.Series(self.y)
+        self.progress_callback = DummyProgress()
 
     def test_init(self):
         pv = ProjectedValues(self.X, self.y)
@@ -25,9 +23,8 @@ class TestProjectedValues(TestCase):
 
     def test_set_parameters(self):
         proj = Proj(1, 2)
-        callback = DummyProgress()
         pv = ProjectedValues(self.X, self.y)
-        pv.compute(proj, callback)
+        pv.compute(proj, self.progress_callback)
         pv.set_parameters(proj, {'n_neighbors': 2})
         assert pv._parameters == {
             proj: {
@@ -37,7 +34,7 @@ class TestProjectedValues(TestCase):
                 'previous': {}
             }
         }
-        pv.compute(proj, callback)
+        pv.compute(proj, self.progress_callback)
         pv.set_parameters(proj, {'MN_ratio': 4})
         assert pv._parameters == {
             proj: {
@@ -51,9 +48,6 @@ class TestProjectedValues(TestCase):
             }
         }
 
-        # pv1 = ProjectedValues(self.X, self.y)
-        # pv1.set_parameters(proj, {'n_neighbors': 2})
-        # trouver un test avec self._parameters.get(projection) is None
 
     def test_get_parameters(self):
         pv = ProjectedValues(self.X, self.y)
@@ -96,30 +90,36 @@ class TestProjectedValues(TestCase):
         }
 
     def test_get_projection(self):
-        callback = DummyProgress()
         pv = ProjectedValues(self.X, self.y)
 
-        #get a pv that is already computed
-        proj = Proj(1, 2)
-        pv.compute(proj, callback)
+        # get a pv that is already computed
+        proj = Proj(1, 2)  # PCA
+        pv.compute(proj, self.progress_callback)
+        assert self.progress_callback.calls[-1][0] == 100
+
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
 
-        #get a pv that needs to be computed
-        proj = Proj(2, 2)
+        # get a pv that needs to be computed without callback
+        proj = Proj(2, 2)  # UMAP
         assert isinstance(pv.get_projection(proj), pd.DataFrame)
+        assert self.progress_callback.calls[-1][0] == 100
+
+        # get a pv that needs to be computed with callback
+        proj = Proj(2, 2)  # UMAP
+        assert isinstance(pv.get_projection(proj, progress_callback=self.progress_callback), pd.DataFrame)
+        assert self.progress_callback.calls[-1][0] == 100
 
     def test_is_present(self):
-        callback = DummyProgress()
         pv = ProjectedValues(self.X, self.y)
-        proj = Proj(1, 2)
+        proj = Proj(1, 2)  # PCA
         assert not pv.is_present(proj)
 
-        pv.compute(proj, callback)
+        pv.compute(proj, self.progress_callback)
         assert pv.is_present(proj)
 
     def test_compute(self):
-        callback = DummyProgress()
         pv = ProjectedValues(self.X, self.y)
         proj = Proj(1, 2)
-        pv.compute(proj, callback)
+        pv.compute(proj, self.progress_callback)
         assert isinstance(pv._projected_values[proj], pd.DataFrame)
+

@@ -31,8 +31,7 @@ class ProjectedValues:
         -------
 
         """
-        assert projection.reduction_method in DimReducMethod.dimreduc_methods_as_list(
-        )
+        assert projection.reduction_method in DimReducMethod.dimreduc_methods_as_list()
         assert projection.dimension in [2, 3]
 
         if self._parameters.get(projection) is None:
@@ -104,7 +103,7 @@ class ProjectedValues:
 
     def is_present(self, projection: Proj) -> bool:
         """
-        tests if the projection is already computed
+        checks if the projection is already computed
         Parameters
         ----------
         projection_method
@@ -132,6 +131,5 @@ class ProjectedValues:
         """
         projected_values = compute_projection(
             self.X, self.y, projection.reduction_method, projection.dimension,
-            progress_callback,
-            **self.get_parameters(projection)['current'])
+            progress_callback, **self.get_parameters(projection)['current'])
         self._projected_values[projection] = projected_values
