@@ -11,7 +11,7 @@ Proj = namedtuple('Proj', ['reduction_method', 'dimension'])
 
 class ProjectedValues:
 
-    def __init__(self, X: pd.DataFrame, y: pd.Series, fit_sample_num: int | None = None):
+    def __init__(self, X: pd.DataFrame, y: pd.Series):
         self.X = X
         self.y = y
         self._projected_values: dict[Proj, pd.DataFrame] = {}

@@ -212,9 +212,7 @@ class TestDimReduction(TestCase):
         np.testing.assert_array_equal(
             compute_projection(X, y, 1, 2, self.callback).index, X.index)
 
-    def test_dim_reduction(
-        self
-    ):  # ok sauf PaCMAP : windows fatal error (access violation File) pour PaCMAP
+    def test_dim_reduction(self):  # ok sauf PaCMAP : windows fatal error (access violation File) pour PaCMAP
         X = pd.DataFrame(np.random.random((10, 5)),
                          index=np.random.choice(np.random.randint(100,
                                                                   size=20),
