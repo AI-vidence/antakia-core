@@ -1,10 +1,12 @@
 import typing
 
 import pandas as pd
+import numpy as np
 from sklearn.base import TransformerMixin
 
 from antakia_core.utils.long_task import LongTask
 from antakia_core.utils.splittable_callback import ProgressCallback
+from antakia_core.utils.correlation_coef import correlation_coef, shuffle_dataframe_and_series
 
 
 class DimReducMethod(LongTask):
@@ -146,23 +148,44 @@ class DimReducMethod(LongTask):
         return X_red
 
     @classmethod
+    def get_scale_values(
+        cls, X: pd.DataFrame, y: pd.Series,
+        progress_callback: ProgressCallback | None,
+        method='MIS'
+    ):
+        mutual_info_scores = []
+        if method == 'MIS':
+            from sklearn.feature_selection import mutual_info_regression
+            chunck_size = 20
+            for i in range(0, len(X.T), chunck_size):
+                chunck_mi = mutual_info_regression(X.iloc[:, i:i + chunck_size],
+                                                   y.iloc[:])
+                mutual_info_scores.append(
+                    pd.Series(chunck_mi, index=X.columns[i:i + chunck_size]))
+                if progress_callback is not None:
+                    progress_callback(i / len(X.T) * 100)
+            return pd.concat(mutual_info_scores)
+        elif method == 'NCC':
+            X, y = shuffle_dataframe_and_series(X, y)
+            y = y + np.random.random(size=(len(X))) * 0.1 * y.std()
+
+            for i, col in enumerate(X.columns):
+                corr = correlation_coef(X[col].values, y.values)
+                mutual_info_scores.append(corr)
+                if progress_callback is not None:
+                    progress_callback(i / len(X.T) * 100)
+            return pd.Series(mutual_info_scores, index=X.columns)
+
+    @classmethod
     def scale_value_space(
-            cls, X: pd.DataFrame, y: pd.Series,
-            progress_callback: ProgressCallback | None) -> pd.DataFrame:
+        cls, X: pd.DataFrame, y: pd.Series,
+        progress_callback: ProgressCallback | None,
+        method='NCC'
+    ) -> pd.DataFrame:
         """
         Scale the values in X so that it's reduced and centered and weighted with mi
         """
         std = X.std()
         std[std == 0] = 1
-        from sklearn.feature_selection import mutual_info_regression
-        chunck_size = 20
-        mutual_info_scores = []
-        for i in range(0, len(X.T), chunck_size):
-            chunck_mi = mutual_info_regression(X.iloc[:, i:i + chunck_size],
-                                               y.iloc[:])
-            mutual_info_scores.append(
-                pd.Series(chunck_mi, index=X.columns[i:i + chunck_size]))
-            if progress_callback is not None:
-                progress_callback(i / len(X.T) * 100)
-        mi = pd.concat(mutual_info_scores)
+        mi = cls.get_scale_values(X, y, progress_callback, method)
         return (X - X.mean()) / std * mi
