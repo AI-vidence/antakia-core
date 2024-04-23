@@ -10,6 +10,7 @@ class DummyCallable:
     def __call__(self, *args):
         self.calls.append(args)
 
+
 class DummyModel:
 
     def predict(self, X):

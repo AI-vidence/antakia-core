@@ -22,7 +22,7 @@ class TestRegion(TestCase):
             [10, 1],
             [20, 2],
         ],
-            columns=['var1', 'var2'])
+                              columns=['var1', 'var2'])
         self.v1 = Variable(0, 'var1', type='float')
         self.v2 = Variable(0, 'var2', type='float')
 

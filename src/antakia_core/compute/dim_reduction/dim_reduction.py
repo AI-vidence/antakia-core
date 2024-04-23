@@ -6,7 +6,6 @@ from openTSNE import TSNE
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from ...utils.splittable_callback import ProgressCallback
 
-
 # ===========================================================
 #         Projections / Dim Reductions implementations
 # ===========================================================
@@ -16,7 +15,8 @@ class PCADimReduc(DimReducMethod):
     """
     PCA computation class.
     """
-    dimreduc_method = DimReducMethod.dimreduc_method_as_int('PCA')
+    dimreduc_method: int = DimReducMethod.dimreduc_method_as_int(
+        'PCA')  # type: ignore
     allowed_kwargs = [
         'copy', 'whiten', 'svd_solver', 'tol', 'iterated_power',
         'n_oversamples', 'power_iteration_normalizer', 'random_state'
@@ -89,7 +89,8 @@ class UMAPDimReduc(DimReducMethod):
     """
     UMAP computation class.
     """
-    dimreduc_method = DimReducMethod.dimreduc_method_as_int('UMAP')
+    dimreduc_method: int = DimReducMethod.dimreduc_method_as_int(
+        'UMAP')  # type: ignore
     allowed_kwargs = [
         'n_neighbors',
         'metric',
@@ -169,7 +170,8 @@ class PaCMAPDimReduc(DimReducMethod):
     PaCMAP computation class.
 
     """
-    dimreduc_method = DimReducMethod.dimreduc_method_as_int('PaCMAP')
+    dimreduc_method: int = DimReducMethod.dimreduc_method_as_int(
+        'PaCMAP')  # type: ignore
     allowed_kwargs = [
         'n_neighbors', 'MN_ratio', 'FP_ratio', 'pair_neighbors', 'pair_MN',
         'pair_FP', 'distance', 'lr', 'num_iters', 'apply_pca', 'intermediate',
@@ -248,6 +250,6 @@ def compute_projection(X: pd.DataFrame,
             X,  # type:ignore
             dimension,  # type:ignore
             progress_callback).compute(  # type:ignore
-            **dim_reduc_kwargs).values,  # type:ignore
+                **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values

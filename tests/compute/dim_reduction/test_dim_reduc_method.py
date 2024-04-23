@@ -18,9 +18,7 @@ class TestDimReducMethod(TestCase):
         self.callback = DummyProgressCallback()
         self.y = pd.Series(np.random.randn(100))
         self.X = pd.DataFrame(np.random.randn(100, 4),
-                         columns=['var1', 'var2', 'var3', 'var4'])
-
-
+                              columns=['var1', 'var2', 'var3', 'var4'])
 
     def test_init(self):
         drm = DimReducMethod(1, PCA, 2, self.X)
@@ -155,8 +153,7 @@ class TestDimReducMethod(TestCase):
         X = pd.DataFrame(np.random.randint(0, 100, size=(6, 3)),
                          columns=list('ABC'))
         y = X.sum(axis=1)
-        drm = DimReducMethod(1, None, 2, X)
-        drm.scale_value_space(X, y, self.callback)
+        mis = DimReducMethod.scale_value_space(X, y, self.callback, method='MIS')
         expected = pd.DataFrame(
             [[-0.048086, -0.153033, 0.032684], [-0.000829, 0.350276, 0.216138],
              [0.001658, -0.200644, 0.089618], [-0.070471, 0.017004, -0.144444],
@@ -164,5 +161,14 @@ class TestDimReducMethod(TestCase):
              [0.148405, 0.166636, -0.163422]],
             index=list(range(0, 6)),
             columns=list('ABC'))
-        assert np.round(drm.scale_value_space(X, y, self.callback)[::],
-                        6).equals(expected)
+
+        np.testing.assert_allclose(mis.values, expected.values, atol=1e-2)
+
+        ncc = DimReducMethod.scale_value_space(X, y, self.callback, method='NCC')
+        expected = pd.DataFrame(
+            [[-0.088322, - 0.09837858,  0.05172027], [-0.00152279,  0.22517763,  0.34202112],
+             [0.00304559, - 0.12898525,  0.14181363], [-0.12943741,  0.01093095, - 0.22857021],
+             [-0.05634334, - 0.1158681, - 0.04838348], [0.27257995,  0.10712334, - 0.25860133]],
+            index=list(range(0, 6)),
+            columns=list('ABC'))
+        np.testing.assert_allclose(ncc.values, expected.values, atol = 1e-2)

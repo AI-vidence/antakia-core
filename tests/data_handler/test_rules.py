@@ -517,10 +517,13 @@ def test_combine():
                    includes_max=False)  # None, None, var1, '<', 5)
     rule2_1 = Rule(var1, min=10,
                    includes_min=True)  # 10, '<=', var1, None, None)
-    rule3_1 = Rule(var1, min=10,
-                   includes_min=True, max=40, includes_max=False)  # 10, '<=', var1, '<', 40)
-    rule4_1 = Rule(var1, min=40,
-                   includes_min=False, max=10, includes_max=False)  # 10, '>', var1, '>', 40)
+    rule3_1 = Rule(var1, min=10, includes_min=True, max=40,
+                   includes_max=False)  # 10, '<=', var1, '<', 40)
+    rule4_1 = Rule(var1,
+                   min=40,
+                   includes_min=False,
+                   max=10,
+                   includes_max=False)  # 10, '>', var1, '>', 40)
 
     assert repr(rule2_1.combine(rule1_1)) == '10.00 ≤ comb1 < 20.00'
     assert rule2_1.combine(rule1_2) == rule4_1

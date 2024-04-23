@@ -59,6 +59,7 @@ class MLModel:
         self.compute_feature_importances(X_test, y_test, score, score_type)
         return self
 
+
 class AvgRegressionBaseline:
 
     def fit(self, X, y, *args, **kwargs):
