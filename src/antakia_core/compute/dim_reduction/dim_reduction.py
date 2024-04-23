@@ -234,11 +234,6 @@ def compute_projection(X: pd.DataFrame,
     if dim_reduc is None or not DimReducMethod.is_valid_dim_number(dimension):
         raise ValueError("Cannot compute proj method #", dimreduc_method,
                          " in ", dimension, " dimensions")
-    if progress_callback is None:
-        pb1, pb2 = None, None
-    else:
-        pb1, pb2 = progress_callback.split(50)
-    X_scaled = DimReducMethod.scale_value_space(X, y, pb1)
 
     default_kwargs = {'random_state': 9, 'fit_sample_num': fit_sample_num}
     default_kwargs.update(kwargs)
@@ -249,9 +244,9 @@ def compute_projection(X: pd.DataFrame,
     }
     proj_values = pd.DataFrame(
         dim_reduc(  # type:ignore
-            X_scaled,  # type:ignore
+            X,  # type:ignore
             dimension,  # type:ignore
-            pb2).compute(  # type:ignore
+            progress_callback).compute(  # type:ignore
                 **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values
