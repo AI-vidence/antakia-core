@@ -250,7 +250,7 @@ class Rule:
         """
         return {
             'Variable': self.variable.display_name,
-            'Unit': self.variable.unit,
+            # 'Unit': self.variable.unit,
             'Desc': self.variable.descr,
             'Critical': self.variable.critical,
             'Rule': self.__repr__()

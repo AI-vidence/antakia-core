@@ -22,9 +22,9 @@ class TestRegion(TestCase):
             [10, 1],
             [20, 2],
         ],
-                              columns=['var1', 'var2'])
-        self.v1 = Variable(0, 'var1', 'float')
-        self.v2 = Variable(0, 'var2', 'float')
+            columns=['var1', 'var2'])
+        self.v1 = Variable(0, 'var1', type='float')
+        self.v2 = Variable(0, 'var2', type='float')
 
         self.r1_1 = Rule(self.v1,
                          min=2,
