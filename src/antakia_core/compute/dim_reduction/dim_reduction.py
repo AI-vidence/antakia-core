@@ -6,6 +6,7 @@ from openTSNE import TSNE
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from ...utils.splittable_callback import ProgressCallback
 
+
 # ===========================================================
 #         Projections / Dim Reductions implementations
 # ===========================================================
@@ -227,6 +228,7 @@ def compute_projection(X: pd.DataFrame,
                        dimreduc_method: int,
                        dimension: int,
                        progress_callback: ProgressCallback | None = None,
+                       fit_sample_num=None,
                        **kwargs) -> pd.DataFrame:
     dim_reduc = dim_reduc_factory.get(dimreduc_method)
 
@@ -234,17 +236,18 @@ def compute_projection(X: pd.DataFrame,
         raise ValueError("Cannot compute proj method #", dimreduc_method,
                          " in ", dimension, " dimensions")
 
-    default_kwargs = {'random_state': 9}
+    default_kwargs = {'random_state': 9, 'fit_sample_num': fit_sample_num}
     default_kwargs.update(kwargs)
     dim_reduc_kwargs = {
         k: v
-        for k, v in default_kwargs.items() if k in dim_reduc.allowed_kwargs
+        for k, v in default_kwargs.items()
+        if k in dim_reduc.allowed_kwargs or k == 'fit_sample_num'
     }
     proj_values = pd.DataFrame(
         dim_reduc(  # type:ignore
             X,  # type:ignore
             dimension,  # type:ignore
             progress_callback).compute(  # type:ignore
-                **dim_reduc_kwargs).values,  # type:ignore
+            **dim_reduc_kwargs).values,  # type:ignore
         index=X.index)
     return proj_values

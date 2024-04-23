@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 class DummyCallable:
@@ -6,18 +7,8 @@ class DummyCallable:
     def __init__(self):
         self.calls = []
 
-    def __call__(self, *args, **kwargs):
-        self.calls.append((args, kwargs))
-
-
-def generate_df_series():
-    X = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],
-                     index=[1, 2, 3],
-                     columns=['a', 'b', 'c'])
-    y = pd.Series([1, 2, 3])
-
-    return X, y
-
+    def __call__(self, *args):
+        self.calls.append(args)
 
 class DummyModel:
 
@@ -38,6 +29,7 @@ class DummyProgress(DummyCallable):
     def __init__(self):
         super().__init__()
         self.progress = 0
+        self.calls = []
 
     def __call__(self, *args, **kwargs):
         super().__call__(*args, **kwargs)
@@ -47,3 +39,19 @@ class DummyProgress(DummyCallable):
         if isinstance(value, list):
             return [self for _ in value]
         return self, self
+
+
+def dummy_mask(data: pd.DataFrame | pd.Series,
+               random_seed: int | None = None) -> pd.Series:
+    """
+    Generates a random mask from a dataframe
+    :param data: data frame the mask is created from
+    :param random_seed: random seed
+    :return: mask Series
+    """
+    np.random.seed(random_seed)
+    if isinstance(data, pd.Series):
+        return pd.Series(np.random.randint(0, 2, data.shape[0]))
+    else:
+        return pd.Series(np.random.randint(0, 2,
+                                           data.shape[0] * data.shape[1]))
