@@ -41,7 +41,6 @@ class PCADimReduc(DimReducMethod):
 #     def fit_transform(self, X):
 #         return pd.DataFrame(self.fit(X.values), index=X.index)
 
-
 # class TSNEDimReduc(DimReducMethod):
 #     """
 #     T-SNE computation class.

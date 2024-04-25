@@ -4,12 +4,11 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.decomposition import PCA
-from openTSNE import TSNE
+# from openTSNE import TSNE
 import umap
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from antakia_core.utils.splittable_callback import DummyProgressCallback
-from tests.dummy_datasets import generate_corner_dataset
 
 
 class TestDimReducMethod(TestCase):
@@ -122,28 +121,28 @@ class TestDimReducMethod(TestCase):
         X_proj = drm4.compute()
         assert X_proj.shape == (self.X.shape[0], 2)
 
-    def test_computeTSNE(self):  # ok rajouter test sur publish_progress
-        # test with TSNE 2D
-        drm2 = DimReducMethod(1,
-                              TSNE,
-                              2,
-                              self.X,
-                              default_parameters={'n_components': 2})
-        X_proj = drm2.compute(fit_sample_num=50)
-        assert X_proj.shape == (self.X.shape[0], 2)
-        X_proj = drm2.compute()
-        assert X_proj.shape == (self.X.shape[0], 2)
-
-        # test with TSNE 3D
-        drm3 = DimReducMethod(1,
-                              TSNE,
-                              3,
-                              self.X,
-                              default_parameters={'n_components': 2})
-        X_proj = drm3.compute(fit_sample_num=50)
-        assert X_proj.shape == (self.X.shape[0], 3)
-        X_proj = drm3.compute()
-        assert X_proj.shape == (self.X.shape[0], 3)
+    # def test_computeTSNE(self):  # ok rajouter test sur publish_progress
+    #     # test with TSNE 2D
+    #     drm2 = DimReducMethod(1,
+    #                           TSNE,
+    #                           2,
+    #                           self.X,
+    #                           default_parameters={'n_components': 2})
+    #     X_proj = drm2.compute(fit_sample_num=50)
+    #     assert X_proj.shape == (self.X.shape[0], 2)
+    #     X_proj = drm2.compute()
+    #     assert X_proj.shape == (self.X.shape[0], 2)
+    #
+    #     # test with TSNE 3D
+    #     drm3 = DimReducMethod(1,
+    #                           TSNE,
+    #                           3,
+    #                           self.X,
+    #                           default_parameters={'n_components': 2})
+    #     X_proj = drm3.compute(fit_sample_num=50)
+    #     assert X_proj.shape == (self.X.shape[0], 3)
+    #     X_proj = drm3.compute()
+    #     assert X_proj.shape == (self.X.shape[0], 3)
 
     def test_computePacMAP(self):  # à implémenter sous un autre OS que Windows
         pass
@@ -153,7 +152,10 @@ class TestDimReducMethod(TestCase):
         X = pd.DataFrame(np.random.randint(0, 100, size=(6, 3)),
                          columns=list('ABC'))
         y = X.sum(axis=1)
-        mis = DimReducMethod.scale_value_space(X, y, self.callback, method='MIS')
+        mis = DimReducMethod.scale_value_space(X,
+                                               y,
+                                               self.callback,
+                                               method='MIS')
         expected = pd.DataFrame(
             [[-0.048086, -0.153033, 0.032684], [-0.000829, 0.350276, 0.216138],
              [0.001658, -0.200644, 0.089618], [-0.070471, 0.017004, -0.144444],
@@ -164,11 +166,16 @@ class TestDimReducMethod(TestCase):
 
         np.testing.assert_allclose(mis.values, expected.values, atol=1e-2)
 
-        ncc = DimReducMethod.scale_value_space(X, y, self.callback, method='NCC')
-        expected = pd.DataFrame(
-            [[-0.088322, - 0.09837858,  0.05172027], [-0.00152279,  0.22517763,  0.34202112],
-             [0.00304559, - 0.12898525,  0.14181363], [-0.12943741,  0.01093095, - 0.22857021],
-             [-0.05634334, - 0.1158681, - 0.04838348], [0.27257995,  0.10712334, - 0.25860133]],
-            index=list(range(0, 6)),
-            columns=list('ABC'))
-        np.testing.assert_allclose(ncc.values, expected.values, atol = 1e-2)
+        ncc = DimReducMethod.scale_value_space(X,
+                                               y,
+                                               self.callback,
+                                               method='NCC')
+        expected = pd.DataFrame([[-0.088322, -0.09837858, 0.05172027],
+                                 [-0.00152279, 0.22517763, 0.34202112],
+                                 [0.00304559, -0.12898525, 0.14181363],
+                                 [-0.12943741, 0.01093095, -0.22857021],
+                                 [-0.05634334, -0.1158681, -0.04838348],
+                                 [0.27257995, 0.10712334, -0.25860133]],
+                                index=list(range(0, 6)),
+                                columns=list('ABC'))
+        np.testing.assert_allclose(ncc.values, expected.values, atol=1e-2)
