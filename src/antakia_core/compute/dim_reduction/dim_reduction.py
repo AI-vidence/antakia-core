@@ -1,7 +1,7 @@
 from .pacmap_progress import PaCMAP
 import pandas as pd
 from sklearn.decomposition import PCA
-from openTSNE import TSNE
+#from openTSNE import TSNE
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from ...utils.splittable_callback import ProgressCallback
@@ -36,53 +36,53 @@ class PCADimReduc(DimReducMethod):
                          })
 
 
-class TSNEwrapper(TSNE):
+# class TSNEwrapper(TSNE):
+#
+#     def fit_transform(self, X):
+#         return pd.DataFrame(self.fit(X.values), index=X.index)
 
-    def fit_transform(self, X):
-        return pd.DataFrame(self.fit(X.values), index=X.index)
 
-
-class TSNEDimReduc(DimReducMethod):
-    """
-    T-SNE computation class.
-    """
-    dimreduc_method = -1  # DimReducMethod.dimreduc_method_as_int('TSNE')
-    allowed_kwargs = [
-        'perplexity', 'early_exaggeration', 'learning_rate', 'n_iter',
-        'n_iter_without_progress', 'min_grad_norm', 'metric', 'metric_params',
-        'init', 'verbose', 'random_state', 'method', 'angle', 'n_jobs'
-    ]
-
-    def __init__(self,
-                 X: pd.DataFrame,
-                 dimension: int = 2,
-                 progress_callback: ProgressCallback | None = None):
-        super().__init__(self.dimreduc_method,
-                         TSNEwrapper,
-                         dimension,
-                         X,
-                         progress_callback=progress_callback,
-                         default_parameters={
-                             'n_components': dimension,
-                             'n_jobs': -1
-                         })
-
-    @classmethod
-    def parameters(cls) -> dict:
-        return {
-            'perplexity': {
-                'type': float,
-                'min': 5,
-                'max': 50,
-                'default': 12
-            },
-            'learning_rate': {
-                'type': [float, str],
-                'min': 10,
-                'max': 1000,
-                'default': 'auto'
-            }
-        }
+# class TSNEDimReduc(DimReducMethod):
+#     """
+#     T-SNE computation class.
+#     """
+#     dimreduc_method = -1  # DimReducMethod.dimreduc_method_as_int('TSNE')
+#     allowed_kwargs = [
+#         'perplexity', 'early_exaggeration', 'learning_rate', 'n_iter',
+#         'n_iter_without_progress', 'min_grad_norm', 'metric', 'metric_params',
+#         'init', 'verbose', 'random_state', 'method', 'angle', 'n_jobs'
+#     ]
+#
+#     def __init__(self,
+#                  X: pd.DataFrame,
+#                  dimension: int = 2,
+#                  progress_callback: ProgressCallback | None = None):
+#         super().__init__(self.dimreduc_method,
+#                          TSNEwrapper,
+#                          dimension,
+#                          X,
+#                          progress_callback=progress_callback,
+#                          default_parameters={
+#                              'n_components': dimension,
+#                              'n_jobs': -1
+#                          })
+#
+#     @classmethod
+#     def parameters(cls) -> dict:
+#         return {
+#             'perplexity': {
+#                 'type': float,
+#                 'min': 5,
+#                 'max': 50,
+#                 'default': 12
+#             },
+#             'learning_rate': {
+#                 'type': [float, str],
+#                 'min': 10,
+#                 'max': 1000,
+#                 'default': 'auto'
+#             }
+#         }
 
 
 class UMAPDimReduc(DimReducMethod):
@@ -221,7 +221,12 @@ class PaCMAPDimReduc(DimReducMethod):
 
 dim_reduc_factory: dict[int, type[DimReducMethod]] = {
     dm.dimreduc_method: dm
-    for dm in [PCADimReduc, TSNEDimReduc, UMAPDimReduc, PaCMAPDimReduc]
+    for dm in [
+        PCADimReduc,
+        # TSNEDimReduc,
+        UMAPDimReduc,
+        PaCMAPDimReduc
+    ]
 }
 
 

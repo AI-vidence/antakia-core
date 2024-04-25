@@ -2,19 +2,10 @@ from unittest import TestCase
 
 import numpy as np
 
-from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
-from antakia_core.compute.dim_reduction.pacmap_progress.pacmap_progress import PaCMAP
-import pacmap
-
-import pandas as pd
 import pytest
 import umap
 
-from sklearn.decomposition import PCA
-from antakia_core.compute.dim_reduction.dim_reduction import compute_projection, dim_reduc_factory, PCADimReduc, \
-    TSNEwrapper, \
-    TSNEDimReduc, UMAPDimReduc, PaCMAPDimReduc
-from antakia_core.utils.splittable_callback import DummyProgressCallback
+from antakia_core.compute.dim_reduction.dim_reduction import *
 from tests.dummy_datasets import generate_corner_dataset
 from tests.utils_fct import DummyProgress
 
@@ -40,47 +31,47 @@ class TestDimReduction(TestCase):
             'n_oversamples', 'power_iteration_normalizer', 'random_state'
         ])
 
-    def test_fit_TSNEwrapper(self):
-        tsn = TSNEwrapper()
-        tsn.fit_transform(self.X)
+    # def test_fit_TSNEwrapper(self):
+    #     tsn = TSNEwrapper()
+    #     tsn.fit_transform(self.X)
 
-    def test_init_TSNEDimReduc(self):
-        tsne = TSNEDimReduc(self.X, 2)
-        assert tsne.dimreduc_method == -1
-        np.testing.assert_array_equal(tsne.default_parameters, {
-            'n_components': 2,
-            'n_jobs': -1
-        })
-        assert tsne.dimension == 2
-        assert tsne.dimreduc_model == TSNEwrapper
-        assert hasattr(tsne.dimreduc_model, 'fit')
-        assert isinstance(tsne, DimReducMethod)
+    # def test_init_TSNEDimReduc(self):
+    #     tsne = TSNEDimReduc(self.X, 2)
+    #     assert tsne.dimreduc_method == -1
+    #     np.testing.assert_array_equal(tsne.default_parameters, {
+    #         'n_components': 2,
+    #         'n_jobs': -1
+    #     })
+    #     assert tsne.dimension == 2
+    #     assert tsne.dimreduc_model == TSNEwrapper
+    #     assert hasattr(tsne.dimreduc_model, 'fit')
+    #     assert isinstance(tsne, DimReducMethod)
+    #
+    #     assert tsne.X.equals(self.X)
+    #     np.testing.assert_array_equal(tsne.allowed_kwargs, [
+    #         'perplexity', 'early_exaggeration', 'learning_rate', 'n_iter',
+    #         'n_iter_without_progress', 'min_grad_norm', 'metric',
+    #         'metric_params', 'init', 'verbose', 'random_state', 'method',
+    #         'angle', 'n_jobs'
+    #     ])
 
-        assert tsne.X.equals(self.X)
-        np.testing.assert_array_equal(tsne.allowed_kwargs, [
-            'perplexity', 'early_exaggeration', 'learning_rate', 'n_iter',
-            'n_iter_without_progress', 'min_grad_norm', 'metric',
-            'metric_params', 'init', 'verbose', 'random_state', 'method',
-            'angle', 'n_jobs'
-        ])
-
-    def test_parameters_TSNEDimReduc(self):
-        tsne = TSNEDimReduc(self.X, 2)
-        expected_parameters = {
-            'perplexity': {
-                'type': float,
-                'min': 5,
-                'max': 50,
-                'default': 12
-            },
-            'learning_rate': {
-                'type': [float, str],
-                'min': 10,
-                'max': 1000,
-                'default': 'auto'
-            }
-        }
-        np.testing.assert_array_equal(tsne.parameters(), expected_parameters)
+    # def test_parameters_TSNEDimReduc(self):
+    #     tsne = TSNEDimReduc(self.X, 2)
+    #     expected_parameters = {
+    #         'perplexity': {
+    #             'type': float,
+    #             'min': 5,
+    #             'max': 50,
+    #             'default': 12
+    #         },
+    #         'learning_rate': {
+    #             'type': [float, str],
+    #             'min': 10,
+    #             'max': 1000,
+    #             'default': 'auto'
+    #         }
+    #     }
+    #     np.testing.assert_array_equal(tsne.parameters(), expected_parameters)
 
     def test_init_UMAPDimReduc(self):
         umap_dr = UMAPDimReduc(self.X, 2)
