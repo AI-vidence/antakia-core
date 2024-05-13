@@ -228,7 +228,7 @@ class ModelRegion(Region):
         if self.interpretable_models.selected_model is not None:
             dict_form[
                 'Sub-model'] = self.interpretable_models.selected_model_str()
-        dict_form["Average"] = format_number(self.y[self.mask].mean())
+        dict_form["Average"] = format_number(self.y[self.mask].mean())  # type: ignore
         return dict_form
 
     def select_model(self, model_name: str):
