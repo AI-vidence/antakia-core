@@ -14,12 +14,13 @@ interpret = "*"
 lime = "^0.2.0.1"
 shap = "^0.43.0"
 umap-learn = "^0.5.5"
-skope-rules-temp = ">=0.2.4"
-scipy = "*"
-pygam = [
-    { version = ">=0.9.0", python = ">=3.11,<3.13" },
-    { version = "<0.9.0", python = "<3.11" }
-]
+skope-rules-temp = ">=0.2.5"
+scipy = ">=1.12"
+pygam = ">=0.8.1"
+#pygam = [
+#    { version = ">=0.9.0", python = ">=3.11,<3.13" },
+#    { version = "<0.9.0", python = "<3.11" }
+#]
 
 
 [tool.poetry.group.dev.dependencies]
