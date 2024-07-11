@@ -8,7 +8,7 @@ class NotFittedError(Exception):
 
 class MLModel:
 
-    def __init__(self, model, name, fitted=False):
+    def __init__(self, model, name:str, fitted=False):
         self.fitted = fitted
         self.model = model
         self.name = name

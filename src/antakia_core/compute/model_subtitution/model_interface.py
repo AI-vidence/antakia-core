@@ -56,8 +56,27 @@ class InterpretableModels:
 
         self.models = {}
         self.scores = {}
+        self._y_pred_submodels = {}
         self.perfs = pd.DataFrame()
         self.selected_model = None
+
+    def y_pred(self, X, model):
+        """
+        directly returns the prediction from the dictionary
+        computes the required prediction if needed
+
+        Parameters
+        ----------
+        model : model used for the predictions
+
+        Returns
+        the series containing the colors (values) predicted by the model
+        -------
+
+        """
+        if model.name not in self._y_pred_submodels:
+            self._y_pred_submodels[model.name] = model.predict(X)
+        return self._y_pred_submodels[model.name]
 
     def _get_available_models(self, task_type) -> List[type[MLModel]]:
         if task_type == ProblemCategory.regression:
