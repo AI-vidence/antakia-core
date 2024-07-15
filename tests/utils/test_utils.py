@@ -3,6 +3,8 @@ import numpy as np
 import pytest
 
 from antakia_core.utils import utils
+from tests.dummy_datasets import get_data_from_mixture_distribution, mixture_dataset
+from tests.utils_fct import dummy_mask
 
 
 def test_overlap_handler():
@@ -10,6 +12,12 @@ def test_overlap_handler():
     # print(utils.overlap_handler())
     # assert utils.overlap_handler(ens,liste) == 0
 
+def test_get_mask_comparison_color():
+    data = mixture_dataset(20)[0]
+    selection_mask = dummy_mask(data).astype(bool)
+    rules_mask = dummy_mask(data).astype(bool)
+    assert isinstance(utils.get_mask_comparison_color(selection_mask, rules_mask)[0] ,pd.Series)
+    assert isinstance(utils.get_mask_comparison_color(selection_mask, rules_mask)[1] ,dict)
 
 def test_in_index():
     df1 = pd.DataFrame([[4, 7, 10], [5, 8, 11], [6, 9, 12]],

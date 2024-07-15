@@ -110,7 +110,7 @@ def compute_step(min, max):
     return min_, max_, step
 
 
-def get_mask_comparison_color(rules_mask, selection_mask):
+def get_mask_comparison_color(rules_mask : pd.Series, selection_mask:pd.Series) -> [pd.Series, dict]:
     """
     compute colors for comparison between two masks
     """

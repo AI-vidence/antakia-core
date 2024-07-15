@@ -216,6 +216,7 @@ class ModelRegion(Region):
         self.y_test = y_test
         self.customer_model = customer_model
         self.interpretable_models = InterpretableModels(score)
+        self.trained = False
 
     def to_dict(self) -> dict:
         """
@@ -268,6 +269,7 @@ class ModelRegion(Region):
                 None,
                 None,
                 task_type=task_type)
+        self.trained = True
 
     @property
     def perfs(self):
