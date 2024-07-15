@@ -154,7 +154,7 @@ class InterpretableModels:
 
     def get_models_performance(
             self,
-            customer_model,  #fitted model
+            customer_model,  # fitted model
             X_train: pd.DataFrame,
             y_train: pd.Series,
             X_test: pd.DataFrame | None,

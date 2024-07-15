@@ -54,5 +54,4 @@ def dummy_mask(data: pd.DataFrame | pd.Series,
     if isinstance(data, pd.Series):
         return pd.Series(np.random.randint(0, 2, data.shape[0]))
     else:
-        return pd.Series(np.random.randint(0, 2,
-                                           data.shape[0] * data.shape[1]))
+        return pd.Series(np.random.randint(0, 2,data.shape[0] * data.shape[1]))

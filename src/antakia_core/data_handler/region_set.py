@@ -158,7 +158,7 @@ class RegionSet:
         return [region.mask for region in self.display_order]
 
     @property
-    def mask(self):
+    def mask(self) -> pd.Series:
         """
         get the union mask of all regions
         Returns
@@ -201,7 +201,7 @@ class RegionSet:
         """
         return len(self.regions)
 
-    def get(self, i) -> Region | None:
+    def get(self, i: int) -> Region | None:
         """
         get a specific region by id
         Parameters
@@ -374,7 +374,7 @@ class ModelRegionSet(RegionSet):
         self.add(region)
         return region
 
-    def get(self, i) -> ModelRegion | None:
+    def get(self, i:int) -> ModelRegion | None:
         return super().get(i)  # type:ignore
 
     def stats(self) -> dict:

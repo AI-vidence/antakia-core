@@ -3,8 +3,8 @@ import warnings
 import pandas as pd
 from skope_rules_temp import SkopeRules
 
-from antakia_core.utils.variable import Variable, DataVariables
-from antakia_core.data_handler.rules import Rule, RuleSet
+from antakia_core.utils.variable import DataVariables
+from antakia_core.data_handler.rules import RuleSet
 
 
 def skope_rules(df_mask: pd.Series,
