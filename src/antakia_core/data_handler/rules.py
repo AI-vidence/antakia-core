@@ -11,19 +11,18 @@ class RuleSet:
     set of rules
     """
 
-    def __init__(self, rules: list[Rule] | RuleSet | None = None):
-
+    def __init__(self, rules: list[Rule] | 'RuleSet' | None = None):
+        self.rules: dict[Variable, Rule] = {}
         if isinstance(rules, RuleSet):
-            rules = rules.rules.values()
-        self.rules = {}
+            rules = list(rules.rules.values())
         if rules:
             for rule in rules:
-                self.rules[rule.variable] = rule
+                self.add(rule)
 
     def add(self, value: Rule):
         """
         add a new rule
-        combines it with the existing rule is variable already used
+        combines it with the existing rule if variable already used
         Parameters
         ----------
         value
@@ -34,7 +33,8 @@ class RuleSet:
         """
         if value.variable in self.rules:
             self.rules[value.variable] &= value
-        self.rules[value.variable] = value
+        else:
+            self.rules[value.variable] = value
 
     def replace(self, value: Rule):
         """
@@ -58,6 +58,12 @@ class RuleSet:
         return " and ".join([rule.__repr__() for rule in self.rules.values()])
 
     def to_dict(self):
+        """
+        return a list of dictionaries containing the parameters of each rule
+        Returns
+        -------
+
+        """
         if not self.rules:
             return []
         return [rule.to_dict() for rule in self.rules.values()]
@@ -99,7 +105,7 @@ class RuleSet:
                 masks.append(rule.get_matching_mask(X))
         return masks
 
-    def get_matching_indexes(self, X):
+    def get_matching_indexes(self, X: pd.DataFrame) -> list:
         """
         get the list indexes of X validating the rule
         Parameters
@@ -127,13 +133,17 @@ class RuleSet:
 
         """
         rules_info = skrules[0]
+        ###### deprecated
         precision, recall, __ = rules_info[1]
         f1 = precision * recall * 2 / (precision + recall)
+        #precision = TP/(TP+FP)
+        #recall = TP/(TP+FN)
         score_dict = {
             "precision": round(precision, 3),
             "recall": round(recall, 3),
             "f1": round(f1, 3),
         }
+        ######
         rule_strings = rules_info[0].split(" and ")
 
         rule_list = RuleSet()

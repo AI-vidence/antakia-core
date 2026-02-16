@@ -10,18 +10,22 @@ from tests.utils_fct import DummyModel, DummyCallable
 
 
 class TestExplanationMethod(TestCase):
+
     def setUp(self):
         self.X, self.y = generate_corner_dataset(10)
         self.model = DummyModel
         self.callable = DummyCallable()
 
     def test_init(self):
+
         class DummyExplanation(ExplanationMethod):
+
             def compute(self):
                 self.publish_progress(100)
                 return 0
 
-        exp_meth = DummyExplanation(1, self.X, self.y, self.model, ProblemCategory.regression)
+        exp_meth = DummyExplanation(1, self.X, self.y, self.model,
+                                    ProblemCategory.regression)
         assert exp_meth.explanation_method == 1
         np.testing.assert_array_equal(exp_meth.X, self.X)
 
@@ -38,8 +42,11 @@ class TestExplanationMethod(TestCase):
 
     def test_explain_method_str_int_conversion(self):
         for i in ExplanationMethod.explanation_methods_as_list():
-            assert ExplanationMethod.explain_method_as_int(ExplanationMethod.explain_method_as_str(i)) == i
-            assert ExplanationMethod.explain_method_as_str(i) in ['SHAP', 'LIME']
+            assert ExplanationMethod.explain_method_as_int(
+                ExplanationMethod.explain_method_as_str(i)) == i
+            assert ExplanationMethod.explain_method_as_str(i) in [
+                'SHAP', 'LIME'
+            ]
         with pytest.raises(ValueError):
             ExplanationMethod.explain_method_as_str(3)
         with pytest.raises(ValueError):

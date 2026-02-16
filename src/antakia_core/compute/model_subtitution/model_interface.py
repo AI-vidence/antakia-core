@@ -14,12 +14,12 @@ import re
 from antakia_core.utils.utils import ProblemCategory
 
 
-def pretty_model_name(model_name):
+def pretty_model_name(model_name: str) -> str:
     return model_name.replace('_', ' ').title()
 
 
-def reduce_name(model_name):
-    parts = re.split('\W+', model_name)
+def reduce_name(model_name: str) -> str:
+    parts = re.split(r'\W+', model_name)
     name = ''
     for part in parts:
         name += part[0].upper()
@@ -61,35 +61,73 @@ class InterpretableModels:
 
     def _get_available_models(self, task_type) -> List[type[MLModel]]:
         if task_type == ProblemCategory.regression:
-            return [LinearRegression, LassoRegression, RidgeRegression, GaM,
-                    EBM, DecisionTreeRegressor, AvgBaselineModel]
-        return [AvgClassificationBaselineModel, DecisionTreeClassifier, LogisticRegression]
+            return [
+                LinearRegression, LassoRegression, RidgeRegression, GaM, EBM,
+                DecisionTreeRegressor, AvgBaselineModel
+            ]
+        return [
+            AvgClassificationBaselineModel, DecisionTreeClassifier,
+            LogisticRegression
+        ]
 
     def _init_models(self, task_type):
+        """
+        fills the empty dict with all available models
+        Parameters
+        ----------
+        task_type
+
+        Returns
+        -------
+
+        """
         for model_class in self._get_available_models(task_type):
             model = model_class()
             if model.name not in self.models:
                 self.models[pretty_model_name(model.name)] = model
 
-    def _init_scores(self, customer_model, task_type):
+    def _init_scores(self, customer_model, task_type, X_test, y_test):
+        """
+        fills the empty dict with score names as key, and tuple
+        (scoring function, score type) as value
+
+        Parameters
+        ----------
+        customer_model
+        task_type
+        X_test
+        y_test
+
+        Returns
+        -------
+
+        """
         if self.score_type == 'compute':
             self._compute_score_type(customer_model, X_test, y_test)
         if task_type == ProblemCategory.regression:
             scores_list = ['MSE', 'MAE', 'R2']
         else:
-            scores_list = ['ACC', 'F1', 'precision'.upper(), 'recall'.upper(), 'R2']
+            scores_list = [
+                'ACC', 'F1', 'precision'.upper(), 'recall'.upper(), 'R2'
+            ]
         self.scores = {
-            score: self.available_scores[score] for score in scores_list
+            score: self.available_scores[score]
+            for score in scores_list
         }
-        self.scores[self.custom_score_str] = (self.custom_score, self.score_type)
+        self.scores[self.custom_score_str] = (self.custom_score,
+                                              self.score_type)
 
     def _train_models(self, X_train, y_train, X_test, y_test):
-        Parallel(n_jobs=1)(
-            delayed(model.fit_and_compute_fi)(X_train, y_train, X_test, y_test, self.custom_score, self.score_type) for
-            model_name, model in
-            self.models.items() if not model.fitted)
+        models = Parallel(n_jobs=1)(delayed(model.fit_and_compute_fi)(
+            X_train, y_train, X_test, y_test, self.custom_score,
+            self.score_type) for model_name, model in self.models.items()
+                                    if not model.fitted)
 
-    def _compute_score_type(self, customer_model, X: pd.DataFrame, y: pd.Series):
+        for model in models:
+            self.models[pretty_model_name(model.name)] = model
+
+    def _compute_score_type(self, customer_model, X: pd.DataFrame,
+                            y: pd.Series):
         y_pred = customer_model.predict(X)
         s1 = self.custom_score(y_pred, y)
         s2 = self.custom_score(y.sample(len(y)).values, y.values)
@@ -97,33 +135,54 @@ class InterpretableModels:
 
     def get_models_performance(
             self,
-            customer_model,
+            customer_model,  #fitted model
             X_train: pd.DataFrame,
             y_train: pd.Series,
             X_test: pd.DataFrame | None,
             y_test: pd.Series | None,
             task_type='regression') -> pd.DataFrame:
+        """
+
+        Parameters
+        ----------
+        customer_model
+        X_train
+        y_train
+        X_test
+        y_test
+        task_type
+
+        Returns sorted perf dataframe
+        -------
+
+        """
         if isinstance(task_type, str):
             task_type = ProblemCategory[task_type]
         if len(X_train) <= 50 or len(X_train.T) >= len(X_train):
             return pd.DataFrame()
         if X_test is None or len(X_test) == 0:
             print('no test set provided, splitting train set')
-            X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
-        self._init_scores(customer_model, task_type)
+            X_train, X_test, y_train, y_test = train_test_split(X_train,
+                                                                y_train,
+                                                                test_size=0.2)
+        self._init_scores(customer_model, task_type, X_test, y_test)
         self._init_models(task_type)
         if customer_model is not None:
-            self.models[self.customer_model_name] = MLModel(customer_model, self.customer_model_name, True)
-            self.models[self.customer_model_name].compute_feature_importances(X_test, y_test, self.custom_score,
-                                                                              self.score_type)
+            self.models[self.customer_model_name] = MLModel(
+                customer_model, self.customer_model_name, True)
+            self.models[self.customer_model_name].compute_feature_importances(
+                X_test, y_test, self.custom_score, self.score_type)
         self._train_models(X_train, y_train, X_test, y_test)
         for model_name, model in self.models.items():
             y_pred = model.predict(X_test)
             for score_name, score in self.scores.items():
-                self.perfs.loc[model_name, score_name] = score[0](y_test, y_pred)
+                self.perfs.loc[model_name, score_name] = score[0](y_test,
+                                                                  y_pred)
 
-        self.perfs['delta'] = (self.perfs[self.custom_score_str] - self.perfs.loc[
-            self.customer_model_name, self.custom_score_str]) * (2 * (self.score_type == 'minimize') - 1)
+        self.perfs['delta'] = (
+            self.perfs[self.custom_score_str] -
+            self.perfs.loc[self.customer_model_name, self.custom_score_str]
+        ) * (2 * (self.score_type == 'minimize') - 1)
 
         def get_delta_color(delta):
             return 'red' if delta > 0.01 else 'green' if delta < -0.01 else 'orange'
@@ -131,10 +190,16 @@ class InterpretableModels:
         self.perfs['delta_color'] = self.perfs['delta'].apply(get_delta_color)
         return self.perfs.sort_values('delta', ascending=True)
 
-    def select_model(self, model_name):
+    def select_model(self, model_name: str):
         self.selected_model = model_name
 
     def selected_model_str(self) -> str:
+        """
+
+        Returns a string representation of the selected model's name and his score
+        -------
+
+        """
         perf = self.perfs.loc[self.selected_model]
         reduced_name = reduce_name(self.selected_model)
         display_str = f'{reduced_name} - {self.custom_score_str}:{perf[self.custom_score_str]:.2f} ({perf["delta"]:.2f})'
@@ -148,7 +213,8 @@ class InterpretableModels:
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('../../../../antakia/data/california_housing.csv').set_index('Unnamed: 0')
+    df = pd.read_csv('../../../../antakia/data/california_housing.csv'
+                     ).set_index('Unnamed: 0')
     df = df.sample(len(df))
     limit = int(2000 / 0.8)
     df = df.iloc[:limit]
@@ -160,5 +226,4 @@ if __name__ == '__main__':
     X_test = df_test.iloc[:, :8]  # the dataset
     y_test = df_test.iloc[:, 9]  # the target variable
     InterpretableModels(mean_squared_error).get_models_performance(
-        None, X_train, y_train, X_test, y_test,
-        task_type='regression')
+        None, X_train, y_train, X_test, y_test, task_type='regression')

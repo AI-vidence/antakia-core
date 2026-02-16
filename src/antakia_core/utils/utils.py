@@ -2,6 +2,7 @@
 Utils module for the antakia package.
 """
 import math
+import os
 import time
 from enum import EnumMeta, Enum
 from numbers import Number
@@ -13,23 +14,44 @@ import pandas as pd
 from pandas.api.types import is_bool_dtype, is_integer_dtype
 
 
+def timeit(method):
+
+    def timed(*args, **kw):
+        if os.environ.get('ATK_DEV') == 'TRUE':
+            ts = time.time()
+            result = method(*args, **kw)
+            te = time.time()
+            if 'log_time' in kw:
+                name = kw.get('log_name', method.__name__.upper())
+                kw['log_time'][name] = int((te - ts) * 1000)
+            else:
+                if te - ts > 0.001:
+                    print(
+                        f'{method.__module__}.{method.__name__}  {(te - ts) * 1000:2.2f} ms'
+                    )
+            return result
+        return method(*args, **kw)
+
+    return timed
+
+
 def in_index(indexes: list, X: pd.DataFrame) -> bool:
     """
     Checks if a list of indexes is in the index of a DataFrame
     """
     try:
-        X.loc[indexes]
+        _ = X.loc[indexes]
         return True
     except KeyError:
         return False
 
 
-def rows_to_mask(X: pd.DataFrame, rows_list: list) -> pd.Series:
+def rows_to_mask(X: pd.DataFrame, rows_list: list[int]) -> pd.Series:
     """
     Converts DataFrame row numbers to Index numbers
     """
-    mask = pd.Series(np.zeros(len(X)), index=X.index)
-    mask.iloc[rows_list] = 1
+    mask = boolean_mask(X, False)
+    mask.iloc[rows_list] = True
     return mask.astype(bool)
 
 
@@ -41,6 +63,7 @@ def indexes_to_rows(X: pd.DataFrame, indexes_list: list) -> list:
     return index.loc[indexes_list].tolist()
 
 
+@timeit
 def mask_to_rows(mask: pd.Series) -> list:
     """
     converts a mask to row indices (i.e. iloc)
@@ -55,32 +78,19 @@ def mask_to_index(mask: pd.Series) -> list:
     return mask[mask].index.tolist()
 
 
-def boolean_mask(X: pd.DataFrame, value: bool = True):
+def boolean_mask(X: pd.DataFrame | pd.Series, value: bool = True):
     """
     builds a constant series indexed on X with value as value
     """
     return pd.Series([value] * len(X), index=X.index)
 
 
-def timeit(method):
-    def timed(*args, **kw):
-        ts = time.time()
-        result = method(*args, **kw)
-        te = time.time()
-        if 'log_time' in kw:
-            name = kw.get('log_name', method.__name__.upper())
-            kw['log_time'][name] = int((te - ts) * 1000)
-        else:
-            print('%r  %2.2f ms' % (method.__name__, (te - ts) * 1000))
-        return result
-
-    return timed
-
-
 def debug(func):
+
     @wraps(func)
     def wrapper(*args, **kwargs):
-        print(f"Calling {func.__name__} with args: {args} and kwargs: {kwargs}")
+        print(
+            f"Calling {func.__name__} with args: {args} and kwargs: {kwargs}")
         result = func(*args, **kwargs)
         print(f"{func.__name__} returned: {result}")
         return result
@@ -108,7 +118,7 @@ def get_mask_comparison_color(rules_mask, selection_mask):
         'matched': 'blue',
         'error type 1': 'orange',
         'error type 2': 'red',
-        'other data': 'grey'
+        'other data': BASE_COLOR
     }
     color = pd.Series(index=selection_mask.index, dtype=str)
     color[selection_mask & rules_mask] = colors_info['matched']
@@ -119,10 +129,15 @@ def get_mask_comparison_color(rules_mask, selection_mask):
 
 
 # First color can't be blue, reserved for the rules - grey is reserved to background
-colors = ["red", "blue", "green", "yellow", "orange", "pink", "brown", "cyan", "black"]
+colors = [
+    "red", "blue", "green", "yellow", "orange", "pink", "brown", "cyan",
+    "black"
+]
+BASE_COLOR = 'grey'
 
 
 class MetaEnum(EnumMeta):
+
     def __contains__(cls, item):
         try:
             cls(item)
@@ -144,22 +159,20 @@ def format_data(x):
 
 
 def format_number(value: Number) -> str:
+
     def format_str(value):
         if abs(value) < 1e-2 or abs(value) > 1e4:
             return '.2e'
         return '.2f'
 
     if value == 0:
-        return value
-    elif pd.isna(value):
+        return str(value)
+    elif pd.isna(value):  # type:ignore
         return 'NaN'
     return format(value, format_str(value))
 
 
-class BaseEnum(Enum, metaclass=MetaEnum):
-    pass
-
-
-ProblemCategory = BaseEnum('ProblemCategory',
-                           ['classification_with_proba', 'classification_proba', 'classification',
-                            'classification_label_only', 'regression', 'auto'])
+ProblemCategory = Enum('ProblemCategory', [
+    'classification_with_proba', 'classification_proba', 'classification',
+    'classification_label_only', 'regression', 'auto'
+])
