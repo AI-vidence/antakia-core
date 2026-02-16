@@ -1,10 +1,59 @@
-from .pacmap_progress import PaCMAP
+"""
+Dimension reduction implementations for AntakIA.
+
+Provides PCA, UMAP, GeoMap projections.
+PaCMAP is optional (pip install antakia-core[pacmap]).
+"""
+from __future__ import annotations
+
+import logging
+from typing import Optional
+
+import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
-#from openTSNE import TSNE
 
 from antakia_core.compute.dim_reduction.dim_reduc_method import DimReducMethod
 from ...utils.splittable_callback import ProgressCallback
+
+logger = logging.getLogger(__name__)
+
+
+# ===========================================================
+#         Utility functions
+# ===========================================================
+
+
+def get_safe_n_neighbors(n_samples: int, requested: int = 15) -> int:
+    """
+    Calculate safe n_neighbors for small datasets.
+
+    UMAP and PaCMAP can crash if n_neighbors is too large relative
+    to the dataset size.
+
+    Parameters
+    ----------
+    n_samples : int
+        Number of samples in dataset
+    requested : int
+        Requested number of neighbors
+
+    Returns
+    -------
+    int
+        Safe number of neighbors
+    """
+    max_safe = max(2, (n_samples - 1) // 4)
+    safe = min(requested, max_safe)
+
+    if safe < requested:
+        logger.warning(
+            f"n_neighbors reduced from {requested} to {safe} "
+            f"for dataset of {n_samples} points"
+        )
+
+    return safe
+
 
 # ===========================================================
 #         Projections / Dim Reductions implementations
@@ -168,6 +217,7 @@ class PaCMAPDimReduc(DimReducMethod):
     """
     PaCMAP computation class.
 
+    Optional: requires `pip install pacmap` or `pip install antakia-core[pacmap]`.
     """
     dimreduc_method: int = DimReducMethod.dimreduc_method_as_int(
         'PaCMAP')  # type: ignore
@@ -182,8 +232,15 @@ class PaCMAPDimReduc(DimReducMethod):
                  X: pd.DataFrame,
                  dimension: int = 2,
                  progress_callback: ProgressCallback | None = None):
+        try:
+            from .pacmap_progress import PaCMAP as PaCMAPModel
+        except ImportError:
+            raise ImportError(
+                "PaCMAP is not installed. Install with: "
+                "pip install pacmap  or  pip install antakia-core[pacmap]"
+            )
         super().__init__(self.dimreduc_method,
-                         PaCMAP,
+                         PaCMAPModel,
                          dimension,
                          X,
                          progress_callback=progress_callback,
@@ -218,15 +275,131 @@ class PaCMAPDimReduc(DimReducMethod):
         }
 
 
-dim_reduc_factory: dict[int, type[DimReducMethod]] = {
-    dm.dimreduc_method: dm
-    for dm in [
+class GeoMapIdentity:
+    """Identity transformer that returns lat/lon as-is for map visualization."""
+
+    def __init__(self, lat_col: str = "lat", lon_col: str = "lon", **kwargs):
+        self.lat_col = lat_col
+        self.lon_col = lon_col
+
+    def fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        lat = X[self.lat_col].values if self.lat_col in X.columns else X.iloc[:, 0].values
+        lon = X[self.lon_col].values if self.lon_col in X.columns else X.iloc[:, 1].values
+        return pd.DataFrame({"lat": lat, "lon": lon}, index=X.index)
+
+
+class GeoMapDimReduc(DimReducMethod):
+    """
+    Geographic Map projection using lat/lon coordinates directly.
+
+    Not a dimensionality reduction method per se: it maps geographic
+    coordinates for visualization on a Plotly scatter_map.
+    Automatically detected when the DataFrame contains columns named
+    'latitude'/'lat' and 'longitude'/'lon'/'long'.
+    """
+
+    dimreduc_method: int = DimReducMethod.dimreduc_method_as_int(
+        'GeoMap')  # type: ignore
+    allowed_kwargs = ["lat_col", "lon_col"]
+    has_progress_callback = False
+
+    _lat_col: Optional[str] = None
+    _lon_col: Optional[str] = None
+
+    def __init__(
+        self,
+        X: pd.DataFrame,
+        dimension: int = 2,
+        progress_callback: ProgressCallback | None = None,
+        lat_col: Optional[str] = None,
+        lon_col: Optional[str] = None,
+    ):
+        if lat_col is None or lon_col is None:
+            lat_col, lon_col = self._detect_lat_lon_columns(X)
+
+        self._lat_col = lat_col
+        self._lon_col = lon_col
+
+        if lat_col is None or lon_col is None:
+            raise ValueError(
+                "GeoMap requires latitude and longitude columns. "
+                "No columns named 'lat', 'latitude', 'lon', 'longitude' found."
+            )
+
+        super().__init__(
+            self.dimreduc_method,
+            GeoMapIdentity,
+            2,  # Always 2D for maps
+            X,
+            progress_callback=progress_callback,
+            default_parameters={
+                "lat_col": lat_col,
+                "lon_col": lon_col,
+            },
+        )
+        logger.info(f"GeoMap: Using columns lat='{lat_col}', lon='{lon_col}'")
+
+    @staticmethod
+    def _detect_lat_lon_columns(X: pd.DataFrame) -> tuple:
+        """Detect latitude and longitude columns by name."""
+        lat_col = None
+        lon_col = None
+
+        for col in X.columns:
+            col_lower = col.lower()
+            if col_lower in ["latitude", "lat"]:
+                lat_col = col
+            elif col_lower in ["longitude", "lon", "long"]:
+                lon_col = col
+
+        return lat_col, lon_col
+
+    @classmethod
+    def has_geo_columns(cls, X: pd.DataFrame) -> bool:
+        """Check if DataFrame has lat/lon columns."""
+        lat_col, lon_col = cls._detect_lat_lon_columns(X)
+        return lat_col is not None and lon_col is not None
+
+    @classmethod
+    def parameters(cls) -> dict:
+        return {}
+
+    def compute(self, **kwargs) -> pd.DataFrame:
+        """Return lat/lon as projection coordinates."""
+        self.publish_progress(0)
+
+        lat = self.X[self._lat_col].values
+        lon = self.X[self._lon_col].values
+
+        result = pd.DataFrame({0: lon, 1: lat}, index=self.X.index)
+
+        self.publish_progress(100)
+        return result
+
+
+def _build_dim_reduc_factory() -> dict[int, type[DimReducMethod]]:
+    """Build factory with available methods. PaCMAP is optional."""
+    methods = [
         PCADimReduc,
-        # TSNEDimReduc,
         UMAPDimReduc,
-        PaCMAPDimReduc
+        GeoMapDimReduc,
     ]
-}
+
+    # PaCMAP: optional dependency
+    try:
+        from .pacmap_progress import PaCMAP as _  # noqa: F401
+        methods.append(PaCMAPDimReduc)
+        logger.debug("PaCMAP available for dimension reduction")
+    except ImportError:
+        logger.info(
+            "PaCMAP not installed — using UMAP as default. "
+            "Install with: pip install pacmap"
+        )
+
+    return {dm.dimreduc_method: dm for dm in methods}
+
+
+dim_reduc_factory: dict[int, type[DimReducMethod]] = _build_dim_reduc_factory()
 
 
 def compute_projection(X: pd.DataFrame,

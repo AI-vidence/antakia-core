@@ -22,7 +22,7 @@ class DimReducMethod(LongTask):
     """
 
     # Class attributes methods
-    dim_reduc_methods = ['PCA', 'UMAP', 'PaCMAP']
+    dim_reduc_methods = ['PCA', 'UMAP', 'PaCMAP', 'GeoMap']
     dimreduc_method = -1
 
     allowed_kwargs: list[str] = []
