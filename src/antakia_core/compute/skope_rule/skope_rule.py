@@ -1,7 +1,7 @@
 import warnings
 
 import pandas as pd
-from sope_rules_antakia import SkopeRules
+from skope_rules_antakia import SkopeRules
 
 from antakia_core.utils.variable import Variable, DataVariables
 from antakia_core.data_handler.rules import Rule, RuleSet
