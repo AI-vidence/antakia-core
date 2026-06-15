@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "antakia-core"
-version = "0.4.8"
+version = "0.4.9"
 description = "Core modules for AntakIA"
 authors = ["Pierre Hulot <pierre@ai-vidence.com>"]
 readme = "README.md"
@@ -13,7 +13,7 @@ interpret = "*"
 lime = "^0.2.0.1"
 shap = ">=0.50.0"
 umap-learn = "^0.5.5"
-skope-rules-temp = ">=0.2.4"
+sope-rules-antakia = ">=0.1.0"
 scipy = "*"
 pygam = [
     { version = ">=0.9.0", python = ">=3.11,<3.13" },
